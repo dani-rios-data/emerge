@@ -1,9 +1,6 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import Papa from 'papaparse';
-import COLORS from '../utils/colors';
 import { rdSectors } from '../data/rdInvestment';
-import { useLanguage } from '../contexts/LanguageContext';
 
 // Interfaz para adaptarse a EuropeCSVData
 interface EuropeCSVData {
@@ -52,6 +49,9 @@ interface EuropeanRDMapProps {
   onClick?: (country: string) => void;
 }
 
+// URL del archivo GeoJSON de Europa
+const EUROPE_GEOJSON_URL = "/data/geo/europe.geojson";
+
 // Paleta de colores para el mapa
 const RED_PALETTE = {
   NULL: '#e0e0e0',
@@ -65,11 +65,8 @@ const RED_PALETTE = {
 // Mapeo de ISO2 a ISO3 para países que puedan necesitarlo
 const ISO2_TO_ISO3_MAP: Record<string, string> = {
   'AL': 'ALB', // Albania
-  'AD': 'AND', // Andorra
   'AT': 'AUT', // Austria
-  'BY': 'BLR', // Bielorrusia
   'BE': 'BEL', // Bélgica
-  'BA': 'BIH', // Bosnia y Herzegovina
   'BG': 'BGR', // Bulgaria
   'HR': 'HRV', // Croacia
   'CY': 'CYP', // Chipre
@@ -85,30 +82,50 @@ const ISO2_TO_ISO3_MAP: Record<string, string> = {
   'IE': 'IRL', // Irlanda
   'IT': 'ITA', // Italia
   'LV': 'LVA', // Letonia
-  'LI': 'LIE', // Liechtenstein
   'LT': 'LTU', // Lituania
   'LU': 'LUX', // Luxemburgo
   'MT': 'MLT', // Malta
-  'MD': 'MDA', // Moldavia
-  'MC': 'MCO', // Mónaco
-  'ME': 'MNE', // Montenegro
   'NL': 'NLD', // Países Bajos
-  'MK': 'MKD', // Macedonia del Norte
   'NO': 'NOR', // Noruega
   'PL': 'POL', // Polonia
   'PT': 'PRT', // Portugal
   'RO': 'ROU', // Rumanía
-  'RU': 'RUS', // Rusia
-  'SM': 'SMR', // San Marino
-  'RS': 'SRB', // Serbia
   'SK': 'SVK', // Eslovaquia
   'SI': 'SVN', // Eslovenia
   'ES': 'ESP', // España
   'SE': 'SWE', // Suecia
   'CH': 'CHE', // Suiza
-  'UA': 'UKR', // Ucrania
   'GB': 'GBR', // Reino Unido
-  'VA': 'VAT', // Ciudad del Vaticano
+};
+
+// Textos localizados para el mapa
+const mapTexts = {
+  es: {
+    title: "Inversión en I+D por país",
+    loading: "Cargando mapa...",
+    error: "Error al cargar el mapa de Europa",
+    noData: "Sin datos",
+    rdInvestment: "Inversión I+D",
+    ofGDP: "del PIB",
+    lessThan: "< 1%",
+    between1: "1% - 1.5%",
+    between2: "1.5% - 2%",
+    between3: "2% - 2.5%",
+    between4: "2.5% - 3%"
+  },
+  en: {
+    title: "R&D Investment by Country",
+    loading: "Loading map...",
+    error: "Error loading Europe map",
+    noData: "No data",
+    rdInvestment: "R&D Investment",
+    ofGDP: "of GDP",
+    lessThan: "< 1%",
+    between1: "1% - 1.5%",
+    between2: "1.5% - 2%",
+    between3: "2% - 2.5%",
+    between4: "2.5% - 3%"
+  }
 };
 
 // Función para normalizar nombres (elimina acentos y convierte a minúsculas)
@@ -162,7 +179,20 @@ const getCountryIso2 = (feature: GeoJsonFeature): string => {
     '';
 };
 
-// Función para obtener el valor de un país usando código ISO3
+// Verificar si el sector del ítem coincide con el sector seleccionado
+function normalizedSectorMatch(itemSector: string, selectedSector: string): boolean {
+  const normalizedItemSector = normalizeText(itemSector || '');
+  const normalizedSelectedSector = normalizeText(selectedSector);
+  
+  // Conversión de 'total' a 'all sectors' para compatibilidad
+  const normalizedSelectedForCompare = 
+    normalizedSelectedSector === 'total' ? 'all sectors' : normalizedSelectedSector;
+  
+  return normalizedItemSector === normalizedSelectedForCompare || 
+         normalizedItemSector === 'all sectors' && normalizedSelectedSector === 'total';
+}
+
+// Función para obtener el valor de un país
 function getCountryValue(
   countryFeature: GeoJsonFeature, 
   data: EuropeCSVData[], 
@@ -175,58 +205,21 @@ function getCountryValue(
   const countryName = getCountryName(countryFeature);
   const countryIso3 = getCountryIso3(countryFeature);
   
-  console.log(`Buscando datos para: ${countryName} | ISO3: ${countryIso3 || 'no disponible'} | Sector: ${selectedSector}`);
-  
   // Intentar coincidencia por código ISO3 (prioridad)
   if (countryIso3) {
-    // Mostrar todas las entradas con este ISO3 para depuración
-    const entriesWithThisISO = data.filter(item => 
-      item.ISO3 && item.ISO3.toUpperCase() === countryIso3.toUpperCase()
+    const matchingEntries = data.filter(item => 
+      item.ISO3 && 
+      item.ISO3.toUpperCase() === countryIso3.toUpperCase() &&
+      parseInt(item.Year) === selectedYear && 
+      normalizedSectorMatch(item.Sector, selectedSector)
     );
     
-    if (entriesWithThisISO.length > 0) {
-      console.log(`Encontradas ${entriesWithThisISO.length} entradas con ISO3 ${countryIso3}`);
-      
-      // Verificar si tenemos el año correcto
-      const hasSelectedYear = entriesWithThisISO.some(item => 
-        item.Year === selectedYear.toString()
-      );
-      
-      if (!hasSelectedYear) {
-        console.log(`⚠️ No hay entradas para el año ${selectedYear} con ISO3 ${countryIso3}`);
-        // Mostrar los años disponibles para este país
-        const availableYears = [...new Set(entriesWithThisISO.map(item => item.Year))].sort();
-        console.log(`Años disponibles para ${countryName}: ${availableYears.join(', ')}`);
-      }
-      
-      // Filtrar por año y sector
-      const matchingEntries = entriesWithThisISO.filter(item => {
-        const yearMatch = parseInt(item.Year) === selectedYear;
-        const sectorMatch = normalizedSectorMatch(item.Sector, selectedSector);
-        
-        if (yearMatch && !sectorMatch) {
-          console.log(`⚠️ Año correcto (${selectedYear}) pero sector incorrecto para ${countryName}. Sector encontrado: "${item.Sector}", Sector buscado: "${selectedSector}"`);
-        }
-        
-        return yearMatch && sectorMatch;
-      });
-      
-      if (matchingEntries.length > 0) {
-        const countryData = matchingEntries[0];
-        // Intentar obtener el valor de diferentes columnas posibles
-        const value = countryData.Value || countryData['%GDP'] || '';
-        console.log(`✅ Coincidencia por ISO3: ${countryName} (${countryIso3}) -> Valor: ${value}`);
-        
-        // Mostrar todas las propiedades del objeto para depuración
-        console.log("Propiedades completas del objeto:", countryData);
-        
-        const parsedValue = parseFloat(value);
-        return isNaN(parsedValue) ? null : parsedValue;
-      } else {
-        console.log(`❌ Encontradas entradas con ISO3 ${countryIso3}, pero no para el año ${selectedYear} y sector "${selectedSector}"`);
-      }
-    } else {
-      console.log(`❌ No se encontraron entradas con ISO3 ${countryIso3}`);
+    if (matchingEntries.length > 0) {
+      const countryData = matchingEntries[0];
+      // Intentar obtener el valor de diferentes columnas posibles
+      const value = countryData['%GDP'] || countryData.Value || '';
+      const parsedValue = parseFloat(value.replace(',', '.'));
+      return isNaN(parsedValue) ? null : parsedValue;
     }
   }
   
@@ -241,61 +234,19 @@ function getCountryValue(
       normalizedName.includes(itemCountry)
     );
     
-    const yearMatch = parseInt(item.Year) === selectedYear;
-    const sectorMatch = normalizedSectorMatch(item.Sector, selectedSector);
-    
-    if (matches) {
-      console.log(`Coincidencia por nombre entre "${countryName}" y "${item.Country}"`);
-      
-      if (!yearMatch) {
-        console.log(`⚠️ Nombre coincide pero año incorrecto. Año encontrado: ${item.Year}, Año buscado: ${selectedYear}`);
-      }
-      
-      if (!sectorMatch) {
-        console.log(`⚠️ Nombre coincide pero sector incorrecto. Sector encontrado: "${item.Sector}", Sector buscado: "${selectedSector}"`);
-      }
-    }
-    
-    return matches && yearMatch && sectorMatch;
+    return matches && 
+           parseInt(item.Year) === selectedYear && 
+           normalizedSectorMatch(item.Sector, selectedSector);
   });
   
   if (countryData) {
     // Intentar obtener el valor de diferentes columnas posibles
-    const value = countryData.Value || countryData['%GDP'] || '';
-    console.log(`✅ Coincidencia por nombre: ${countryName} -> ${countryData.Country}, valor: ${value}`);
-    
-    // Mostrar todas las propiedades del objeto para depuración
-    console.log("Propiedades completas del objeto:", countryData);
-    
-    const parsedValue = parseFloat(value);
+    const value = countryData['%GDP'] || countryData.Value || '';
+    const parsedValue = parseFloat(value.replace(',', '.'));
     return isNaN(parsedValue) ? null : parsedValue;
   }
   
-  console.log(`❌ No se encontró coincidencia para ${countryName}`);
   return null;
-}
-
-// Verificar si el sector del ítem coincide con el sector seleccionado
-function normalizedSectorMatch(itemSector: string, selectedSector: string): boolean {
-  const normalizedItemSector = normalizeText(itemSector || '');
-  const normalizedSelectedSector = normalizeText(selectedSector);
-  
-  // Conversión de 'total' a 'all sectors' para compatibilidad
-  const normalizedSelectedForCompare = 
-    normalizedSelectedSector === 'total' ? 'all sectors' : normalizedSelectedSector;
-  
-  const isMatch = 
-    normalizedItemSector === normalizedSelectedForCompare || 
-    normalizedItemSector === 'all sectors' && normalizedSelectedSector === 'total';
-  
-  // Mostrar depuración
-  if (isMatch) {
-    console.log(`✓ Coincidencia de sector: Item sector "${itemSector}" vs Selected sector "${selectedSector}"`);
-  } else {
-    console.log(`✗ No coincide sector: Item sector "${itemSector}" vs Selected sector "${selectedSector}"`);
-  }
-                 
-  return isMatch;
 }
 
 // Función para determinar el color basado en el valor
@@ -311,7 +262,6 @@ function getColorByValue(value: number | null): string {
 }
 
 const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick }) => {
-  const { t } = useLanguage();
   const svgRef = useRef<SVGSVGElement>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipContent, setTooltipContent] = useState({ country: '', value: null as number | null });
@@ -320,123 +270,58 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
   const [error, setError] = useState<string | null>(null);
   const [geojsonData, setGeojsonData] = useState<GeoJsonData | null>(null);
 
+  // Acceso a los textos localizados
+  const t = mapTexts[language];
+
   // Obtener el nombre del sector según el idioma
   const getSectorName = () => {
-    // Traducción más precisa según el sector seleccionado
-    const sectorMappings: Record<string, { es: string, en: string }> = {
-      'All Sectors': { es: 'Todos los sectores', en: 'All Sectors' },
-      'Business enterprise sector': { es: 'Sector empresarial', en: 'Business enterprise sector' },
-      'Government sector': { es: 'Administración Pública', en: 'Government sector' },
-      'Higher education sector': { es: 'Enseñanza Superior', en: 'Higher education sector' },
-      'Private non-profit sector': { es: 'Instituciones Privadas sin Fines de Lucro', en: 'Private non-profit sector' }
+    // Convertir el nombre del sector al ID
+    const sectorMapping: Record<string, string> = {
+      'All Sectors': 'total',
+      'Business enterprise sector': 'business',
+      'Government sector': 'government',
+      'Higher education sector': 'education',
+      'Private non-profit sector': 'nonprofit'
     };
     
-    return sectorMappings[selectedSector]?.[language] || selectedSector;
+    const sectorId = sectorMapping[selectedSector] || 'total';
+    
+    // Buscar el sector por ID y obtener el nombre traducido
+    const sector = rdSectors.find(s => s.id === sectorId);
+    if (!sector) return language === 'es' ? 'Todos los sectores' : 'All Sectors';
+    
+    return sector.name[language];
   };
 
-  // Obtener el título del mapa
+  // Título del mapa según el idioma y el sector seleccionado
   const getMapTitle = () => {
-    const sectorText = getSectorName();
+    const sectorName = getSectorName();
     return language === 'es' 
-      ? `Inversión en I+D por país - ${sectorText} (${selectedYear})` 
-      : `R&D Investment by Country - ${sectorText} (${selectedYear})`;
+      ? `Inversión en I+D por país - ${sectorName} (${selectedYear})`
+      : `R&D Investment by Country - ${sectorName} (${selectedYear})`;
   };
-
-  // Depurar los países disponibles en los datos
-  useEffect(() => {
-    if (data && data.length > 0) {
-      console.log("Estructura de datos completa:");
-      
-      // Obtener las claves del primer objeto
-      const firstItem = data[0];
-      const keys = Object.keys(firstItem);
-      
-      console.log("Estructura del objeto de datos:");
-      console.log("Claves disponibles:", keys);
-      
-      // Verificar columnas específicas importantes
-      console.log("Columna ISO3 presente:", keys.includes("ISO3"));
-      console.log("Columna Value presente:", keys.includes("Value"));
-      console.log("Columna %GDP presente:", keys.includes("%GDP"));
-      console.log("Columna Year presente:", keys.includes("Year"));
-      console.log("Columna Sector presente:", keys.includes("Sector"));
-      
-      // Mostrar algunos ejemplos para cada columna importante
-      if (keys.includes("Year")) {
-        const uniqueYears = [...new Set(data.map(item => item.Year))].sort();
-        console.log("Años disponibles:", uniqueYears);
-      }
-      
-      if (keys.includes("Sector")) {
-        const uniqueSectors = [...new Set(data.map(item => item.Sector))];
-        console.log("Sectores disponibles:", uniqueSectors);
-      }
-      
-      // Contar entradas para el año y sector seleccionados
-      const entriesForSelection = data.filter(item => 
-        parseInt(item.Year) === selectedYear && 
-        normalizedSectorMatch(item.Sector, selectedSector)
-      );
-      
-      console.log(`Entradas para año ${selectedYear} y sector "${selectedSector}": ${entriesForSelection.length}`);
-      
-      if (entriesForSelection.length === 0) {
-        console.warn(`⚠️ No hay datos para el año ${selectedYear} y sector "${selectedSector}"`);
-        
-        // Mostrar años y sectores disponibles
-        const uniqueYears = [...new Set(data.map(item => item.Year))].sort();
-        console.log(`Años disponibles: ${uniqueYears.join(', ')}`);
-        
-        const uniqueSectors = [...new Set(data.map(item => item.Sector))];
-        console.log(`Sectores disponibles: ${uniqueSectors.join(', ')}`);
-      } else {
-        // Mostrar todos los países con datos para el año y sector seleccionados
-        const countriesWithData = entriesForSelection.map(item => item.Country);
-        console.log(`Países con datos para año ${selectedYear} y sector "${selectedSector}":`, countriesWithData);
-      }
-    }
-  }, [data, selectedYear, selectedSector]);
 
   // Cargar el GeoJSON
   useEffect(() => {
     setLoading(true);
-    fetch('/data/geo/europe.geojson')
+    setError(null);
+    fetch(EUROPE_GEOJSON_URL)
       .then(response => {
         if (!response.ok) {
-          throw new Error(language === 'es' ? 'No se pudo cargar el mapa' : 'Could not load the map');
+          throw new Error(t.error);
         }
         return response.json();
       })
       .then(geoJsonData => {
         setGeojsonData(geoJsonData);
-        
-        // Depurar el GeoJSON en profundidad
-        if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
-          console.log(`GeoJSON cargado con ${geoJsonData.features.length} países`);
-          
-          // Examinar estructura completa del primer país para entender el formato
-          console.log("Estructura completa del primer país en el GeoJSON:", geoJsonData.features[0]);
-          
-          // Examinar propiedades de los primeros 5 países
-          const sampleFeatures = geoJsonData.features.slice(0, 5);
-          console.log("Nombres de los primeros 5 países en el GeoJSON:");
-          
-          sampleFeatures.forEach((feature: GeoJsonFeature, index: number) => {
-            const countryName = getCountryName(feature);
-            const countryIso2 = getCountryIso2(feature);
-            const countryIso3 = getCountryIso3(feature);
-            console.log(`País ${index + 1}: ${countryName} (ISO2: ${countryIso2 || 'N/A'}, ISO3: ${countryIso3 || 'N/A'})`);
-          });
-        }
-        
         setLoading(false);
       })
       .catch(err => {
         console.error('Error cargando el mapa:', err);
-        setError(language === 'es' ? 'Error al cargar el mapa de Europa' : 'Error loading Europe map');
+        setError(t.error);
         setLoading(false);
       });
-  }, [language]);
+  }, [t.error]);
 
   // Renderizar el mapa cuando los datos GeoJSON están disponibles
   useEffect(() => {
@@ -468,9 +353,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       .data(geojsonData.features)
       .enter()
       .append('path')
-      .attr('d', d => path(d as d3.GeoPermissibleObjects))
-      .attr('fill', (d: GeoJsonFeature) => {
-        const value = getCountryValue(d, data, selectedYear, selectedSector);
+      .attr('d', (d: any) => path(d))
+      .attr('fill', (d: any) => {
+        const feature = d as GeoJsonFeature;
+        const value = getCountryValue(feature, data, selectedYear, selectedSector);
         
         // Si encontramos un valor, incrementamos el contador
         if (value !== null) {
@@ -482,50 +368,49 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       .attr('stroke', '#fff')
       .attr('stroke-width', 0.5)
       .attr('class', 'country')
-      .on('mouseover', (event, d: GeoJsonFeature) => {
-        const countryName = getCountryName(d);
-        const value = getCountryValue(d, data, selectedYear, selectedSector);
+      .on('mouseover', (event: any, d: any) => {
+        const feature = d as GeoJsonFeature;
+        const countryName = getCountryName(feature);
+        const value = getCountryValue(feature, data, selectedYear, selectedSector);
         
         setTooltipContent({ 
           country: countryName, 
           value 
         });
         setTooltipPosition({ 
-          x: event.clientX, 
-          y: event.clientY 
+          x: event.pageX, 
+          y: event.pageY 
         });
         setTooltipVisible(true);
       })
-      .on('mousemove', (event) => {
+      .on('mousemove', (event: any) => {
         setTooltipPosition({ 
-          x: event.clientX, 
-          y: event.clientY 
+          x: event.pageX, 
+          y: event.pageY 
         });
       })
       .on('mouseout', () => {
         setTooltipVisible(false);
       })
-      .on('click', (event, d: GeoJsonFeature) => {
+      .on('click', (event: any, d: any) => {
         if (onClick) {
-          onClick(getCountryName(d));
+          const feature = d as GeoJsonFeature;
+          onClick(getCountryName(feature));
         }
       })
       .style('cursor', onClick ? 'pointer' : 'default');
-    
-    // Mostrar estadísticas de coincidencia
-    console.log(`Total de países coloreados: ${countriesWithData}/${geojsonData.features.length}`);
     
     // Añadir leyenda
     const legendGroup = svg.append('g')
       .attr('transform', `translate(20, ${height - 150})`);
     
     const legend = [
-      { color: RED_PALETTE.MIN, label: '< 1%' },
-      { color: RED_PALETTE.LOW, label: '1% - 1.5%' },
-      { color: RED_PALETTE.MID, label: '1.5% - 2%' },
-      { color: RED_PALETTE.HIGH, label: '2% - 2.5%' },
-      { color: RED_PALETTE.MAX, label: '2.5% - 3%' },
-      { color: RED_PALETTE.NULL, label: t('noData') }
+      { color: RED_PALETTE.MIN, label: t.lessThan },
+      { color: RED_PALETTE.LOW, label: t.between1 },
+      { color: RED_PALETTE.MID, label: t.between2 },
+      { color: RED_PALETTE.HIGH, label: t.between3 },
+      { color: RED_PALETTE.MAX, label: t.between4 },
+      { color: RED_PALETTE.NULL, label: t.noData }
     ];
     
     legend.forEach((item, i) => {
@@ -542,14 +427,14 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         .text(item.label)
         .attr('font-size', '12px');
     });
-  }, [geojsonData, data, selectedYear, selectedSector, language, onClick, t]);
+  }, [geojsonData, data, selectedYear, selectedSector, language, onClick]);
   
   return (
     <div className="relative w-full h-full">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75">
           <p className="text-gray-600">
-            {t('loadingMap')}
+            {t.loading}
           </p>
         </div>
       )}
@@ -586,10 +471,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           <p className="font-bold">{tooltipContent.country}</p>
           {tooltipContent.value !== null ? (
             <p>
-              {language === 'es' ? 'Inversión I+D' : 'R&D Investment'}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {language === 'es' ? 'del PIB' : 'of GDP'}</span>
+              {t.rdInvestment}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {t.ofGDP}</span>
             </p>
           ) : (
-            <p>{t('noData')}</p>
+            <p>{t.noData}</p>
           )}
         </div>
       )}
@@ -597,4 +482,4 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
   );
 };
 
-export default EuropeanRDMap;
+export default EuropeanRDMap; 

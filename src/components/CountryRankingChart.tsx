@@ -46,24 +46,49 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   highlightCountry,
   selectedSector = 'total'
 }) => {
-  // Textos traducidos
-  const titles = {
-    es: `Ranking de países por inversión en I+D (${selectedYear})`,
-    en: `Country Ranking by R&D Investment (${selectedYear})`
+  // Obtener el nombre del sector según el idioma - versión mejorada
+  const getSectorName = () => {
+    // Conversión directa de ID a objeto sector
+    const sector = rdSectors.find(s => s.id === selectedSector);
+    if (!sector) return language === 'es' ? 'Todos los sectores' : 'All Sectors';
+    return sector.name[language];
   };
 
-  // Obtener el código del sector seleccionado
-  const sectorCode = rdSectors.find(s => s.id === selectedSector)?.code || '_T';
-  const sectorName = sectorCode === '_T' ? 'All Sectors' : rdSectors.find(s => s.id === selectedSector)?.name.en || '';
+  // Textos traducidos
+  const texts = {
+    es: {
+      title: `Ranking de países por inversión en I+D - ${getSectorName()} (${selectedYear})`,
+      axisLabel: "% del PIB",
+      noData: "No hay datos disponibles para este año"
+    },
+    en: {
+      title: `Country Ranking by R&D Investment - ${getSectorName()} (${selectedYear})`,
+      axisLabel: "% of GDP",
+      noData: "No data available for this year"
+    }
+  };
+
+  const t = texts[language];
+
+  // Mapeo entre ID de sector y nombre en inglés para consultas
+  const sectorNameMapping: Record<string, string> = {
+    'total': 'All Sectors',
+    'business': 'Business enterprise sector',
+    'government': 'Government sector',
+    'education': 'Higher education sector',
+    'nonprofit': 'Private non-profit sector'
+  };
+  
+  const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
 
   // Procesar y filtrar datos para el año y sector seleccionado
   const countryDataForYear = data.filter(item => 
     parseInt(item['Year']) === selectedYear &&
-    (item['Sector'] === sectorName || 
-     item['Sector'] === 'All Sectors' && sectorName === 'All Sectors')
+    (item['Sector'] === sectorNameEn || 
+     item['Sector'] === 'All Sectors' && sectorNameEn === 'All Sectors')
   );
   
-  console.log(`Datos para año ${selectedYear} y sector ${sectorName}:`, countryDataForYear.length, "registros");
+  console.log(`Datos para año ${selectedYear} y sector ${sectorNameEn}:`, countryDataForYear.length, "registros");
 
   // Función para normalizar texto (eliminar acentos)
   const normalizeText = (text: string): string => {
@@ -220,6 +245,19 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       legend: {
         display: false
       },
+      title: {
+        display: true,
+        text: t.title,
+        font: {
+          size: 16,
+          weight: 'bold'
+        },
+        padding: {
+          top: 10,
+          bottom: 20
+        },
+        color: '#333'
+      },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -232,41 +270,36 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       x: {
         title: {
           display: true,
-          text: language === 'es' ? '% del PIB' : '% of GDP',
+          text: t.axisLabel,
           font: {
-            size: 12,
             weight: 'bold'
           }
         },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
+        ticks: {
+          callback: function(value) {
+            return value + '%';
+          }
         }
       },
       y: {
-        grid: {
+        title: {
           display: false
         }
       }
     }
   };
 
-  // Si no hay datos, mostrar mensaje
-  if (sortedCountries.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 border rounded-lg p-4 text-gray-500">
-        {language === 'es' ? 'No hay datos disponibles para este año y sector' : 'No data available for this year and sector'}
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full h-[500px]">
-      <h3 className="text-lg font-semibold mb-2 text-center">
-        {titles[language]}
-      </h3>
-      <div className="h-full">
-        <Bar data={chartData} options={options} />
-      </div>
+    <div className="relative h-full">
+      {sortedCountries.length > 0 ? (
+        <div className="h-full"> 
+          <Bar data={chartData} options={options} />
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-64 text-gray-500">
+          {t.noData}
+        </div>
+      )}
     </div>
   );
 };

@@ -29,12 +29,7 @@ const translations: Translations = {
     chartPlaceholder: "Gráfico de",
     publicSector: "Sector Público",
     privateSector: "Sector Privado",
-    developedBy: "Desarrollado por",
-    year: "Año",
-    sector: "Sector",
-    loading: "Cargando datos...",
-    noData: "Sin datos",
-    loadingMap: "Cargando mapa..."
+    developedBy: "Desarrollado por"
   },
   en: {
     title: "R&D Observatory of Canary Islands",
@@ -54,12 +49,7 @@ const translations: Translations = {
     chartPlaceholder: "Chart of",
     publicSector: "Public Sector",
     privateSector: "Private Sector",
-    developedBy: "Developed by",
-    year: "Year",
-    sector: "Sector",
-    loading: "Loading data...",
-    noData: "No data",
-    loadingMap: "Loading map..."
+    developedBy: "Developed by"
   }
 };
 

@@ -16,8 +16,34 @@ interface EuropeCSVData {
   [key: string]: string | undefined;
 }
 
-const Investment: React.FC = () => {
-  const { language, t } = useLanguage();
+// Textos localizados para la página de inversión
+const texts = {
+  es: {
+    investmentTitle: "Inversión en I+D",
+    investmentDescription: "Datos sobre la inversión en I+D en las Islas Canarias, tanto pública como privada",
+    year: "Año:",
+    sector: "Sector:",
+    loading: "Cargando datos...",
+    errorPrefix: "Error al cargar datos:",
+    noDataAvailable: "No hay datos disponibles para esta selección"
+  },
+  en: {
+    investmentTitle: "R&D Investment",
+    investmentDescription: "Data on R&D investment in the Canary Islands, both public and private",
+    year: "Year:",
+    sector: "Sector:",
+    loading: "Loading data...",
+    errorPrefix: "Error loading data:",
+    noDataAvailable: "No data available for this selection"
+  }
+};
+
+interface InvestmentProps {
+  language: 'es' | 'en';
+}
+
+const Investment: React.FC<InvestmentProps> = ({ language }) => {
+  const { t } = useLanguage();
   const [europeData, setEuropeData] = useState<EuropeCSVData[]>([]); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +52,11 @@ const Investment: React.FC = () => {
   const [selectedSector, setSelectedSector] = useState<string>("All Sectors"); // Usar el valor exacto del CSV
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   
+  // Función auxiliar para acceder a los textos según el idioma actual
+  const getLocalizedText = (key: keyof typeof texts.es) => {
+    return texts[language][key];
+  };
+
   // Efecto para cargar los datos desde los archivos CSV
   useEffect(() => {
     const loadCSVData = async () => {
@@ -38,7 +69,7 @@ const Investment: React.FC = () => {
         // Cargar datos de Europa
         const europeResponse = await fetch(DATA_PATHS.GDP_EUROPE);
         if (!europeResponse.ok) {
-          throw new Error(`Error al cargar datos de Europa: ${europeResponse.status} - ${europeResponse.statusText}`);
+          throw new Error(`${getLocalizedText('errorPrefix')} ${europeResponse.status} - ${europeResponse.statusText}`);
         }
         
         console.log("Respuesta recibida:", europeResponse.status, europeResponse.statusText);
@@ -96,7 +127,7 @@ const Investment: React.FC = () => {
         setIsLoading(false);
       } catch (err) {
         console.error('Error cargando datos:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido al cargar datos');
+        setError(err instanceof Error ? err.message : `${getLocalizedText('errorPrefix')} Error desconocido`);
         setIsLoading(false);
       }
     };
@@ -160,14 +191,14 @@ const Investment: React.FC = () => {
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-4">{t('investment')}</h2>
       <p className="mb-6">
-        {t('investmentDescription')}
+        {getLocalizedText('investmentDescription')}
       </p>
       
       {/* Selectores de año y sector en la misma fila */}
       <div className="flex flex-wrap items-center mb-6 gap-4">
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {t('year')}:
+            {getLocalizedText('year')}
           </label>
           <select 
             value={selectedYear}
@@ -182,7 +213,7 @@ const Investment: React.FC = () => {
         
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {t('sector')}:
+            {getLocalizedText('sector')}
           </label>
           <select 
             value={getSectorId(selectedSector)}
@@ -200,7 +231,7 @@ const Investment: React.FC = () => {
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">{t('loading')}</p>
+          <p className="text-gray-500">{getLocalizedText('loading')}</p>
         </div>
       ) : error ? (
         <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700">
@@ -209,7 +240,7 @@ const Investment: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Mapa de Europa */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
             <EuropeanRDMap 
               data={europeData} 
               selectedYear={selectedYear} 
@@ -220,7 +251,7 @@ const Investment: React.FC = () => {
           </div>
           
           {/* Gráfico de ranking de países - Usar cast seguro pues la interfaz es compatible */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
             <CountryRankingChart 
               data={europeData as unknown as RdInvestmentEuropeCSVData[]}
               selectedYear={selectedYear} 

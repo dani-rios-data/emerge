@@ -197,7 +197,7 @@ const App: React.FC = () => {
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('investment')}</h2>
             
             {/* Componente modular para la sección de Inversión */}
-            <Investment />
+            <Investment language={language} />
           </div>
         )}
         
