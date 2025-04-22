@@ -322,16 +322,24 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
 
   // Obtener el nombre del sector según el idioma
   const getSectorName = () => {
-    // Si es "All Sectors", traducir según el idioma
-    if (selectedSector === 'All Sectors') {
-      return language === 'es' ? 'Todos los sectores' : 'All Sectors';
-    }
-    return selectedSector;
+    // Traducción más precisa según el sector seleccionado
+    const sectorMappings: Record<string, { es: string, en: string }> = {
+      'All Sectors': { es: 'Todos los sectores', en: 'All Sectors' },
+      'Business enterprise sector': { es: 'Sector empresarial', en: 'Business enterprise sector' },
+      'Government sector': { es: 'Administración Pública', en: 'Government sector' },
+      'Higher education sector': { es: 'Enseñanza Superior', en: 'Higher education sector' },
+      'Private non-profit sector': { es: 'Instituciones Privadas sin Fines de Lucro', en: 'Private non-profit sector' }
+    };
+    
+    return sectorMappings[selectedSector]?.[language] || selectedSector;
   };
 
-  // Título del mapa según el idioma y el sector seleccionado
+  // Obtener el título del mapa
   const getMapTitle = () => {
-    return t('investmentMapTitle');
+    const sectorText = getSectorName();
+    return language === 'es' 
+      ? `Inversión en I+D por país - ${sectorText} (${selectedYear})` 
+      : `R&D Investment by Country - ${sectorText} (${selectedYear})`;
   };
 
   // Depurar los países disponibles en los datos
@@ -395,7 +403,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
     fetch('/data/geo/europe.geojson')
       .then(response => {
         if (!response.ok) {
-          throw new Error('No se pudo cargar el mapa');
+          throw new Error(language === 'es' ? 'No se pudo cargar el mapa' : 'Could not load the map');
         }
         return response.json();
       })
@@ -425,10 +433,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       })
       .catch(err => {
         console.error('Error cargando el mapa:', err);
-        setError('Error al cargar el mapa de Europa');
+        setError(language === 'es' ? 'Error al cargar el mapa de Europa' : 'Error loading Europe map');
         setLoading(false);
       });
-  }, []);
+  }, [language]);
 
   // Renderizar el mapa cuando los datos GeoJSON están disponibles
   useEffect(() => {
@@ -578,7 +586,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           <p className="font-bold">{tooltipContent.country}</p>
           {tooltipContent.value !== null ? (
             <p>
-              {t('rdInvestment')}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {t('ofGDP')}</span>
+              {language === 'es' ? 'Inversión I+D' : 'R&D Investment'}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {language === 'es' ? 'del PIB' : 'of GDP'}</span>
             </p>
           ) : (
             <p>{t('noData')}</p>

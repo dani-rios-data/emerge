@@ -12,7 +12,6 @@ import {
 } from 'chart.js';
 import { EuropeCSVData, rdSectors } from '../data/rdInvestment';
 import COLORS from '../utils/colors';
-import { useLanguage } from '../contexts/LanguageContext';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -47,7 +46,11 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   highlightCountry,
   selectedSector = 'total'
 }) => {
-  const { t } = useLanguage();
+  // Textos traducidos
+  const titles = {
+    es: `Ranking de países por inversión en I+D (${selectedYear})`,
+    en: `Country Ranking by R&D Investment (${selectedYear})`
+  };
 
   // Obtener el código del sector seleccionado
   const sectorCode = rdSectors.find(s => s.id === selectedSector)?.code || '_T';
@@ -229,34 +232,41 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       x: {
         title: {
           display: true,
-          text: t('percentageGDP'),
+          text: language === 'es' ? '% del PIB' : '% of GDP',
           font: {
-            size: 14
+            size: 12,
+            weight: 'bold'
           }
         },
-        ticks: {
-          callback: function(value) {
-            return value + '%';
-          }
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
         }
       },
       y: {
-        title: {
+        grid: {
           display: false
         }
       }
     }
   };
 
+  // Si no hay datos, mostrar mensaje
+  if (sortedCountries.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border rounded-lg p-4 text-gray-500">
+        {language === 'es' ? 'No hay datos disponibles para este año y sector' : 'No data available for this year and sector'}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-[500px]">
-      {sortedCountries.length > 0 ? (
+      <h3 className="text-lg font-semibold mb-2 text-center">
+        {titles[language]}
+      </h3>
+      <div className="h-full">
         <Bar data={chartData} options={options} />
-      ) : (
-        <div className="flex justify-center items-center h-full text-gray-500">
-          {t('noDataAvailable')}
-        </div>
-      )}
+      </div>
     </div>
   );
 };
