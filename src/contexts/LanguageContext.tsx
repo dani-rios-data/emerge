@@ -56,24 +56,30 @@ const translations: Translations = {
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
+  changeLanguage: (language: Language) => void;
   t: (key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   language: 'es',
   setLanguage: () => {},
+  changeLanguage: () => {},
   t: () => ''
 });
 
 export const LanguageProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('es');
 
+  const changeLanguage = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+  };
+
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations.es] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
