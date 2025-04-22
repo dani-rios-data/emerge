@@ -249,14 +249,15 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         display: true,
         text: t.title,
         font: {
-          size: 16,
+          size: 14,
           weight: 'bold'
         },
         padding: {
           top: 10,
           bottom: 20
         },
-        color: '#333'
+        color: '#333',
+        align: 'center'
       },
       tooltip: {
         callbacks: {

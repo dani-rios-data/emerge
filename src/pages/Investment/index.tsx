@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
 import CountryRankingChart from '../../components/CountryRankingChart';
 import Papa from 'papaparse';
-import { DATA_PATHS, rdSectors, EuropeCSVData as RdInvestmentEuropeCSVData } from '../../data/rdInvestment';
+import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
-// Interfaz compatible con la de EuropeanRDMap
+// Interfaz para los datos CSV
 interface EuropeCSVData {
   Country: string;
+  País: string;
   Year: string;
   Sector: string;
   Value: string;
@@ -43,7 +43,6 @@ interface InvestmentProps {
 }
 
 const Investment: React.FC<InvestmentProps> = ({ language }) => {
-  const { t } = useLanguage();
   const [europeData, setEuropeData] = useState<EuropeCSVData[]>([]); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -189,11 +188,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">{t('investment')}</h2>
-      <p className="mb-6">
-        {getLocalizedText('investmentDescription')}
-      </p>
-      
       {/* Selectores de año y sector en la misma fila */}
       <div className="flex flex-wrap items-center mb-6 gap-4">
         <div className="flex items-center">
@@ -250,10 +244,10 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             />
           </div>
           
-          {/* Gráfico de ranking de países - Usar cast seguro pues la interfaz es compatible */}
+          {/* Gráfico de ranking de países */}
           <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
             <CountryRankingChart 
-              data={europeData as unknown as RdInvestmentEuropeCSVData[]}
+              data={europeData as any} 
               selectedYear={selectedYear} 
               language={language}
               highlightCountry={highlightedCountry}
