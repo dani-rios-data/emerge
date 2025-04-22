@@ -29,7 +29,20 @@ const translations: Translations = {
     chartPlaceholder: "Gráfico de",
     publicSector: "Sector Público",
     privateSector: "Sector Privado",
-    developedBy: "Desarrollado por"
+    developedBy: "Desarrollado por",
+    year: "Año",
+    sector: "Sector",
+    loading: "Cargando datos...",
+    errorLoadingData: "Error al cargar datos de Europa",
+    unknownError: "Error desconocido al cargar datos",
+    investmentMapTitle: "Inversión en I+D por país - % del PIB",
+    countryRankingTitle: "Ranking de países por inversión en I+D",
+    percentageGDP: "% del PIB",
+    noDataAvailable: "No hay datos disponibles para este año",
+    loadingMap: "Cargando mapa...",
+    noData: "Sin datos",
+    rdInvestment: "Inversión I+D",
+    ofGDP: "del PIB"
   },
   en: {
     title: "R&D Observatory of Canary Islands",
@@ -49,7 +62,20 @@ const translations: Translations = {
     chartPlaceholder: "Chart of",
     publicSector: "Public Sector",
     privateSector: "Private Sector",
-    developedBy: "Developed by"
+    developedBy: "Developed by",
+    year: "Year",
+    sector: "Sector",
+    loading: "Loading data...",
+    errorLoadingData: "Error loading European data",
+    unknownError: "Unknown error loading data",
+    investmentMapTitle: "R&D Investment by country - % of GDP",
+    countryRankingTitle: "Country ranking by R&D investment",
+    percentageGDP: "% of GDP",
+    noDataAvailable: "No data available for this year",
+    loadingMap: "Loading map...",
+    noData: "No data",
+    rdInvestment: "R&D Investment",
+    ofGDP: "of GDP"
   }
 };
 

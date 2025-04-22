@@ -38,7 +38,7 @@ const Investment: React.FC = () => {
         // Cargar datos de Europa
         const europeResponse = await fetch(DATA_PATHS.GDP_EUROPE);
         if (!europeResponse.ok) {
-          throw new Error(`Error al cargar datos de Europa: ${europeResponse.status} - ${europeResponse.statusText}`);
+          throw new Error(`${t('errorLoadingData')}: ${europeResponse.status} - ${europeResponse.statusText}`);
         }
         
         console.log("Respuesta recibida:", europeResponse.status, europeResponse.statusText);
@@ -96,7 +96,7 @@ const Investment: React.FC = () => {
         setIsLoading(false);
       } catch (err) {
         console.error('Error cargando datos:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido al cargar datos');
+        setError(err instanceof Error ? err.message : t('unknownError'));
         setIsLoading(false);
       }
     };
@@ -167,7 +167,7 @@ const Investment: React.FC = () => {
       <div className="flex flex-wrap items-center mb-6 gap-4">
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {language === 'es' ? 'Año:' : 'Year:'}
+            {t('year')}:
           </label>
           <select 
             value={selectedYear}
@@ -182,7 +182,7 @@ const Investment: React.FC = () => {
         
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {language === 'es' ? 'Sector:' : 'Sector:'}
+            {t('sector')}:
           </label>
           <select 
             value={getSectorId(selectedSector)}
@@ -200,7 +200,7 @@ const Investment: React.FC = () => {
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">{language === 'es' ? 'Cargando datos...' : 'Loading data...'}</p>
+          <p className="text-gray-500">{t('loading')}</p>
         </div>
       ) : error ? (
         <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700">
@@ -210,6 +210,7 @@ const Investment: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Mapa de Europa */}
           <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-3">{t('investmentMapTitle')}</h3>
             <EuropeanRDMap 
               data={europeData} 
               selectedYear={selectedYear} 
@@ -221,6 +222,7 @@ const Investment: React.FC = () => {
           
           {/* Gráfico de ranking de países - Usar cast seguro pues la interfaz es compatible */}
           <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-3">{t('countryRankingTitle')}</h3>
             <CountryRankingChart 
               data={europeData as unknown as RdInvestmentEuropeCSVData[]}
               selectedYear={selectedYear} 

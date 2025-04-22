@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import Papa from 'papaparse';
 import COLORS from '../utils/colors';
 import { rdSectors } from '../data/rdInvestment';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Interfaz para adaptarse a EuropeCSVData
 interface EuropeCSVData {
@@ -310,6 +311,7 @@ function getColorByValue(value: number | null): string {
 }
 
 const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick }) => {
+  const { t } = useLanguage();
   const svgRef = useRef<SVGSVGElement>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipContent, setTooltipContent] = useState({ country: '', value: null as number | null });
@@ -329,11 +331,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
 
   // Título del mapa según el idioma y el sector seleccionado
   const getMapTitle = () => {
-    const sectorText = getSectorName();
-    
-    return language === 'es'
-      ? `Inversión en I+D por país - ${sectorText} (${selectedYear})`
-      : `R&D Investment by Country - ${sectorText} (${selectedYear})`;
+    return t('investmentMapTitle');
   };
 
   // Depurar los países disponibles en los datos
@@ -519,7 +517,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       { color: RED_PALETTE.MID, label: '1.5% - 2%' },
       { color: RED_PALETTE.HIGH, label: '2% - 2.5%' },
       { color: RED_PALETTE.MAX, label: '2.5% - 3%' },
-      { color: RED_PALETTE.NULL, label: language === 'es' ? 'Sin datos' : 'No data' }
+      { color: RED_PALETTE.NULL, label: t('noData') }
     ];
     
     legend.forEach((item, i) => {
@@ -536,14 +534,14 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         .text(item.label)
         .attr('font-size', '12px');
     });
-  }, [geojsonData, data, selectedYear, selectedSector, language, onClick]);
+  }, [geojsonData, data, selectedYear, selectedSector, language, onClick, t]);
   
   return (
     <div className="relative w-full h-full">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75">
           <p className="text-gray-600">
-            {language === 'es' ? 'Cargando mapa...' : 'Loading map...'}
+            {t('loadingMap')}
           </p>
         </div>
       )}
@@ -580,10 +578,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           <p className="font-bold">{tooltipContent.country}</p>
           {tooltipContent.value !== null ? (
             <p>
-              {language === 'es' ? 'Inversión I+D' : 'R&D Investment'}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {language === 'es' ? 'del PIB' : 'of GDP'}</span>
+              {t('rdInvestment')}: <span className="font-semibold">{tooltipContent.value.toFixed(2)}% {t('ofGDP')}</span>
             </p>
           ) : (
-            <p>{language === 'es' ? 'Sin datos' : 'No data'}</p>
+            <p>{t('noData')}</p>
           )}
         </div>
       )}

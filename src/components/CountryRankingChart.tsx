@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import { EuropeCSVData, rdSectors } from '../data/rdInvestment';
 import COLORS from '../utils/colors';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -46,28 +47,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   highlightCountry,
   selectedSector = 'total'
 }) => {
-  // Textos traducidos
-  const texts = {
-    es: {
-      title: `Ranking de países por inversión en I+D (${selectedYear})`,
-      axisLabel: "% del PIB",
-      noData: "No hay datos disponibles para este año"
-    },
-    en: {
-      title: `Country Ranking by R&D Investment (${selectedYear})`,
-      axisLabel: "% of GDP",
-      noData: "No data available for this year"
-    }
-  };
-
-  const t = texts[language];
-
-  // Obtener el nombre del sector según el idioma
-  const getSectorName = () => {
-    const sector = rdSectors.find(s => s.id === selectedSector);
-    if (!sector) return language === 'es' ? 'Todos los sectores' : 'All Sectors';
-    return sector.name[language];
-  };
+  const { t } = useLanguage();
 
   // Obtener el código del sector seleccionado
   const sectorCode = rdSectors.find(s => s.id === selectedSector)?.code || '_T';
@@ -249,9 +229,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       x: {
         title: {
           display: true,
-          text: t.axisLabel,
+          text: t('percentageGDP'),
           font: {
-            size: 12
+            size: 14
           }
         },
         ticks: {
@@ -261,40 +241,22 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         }
       },
       y: {
-        ticks: {
-          font: {
-            size: 11
-          }
+        title: {
+          display: false
         }
       }
     }
   };
 
-  // Título personalizado con el sector
-  const sectorDisplayName = getSectorName();
-  const chartTitle = language === 'es' 
-    ? `Ranking de países por inversión en I+D - ${sectorDisplayName} (${selectedYear})`
-    : `Country Ranking by R&D Investment - ${sectorDisplayName} (${selectedYear})`;
-
   return (
-    <div className="relative">
-      <div className="mb-2 text-center">
-        <h3 className="text-lg font-semibold text-gray-800">
-          {chartTitle}
-        </h3>
-      </div>
-      
-      <div className="border border-gray-200 rounded-lg overflow-hidden bg-white p-4">
-        {sortedCountries.length > 0 ? (
-          <div style={{ height: '500px' }}> {/* Aumentar altura para acomodar más países */}
-            <Bar data={chartData} options={options} />
-          </div>
-        ) : (
-          <div className="flex justify-center items-center h-64 text-gray-500">
-            {t.noData}
-          </div>
-        )}
-      </div>
+    <div className="w-full h-[500px]">
+      {sortedCountries.length > 0 ? (
+        <Bar data={chartData} options={options} />
+      ) : (
+        <div className="flex justify-center items-center h-full text-gray-500">
+          {t('noDataAvailable')}
+        </div>
+      )}
     </div>
   );
 };
