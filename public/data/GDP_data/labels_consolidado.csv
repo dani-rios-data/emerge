@@ -1,0 +1,531 @@
+Country;País;Year;Sector;Label
+European Union - 27 countries (from 2020);Unión Europea;2012;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2012;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2012;All Sectors;e
+Ireland;Irlanda;2012;All Sectors;e
+Luxembourg;Luxemburgo;2012;All Sectors;b
+Netherlands;Países Bajos;2012;All Sectors;b
+Austria;Austria;2012;All Sectors;e
+Sweden;Suecia;2012;All Sectors;e
+United Kingdom;Reino Unido;2012;All Sectors;e
+United States;Estados Unidos;2012;All Sectors;d
+European Union - 27 countries (from 2020);Unión Europea;2013;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2013;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2013;All Sectors;e
+Ireland;Irlanda;2013;All Sectors;e
+Netherlands;Países Bajos;2013;All Sectors;b
+Sweden;Suecia;2013;All Sectors;e
+Iceland;Islandia;2013;All Sectors;b
+United States;Estados Unidos;2013;All Sectors;d
+Japan;Japón;2013;All Sectors;b
+European Union - 27 countries (from 2020);Unión Europea;2014;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2014;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2014;All Sectors;e
+Italy;Italia;2014;All Sectors;e
+Austria;Austria;2014;All Sectors;e
+Sweden;Suecia;2014;All Sectors;e
+United Kingdom;Reino Unido;2014;All Sectors;e
+United States;Estados Unidos;2014;All Sectors;d
+United States;Estados Unidos;2015;All Sectors;bd
+European Union - 27 countries (from 2020);Unión Europea;2016;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2016;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2016;All Sectors;e
+Italy;Italia;2016;All Sectors;b
+Austria;Austria;2016;All Sectors;e
+Sweden;Suecia;2016;All Sectors;e
+United Kingdom;Reino Unido;2016;All Sectors;e
+United States;Estados Unidos;2016;All Sectors;bd
+United States;Estados Unidos;2017;All Sectors;d
+European Union - 27 countries (from 2020);Unión Europea;2018;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2018;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2018;All Sectors;e
+Ireland;Irlanda;2018;All Sectors;e
+Hungary;Hungría;2018;All Sectors;b
+Austria;Austria;2018;All Sectors;e
+United States;Estados Unidos;2018;All Sectors;d
+Japan;Japón;2018;All Sectors;b
+European Union - 27 countries (from 2020);Unión Europea;2019;All Sectors;e
+Denmark;Dinamarca;2019;All Sectors;p
+United Kingdom;Reino Unido;2019;All Sectors;p
+United States;Estados Unidos;2019;All Sectors;d
+European Union - 27 countries (from 2020);Unión Europea;2020;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2020;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2020;All Sectors;e
+Luxembourg;Luxemburgo;2020;All Sectors;e
+Austria;Austria;2020;All Sectors;e
+United States;Estados Unidos;2020;All Sectors;d
+European Union - 27 countries (from 2020);Unión Europea;2021;All Sectors;e
+Denmark;Dinamarca;2021;All Sectors;p
+United States;Estados Unidos;2021;All Sectors;bd
+European Union - 27 countries (from 2020);Unión Europea;2022;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2022;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2022;All Sectors;e
+Belgium;Bélgica;2022;All Sectors;e
+Hungary;Hungría;2022;All Sectors;d
+Netherlands;Países Bajos;2022;All Sectors;b
+Austria;Austria;2022;All Sectors;e
+United States;Estados Unidos;2022;All Sectors;dp
+European Union - 27 countries (from 2020);Unión Europea;2023;All Sectors;e
+Euro area – 20 countries (from 2023);Zona Euro;2023;All Sectors;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2023;All Sectors;e
+Belgium;Bélgica;2023;All Sectors;p
+Bulgaria;Bulgaria;2023;All Sectors;p
+Czechia;Chequia;2023;All Sectors;p
+Denmark;Dinamarca;2023;All Sectors;p
+Germany;Alemania;2023;All Sectors;p
+Greece;Grecia;2023;All Sectors;p
+Spain;España;2023;All Sectors;p
+France;Francia;2023;All Sectors;p
+Croatia;Croacia;2023;All Sectors;p
+Italy;Italia;2023;All Sectors;p
+Cyprus;Chipre;2023;All Sectors;p
+Lithuania;Lituania;2023;All Sectors;p
+Luxembourg;Luxemburgo;2023;All Sectors;p
+Hungary;Hungría;2023;All Sectors;d
+Netherlands;Países Bajos;2023;All Sectors;e
+Austria;Austria;2023;All Sectors;p
+Poland;Polonia;2023;All Sectors;p
+Portugal;Portugal;2023;All Sectors;p
+Romania;Rumanía;2023;All Sectors;p
+Slovenia;Eslovenia;2023;All Sectors;p
+Sweden;Suecia;2023;All Sectors;p
+Norway;Noruega;2023;All Sectors;p
+European Union - 27 countries (from 2020);Unión Europea;2012;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2012;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2012;Business enterprise sector;e
+Ireland;Irlanda;2012;Business enterprise sector;e
+Luxembourg;Luxemburgo;2012;Business enterprise sector;b
+Hungary;Hungría;2012;Business enterprise sector;d
+Netherlands;Países Bajos;2012;Business enterprise sector;b
+Austria;Austria;2012;Business enterprise sector;e
+Sweden;Suecia;2012;Business enterprise sector;e
+United States;Estados Unidos;2012;Business enterprise sector;d
+European Union - 27 countries (from 2020);Unión Europea;2013;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2013;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2013;Business enterprise sector;e
+Hungary;Hungría;2013;Business enterprise sector;d
+Netherlands;Países Bajos;2013;Business enterprise sector;b
+Iceland;Islandia;2013;Business enterprise sector;b
+United States;Estados Unidos;2013;Business enterprise sector;d
+European Union - 27 countries (from 2020);Unión Europea;2014;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2014;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2014;Business enterprise sector;e
+Hungary;Hungría;2014;Business enterprise sector;d
+Austria;Austria;2014;Business enterprise sector;e
+Sweden;Suecia;2014;Business enterprise sector;e
+Serbia;Serbia;2014;Business enterprise sector;b
+United States;Estados Unidos;2014;Business enterprise sector;d
+European Union - 27 countries (from 2020);Unión Europea;2015;Business enterprise sector;e
+Hungary;Hungría;2015;Business enterprise sector;d
+United States;Estados Unidos;2015;Business enterprise sector;b
+European Union - 27 countries (from 2020);Unión Europea;2016;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2016;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2016;Business enterprise sector;e
+Italy;Italia;2016;Business enterprise sector;b
+Hungary;Hungría;2016;Business enterprise sector;d
+Austria;Austria;2016;Business enterprise sector;e
+Sweden;Suecia;2016;Business enterprise sector;e
+United States;Estados Unidos;2016;Business enterprise sector;b
+European Union - 27 countries (from 2020);Unión Europea;2017;Business enterprise sector;e
+Hungary;Hungría;2017;Business enterprise sector;d
+European Union - 27 countries (from 2020);Unión Europea;2018;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2018;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2018;Business enterprise sector;e
+Ireland;Irlanda;2018;Business enterprise sector;e
+Hungary;Hungría;2018;Business enterprise sector;bd
+Austria;Austria;2018;Business enterprise sector;e
+European Union - 27 countries (from 2020);Unión Europea;2019;Business enterprise sector;e
+Denmark;Dinamarca;2019;Business enterprise sector;p
+Hungary;Hungría;2019;Business enterprise sector;d
+United Kingdom;Reino Unido;2019;Business enterprise sector;p
+European Union - 27 countries (from 2020);Unión Europea;2020;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2020;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2020;Business enterprise sector;e
+Ireland;Irlanda;2020;Business enterprise sector;e
+Hungary;Hungría;2020;Business enterprise sector;d
+Austria;Austria;2020;Business enterprise sector;e
+European Union - 27 countries (from 2020);Unión Europea;2021;Business enterprise sector;e
+Denmark;Dinamarca;2021;Business enterprise sector;p
+Hungary;Hungría;2021;Business enterprise sector;d
+United States;Estados Unidos;2021;Business enterprise sector;b
+European Union - 27 countries (from 2020);Unión Europea;2022;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2022;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2022;Business enterprise sector;e
+Belgium;Bélgica;2022;Business enterprise sector;e
+Netherlands;Países Bajos;2022;Business enterprise sector;b
+Austria;Austria;2022;Business enterprise sector;e
+United States;Estados Unidos;2022;Business enterprise sector;p
+European Union - 27 countries (from 2020);Unión Europea;2023;Business enterprise sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2023;Business enterprise sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2023;Business enterprise sector;e
+Belgium;Bélgica;2023;Business enterprise sector;p
+Bulgaria;Bulgaria;2023;Business enterprise sector;p
+Czechia;Chequia;2023;Business enterprise sector;p
+Denmark;Dinamarca;2023;Business enterprise sector;p
+Germany;Alemania;2023;Business enterprise sector;p
+Greece;Grecia;2023;Business enterprise sector;p
+Spain;España;2023;Business enterprise sector;p
+France;Francia;2023;Business enterprise sector;p
+Croatia;Croacia;2023;Business enterprise sector;p
+Italy;Italia;2023;Business enterprise sector;p
+Cyprus;Chipre;2023;Business enterprise sector;p
+Lithuania;Lituania;2023;Business enterprise sector;p
+Luxembourg;Luxemburgo;2023;Business enterprise sector;p
+Netherlands;Países Bajos;2023;Business enterprise sector;e
+Austria;Austria;2023;Business enterprise sector;p
+Poland;Polonia;2023;Business enterprise sector;p
+Portugal;Portugal;2023;Business enterprise sector;p
+Romania;Rumanía;2023;Business enterprise sector;p
+Slovenia;Eslovenia;2023;Business enterprise sector;p
+Sweden;Suecia;2023;Business enterprise sector;p
+Norway;Noruega;2023;Business enterprise sector;p
+European Union - 27 countries (from 2020);Unión Europea;2012;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2012;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2012;Government sector;e
+Belgium;Bélgica;2012;Government sector;b
+Germany;Alemania;2012;Government sector;d
+Croatia;Croacia;2012;Government sector;d
+Hungary;Hungría;2012;Government sector;d
+Netherlands;Países Bajos;2012;Government sector;bd
+Austria;Austria;2012;Government sector;e
+Slovakia;Eslovaquia;2012;Government sector;d
+Sweden;Suecia;2012;Government sector;e
+United States;Estados Unidos;2012;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2013;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2013;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2013;Government sector;e
+Germany;Alemania;2013;Government sector;d
+Croatia;Croacia;2013;Government sector;d
+Hungary;Hungría;2013;Government sector;d
+Netherlands;Países Bajos;2013;Government sector;bd
+Slovakia;Eslovaquia;2013;Government sector;d
+Sweden;Suecia;2013;Government sector;e
+Iceland;Islandia;2013;Government sector;b
+Montenegro;Montenegro;2013;Government sector;d
+United States;Estados Unidos;2013;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2014;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2014;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2014;Government sector;e
+Germany;Alemania;2014;Government sector;d
+Croatia;Croacia;2014;Government sector;d
+Hungary;Hungría;2014;Government sector;d
+Netherlands;Países Bajos;2014;Government sector;d
+Austria;Austria;2014;Government sector;e
+Slovakia;Eslovaquia;2014;Government sector;d
+Sweden;Suecia;2014;Government sector;e
+Montenegro;Montenegro;2014;Government sector;d
+Serbia;Serbia;2014;Government sector;b
+United States;Estados Unidos;2014;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2015;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2015;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2015;Government sector;e
+Germany;Alemania;2015;Government sector;d
+Croatia;Croacia;2015;Government sector;d
+Hungary;Hungría;2015;Government sector;d
+Netherlands;Países Bajos;2015;Government sector;d
+United States;Estados Unidos;2015;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2016;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2016;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2016;Government sector;e
+Germany;Alemania;2016;Government sector;d
+Croatia;Croacia;2016;Government sector;d
+Hungary;Hungría;2016;Government sector;d
+Netherlands;Países Bajos;2016;Government sector;d
+Austria;Austria;2016;Government sector;e
+Sweden;Suecia;2016;Government sector;e
+United States;Estados Unidos;2016;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2017;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2017;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2017;Government sector;e
+Germany;Alemania;2017;Government sector;d
+Croatia;Croacia;2017;Government sector;d
+Hungary;Hungría;2017;Government sector;d
+Netherlands;Países Bajos;2017;Government sector;d
+United States;Estados Unidos;2017;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2018;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2018;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2018;Government sector;e
+Germany;Alemania;2018;Government sector;d
+Croatia;Croacia;2018;Government sector;d
+Hungary;Hungría;2018;Government sector;bd
+Netherlands;Países Bajos;2018;Government sector;d
+Austria;Austria;2018;Government sector;e
+United States;Estados Unidos;2018;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2019;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2019;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2019;Government sector;e
+Denmark;Dinamarca;2019;Government sector;p
+Germany;Alemania;2019;Government sector;d
+Croatia;Croacia;2019;Government sector;d
+Hungary;Hungría;2019;Government sector;d
+Netherlands;Países Bajos;2019;Government sector;d
+Sweden;Suecia;2019;Government sector;b
+United Kingdom;Reino Unido;2019;Government sector;p
+United States;Estados Unidos;2019;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2020;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2020;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2020;Government sector;e
+Germany;Alemania;2020;Government sector;d
+Croatia;Croacia;2020;Government sector;d
+Luxembourg;Luxemburgo;2020;Government sector;e
+Hungary;Hungría;2020;Government sector;d
+Netherlands;Países Bajos;2020;Government sector;d
+Austria;Austria;2020;Government sector;e
+United States;Estados Unidos;2020;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2021;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2021;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2021;Government sector;e
+Denmark;Dinamarca;2021;Government sector;p
+Germany;Alemania;2021;Government sector;d
+Hungary;Hungría;2021;Government sector;d
+Netherlands;Países Bajos;2021;Government sector;d
+United States;Estados Unidos;2021;Government sector;d
+European Union - 27 countries (from 2020);Unión Europea;2022;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2022;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2022;Government sector;e
+Belgium;Bélgica;2022;Government sector;e
+Germany;Alemania;2022;Government sector;b
+Netherlands;Países Bajos;2022;Government sector;bd
+Austria;Austria;2022;Government sector;e
+United States;Estados Unidos;2022;Government sector;dp
+European Union - 27 countries (from 2020);Unión Europea;2023;Government sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2023;Government sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2023;Government sector;e
+Belgium;Bélgica;2023;Government sector;p
+Bulgaria;Bulgaria;2023;Government sector;p
+Czechia;Chequia;2023;Government sector;p
+Denmark;Dinamarca;2023;Government sector;p
+Germany;Alemania;2023;Government sector;p
+Greece;Grecia;2023;Government sector;p
+Spain;España;2023;Government sector;p
+France;Francia;2023;Government sector;p
+Croatia;Croacia;2023;Government sector;p
+Italy;Italia;2023;Government sector;p
+Cyprus;Chipre;2023;Government sector;p
+Lithuania;Lituania;2023;Government sector;p
+Luxembourg;Luxemburgo;2023;Government sector;p
+Netherlands;Países Bajos;2023;Government sector;de
+Austria;Austria;2023;Government sector;p
+Poland;Polonia;2023;Government sector;p
+Portugal;Portugal;2023;Government sector;p
+Romania;Rumanía;2023;Government sector;p
+Slovenia;Eslovenia;2023;Government sector;p
+Sweden;Suecia;2023;Government sector;p
+European Union - 27 countries (from 2020);Unión Europea;2012;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2012;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2012;Higher education sector;e
+Hungary;Hungría;2012;Higher education sector;d
+Austria;Austria;2012;Higher education sector;e
+Sweden;Suecia;2012;Higher education sector;e
+United States;Estados Unidos;2012;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2013;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2013;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2013;Higher education sector;e
+Ireland;Irlanda;2013;Higher education sector;e
+Hungary;Hungría;2013;Higher education sector;d
+Netherlands;Países Bajos;2013;Higher education sector;b
+Portugal;Portugal;2013;Higher education sector;b
+Iceland;Islandia;2013;Higher education sector;b
+Montenegro;Montenegro;2013;Higher education sector;d
+United States;Estados Unidos;2013;Higher education sector;d
+Japan;Japón;2013;Higher education sector;b
+European Union - 27 countries (from 2020);Unión Europea;2014;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2014;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2014;Higher education sector;e
+Italy;Italia;2014;Higher education sector;e
+Hungary;Hungría;2014;Higher education sector;d
+Austria;Austria;2014;Higher education sector;e
+Sweden;Suecia;2014;Higher education sector;e
+Montenegro;Montenegro;2014;Higher education sector;d
+United States;Estados Unidos;2014;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2015;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2015;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2015;Higher education sector;e
+Italy;Italia;2015;Higher education sector;e
+Hungary;Hungría;2015;Higher education sector;d
+United States;Estados Unidos;2015;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2016;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2016;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2016;Higher education sector;e
+Germany;Alemania;2016;Higher education sector;b
+Italy;Italia;2016;Higher education sector;e
+Hungary;Hungría;2016;Higher education sector;d
+Austria;Austria;2016;Higher education sector;e
+Sweden;Suecia;2016;Higher education sector;e
+United States;Estados Unidos;2016;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2017;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2017;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2017;Higher education sector;e
+Italy;Italia;2017;Higher education sector;e
+Hungary;Hungría;2017;Higher education sector;d
+United States;Estados Unidos;2017;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2018;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2018;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2018;Higher education sector;e
+Italy;Italia;2018;Higher education sector;e
+Hungary;Hungría;2018;Higher education sector;bd
+Austria;Austria;2018;Higher education sector;e
+United States;Estados Unidos;2018;Higher education sector;d
+Japan;Japón;2018;Higher education sector;b
+European Union - 27 countries (from 2020);Unión Europea;2019;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2019;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2019;Higher education sector;e
+Denmark;Dinamarca;2019;Higher education sector;p
+Italy;Italia;2019;Higher education sector;e
+Hungary;Hungría;2019;Higher education sector;d
+Sweden;Suecia;2019;Higher education sector;b
+United Kingdom;Reino Unido;2019;Higher education sector;p
+United States;Estados Unidos;2019;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2020;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2020;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2020;Higher education sector;e
+Italy;Italia;2020;Higher education sector;e
+Luxembourg;Luxemburgo;2020;Higher education sector;e
+Hungary;Hungría;2020;Higher education sector;d
+Austria;Austria;2020;Higher education sector;e
+United States;Estados Unidos;2020;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2021;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2021;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2021;Higher education sector;e
+Denmark;Dinamarca;2021;Higher education sector;p
+Ireland;Irlanda;2021;Higher education sector;e
+Italy;Italia;2021;Higher education sector;e
+Hungary;Hungría;2021;Higher education sector;d
+United States;Estados Unidos;2021;Higher education sector;d
+European Union - 27 countries (from 2020);Unión Europea;2022;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2022;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2022;Higher education sector;e
+Belgium;Bélgica;2022;Higher education sector;e
+Ireland;Irlanda;2022;Higher education sector;e
+Italy;Italia;2022;Higher education sector;e
+Austria;Austria;2022;Higher education sector;e
+Norway;Noruega;2022;Higher education sector;e
+Switzerland;Suiza;2022;Higher education sector;d
+United States;Estados Unidos;2022;Higher education sector;dp
+European Union - 27 countries (from 2020);Unión Europea;2023;Higher education sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2023;Higher education sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2023;Higher education sector;e
+Belgium;Bélgica;2023;Higher education sector;p
+Bulgaria;Bulgaria;2023;Higher education sector;p
+Czechia;Chequia;2023;Higher education sector;p
+Denmark;Dinamarca;2023;Higher education sector;p
+Germany;Alemania;2023;Higher education sector;p
+Ireland;Irlanda;2023;Higher education sector;e
+Greece;Grecia;2023;Higher education sector;p
+Spain;España;2023;Higher education sector;p
+France;Francia;2023;Higher education sector;p
+Croatia;Croacia;2023;Higher education sector;p
+Italy;Italia;2023;Higher education sector;ep
+Cyprus;Chipre;2023;Higher education sector;p
+Lithuania;Lituania;2023;Higher education sector;p
+Luxembourg;Luxemburgo;2023;Higher education sector;p
+Austria;Austria;2023;Higher education sector;p
+Poland;Polonia;2023;Higher education sector;p
+Portugal;Portugal;2023;Higher education sector;p
+Romania;Rumanía;2023;Higher education sector;p
+Slovenia;Eslovenia;2023;Higher education sector;p
+Sweden;Suecia;2023;Higher education sector;p
+European Union - 27 countries (from 2020);Unión Europea;2012;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2012;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2012;Private non-profit sector;e
+Belgium;Bélgica;2012;Private non-profit sector;b
+Austria;Austria;2012;Private non-profit sector;e
+Sweden;Suecia;2012;Private non-profit sector;e
+United Kingdom;Reino Unido;2012;Private non-profit sector;e
+United States;Estados Unidos;2012;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2013;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2013;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2013;Private non-profit sector;e
+Netherlands;Países Bajos;2013;Private non-profit sector;bd
+Portugal;Portugal;2013;Private non-profit sector;b
+Iceland;Islandia;2013;Private non-profit sector;b
+United States;Estados Unidos;2013;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2014;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2014;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2014;Private non-profit sector;e
+Netherlands;Países Bajos;2014;Private non-profit sector;d
+Austria;Austria;2014;Private non-profit sector;e
+Sweden;Suecia;2014;Private non-profit sector;e
+United Kingdom;Reino Unido;2014;Private non-profit sector;e
+United States;Estados Unidos;2014;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2015;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2015;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2015;Private non-profit sector;e
+Netherlands;Países Bajos;2015;Private non-profit sector;d
+United States;Estados Unidos;2015;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2016;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2016;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2016;Private non-profit sector;e
+Netherlands;Países Bajos;2016;Private non-profit sector;d
+Austria;Austria;2016;Private non-profit sector;e
+Sweden;Suecia;2016;Private non-profit sector;e
+United Kingdom;Reino Unido;2016;Private non-profit sector;e
+United States;Estados Unidos;2016;Private non-profit sector;bd
+European Union - 27 countries (from 2020);Unión Europea;2017;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2017;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2017;Private non-profit sector;e
+Netherlands;Países Bajos;2017;Private non-profit sector;d
+United States;Estados Unidos;2017;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2018;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2018;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2018;Private non-profit sector;e
+Netherlands;Países Bajos;2018;Private non-profit sector;d
+Austria;Austria;2018;Private non-profit sector;e
+United States;Estados Unidos;2018;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2019;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2019;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2019;Private non-profit sector;e
+Denmark;Dinamarca;2019;Private non-profit sector;p
+Netherlands;Países Bajos;2019;Private non-profit sector;d
+Sweden;Suecia;2019;Private non-profit sector;e
+United Kingdom;Reino Unido;2019;Private non-profit sector;p
+United States;Estados Unidos;2019;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2020;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2020;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2020;Private non-profit sector;e
+Netherlands;Países Bajos;2020;Private non-profit sector;d
+Austria;Austria;2020;Private non-profit sector;e
+Sweden;Suecia;2020;Private non-profit sector;e
+United States;Estados Unidos;2020;Private non-profit sector;d
+European Union - 27 countries (from 2020);Unión Europea;2021;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2021;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2021;Private non-profit sector;e
+Denmark;Dinamarca;2021;Private non-profit sector;p
+Luxembourg;Luxemburgo;2021;Private non-profit sector;u
+Netherlands;Países Bajos;2021;Private non-profit sector;d
+Sweden;Suecia;2021;Private non-profit sector;e
+United States;Estados Unidos;2021;Private non-profit sector;d
+European Union - 27 countries (from 2020);Unión Europea;2022;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2022;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2022;Private non-profit sector;e
+Belgium;Bélgica;2022;Private non-profit sector;e
+Luxembourg;Luxemburgo;2022;Private non-profit sector;u
+Netherlands;Países Bajos;2022;Private non-profit sector;bd
+Austria;Austria;2022;Private non-profit sector;e
+Sweden;Suecia;2022;Private non-profit sector;e
+Norway;Noruega;2022;Private non-profit sector;e
+United States;Estados Unidos;2022;Private non-profit sector;de
+European Union - 27 countries (from 2020);Unión Europea;2023;Private non-profit sector;e
+Euro area – 20 countries (from 2023);Zona Euro;2023;Private non-profit sector;e
+Euro area - 19 countries  (2015-2022);Zona Euro;2023;Private non-profit sector;e
+Belgium;Bélgica;2023;Private non-profit sector;p
+Bulgaria;Bulgaria;2023;Private non-profit sector;p
+Czechia;Chequia;2023;Private non-profit sector;bp
+Denmark;Dinamarca;2023;Private non-profit sector;p
+Germany;Alemania;2023;Private non-profit sector;p
+Ireland;Irlanda;2023;Private non-profit sector;p
+Greece;Grecia;2023;Private non-profit sector;p
+Spain;España;2023;Private non-profit sector;p
+France;Francia;2023;Private non-profit sector;p
+Croatia;Croacia;2023;Private non-profit sector;p
+Italy;Italia;2023;Private non-profit sector;p
+Cyprus;Chipre;2023;Private non-profit sector;p
+Luxembourg;Luxemburgo;2023;Private non-profit sector;e
+Netherlands;Países Bajos;2023;Private non-profit sector;d
+Austria;Austria;2023;Private non-profit sector;p
+Poland;Polonia;2023;Private non-profit sector;p
+Portugal;Portugal;2023;Private non-profit sector;p
+Romania;Rumanía;2023;Private non-profit sector;p
+Slovenia;Eslovenia;2023;Private non-profit sector;p
+Sweden;Suecia;2023;Private non-profit sector;p
+Norway;Noruega;2023;Private non-profit sector;e
