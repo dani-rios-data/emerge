@@ -248,43 +248,43 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
       <div className="border border-blue-200 rounded-b-md border-t-0">
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 p-3 text-xs text-gray-600">
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(e)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(e)</div>
             <span>{t.estimated}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(p)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(p)</div>
             <span>{t.provisional}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(d)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(d)</div>
             <span>{t.definitionDiffers}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(bd)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(bd)</div>
             <span>{t.breakInTimeSeriesDefinitionDiffers}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(b)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(b)</div>
             <span>{t.breakInTimeSeries}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(de)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(de)</div>
             <span>{t.definitionDiffersEstimated}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(dp)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(dp)</div>
             <span>{t.definitionDiffersProvisional}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(ep)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(ep)</div>
             <span>{t.estimatedProvisional}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(bp)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(bp)</div>
             <span>{t.breakInTimeSeriesProvisional}</span>
           </div>
           <div className="flex items-center">
-            <span className="font-medium mr-2 text-black">(u)</span>
+            <div className="w-10 pl-4 mr-2 font-medium text-black">(u)</div>
             <span>{t.lowReliability}</span>
           </div>
         </div>
