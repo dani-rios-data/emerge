@@ -162,17 +162,24 @@ function getCountryValue(
   const countryName = getCountryName(feature);
   const countryIso3 = getCountryIso3(feature);
   
-  // Mapeo entre ID de sector y nombre en inglés para consultas
-  const sectorNameMapping: Record<string, string> = {
-    'total': 'All Sectors',
-    'all': 'All Sectors',
-    'business': 'Business enterprise sector',
-    'government': 'Government sector',
-    'education': 'Higher education sector',
-    'nonprofit': 'Private non-profit sector'
-  };
+  // Verificar si ya tenemos el nombre completo del sector (como 'Business enterprise sector')
+  // o si tenemos que mapearlo (como 'business')
+  let sectorNameEn = selectedSector;
   
-  const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
+  // Si parece ser un ID de sector corto (business, government, etc.), lo mapeamos al nombre completo
+  if (['total', 'all', 'business', 'government', 'education', 'nonprofit'].includes(selectedSector.toLowerCase())) {
+    const sectorNameMapping: Record<string, string> = {
+      'total': 'All Sectors',
+      'all': 'All Sectors',
+      'business': 'Business enterprise sector',
+      'government': 'Government sector',
+      'education': 'Higher education sector',
+      'nonprofit': 'Private non-profit sector'
+    };
+    sectorNameEn = sectorNameMapping[selectedSector.toLowerCase()] || 'All Sectors';
+  }
+  
+  console.log(`Buscando datos para: País=${countryName}, ISO3=${countryIso3}, Año=${selectedYear}, Sector=${sectorNameEn}`);
 
   // Intentar coincidir primero por ISO3
   let countryData = data.filter(d => {
@@ -200,9 +207,12 @@ function getCountryValue(
   const filteredData = countryData.filter(d => {
     const yearMatch = d.Year && selectedYear && 
                      d.Year.toString().trim() === selectedYear.toString().trim();
+    
+    // Comprobar si el sector coincide exactamente o si estamos buscando 'All Sectors'
     const sectorMatch = d.Sector && 
-                       (selectedSector === 'all' || selectedSector === 'total' || 
-                        normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
+                      (sectorNameEn === 'All Sectors' || 
+                       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
+    
     return yearMatch && sectorMatch;
   });
 
@@ -234,12 +244,28 @@ function getSectorValueRange(data: EuropeCSVData[], selectedYear: string, select
   
   if (!data || data.length === 0) return defaultRange;
   
+  // Verificar si ya tenemos el nombre completo del sector o si necesitamos convertirlo
+  let sectorNameEn = selectedSector;
+  
+  // Si parece ser un ID de sector corto, convertirlo al nombre completo
+  if (['total', 'all', 'business', 'government', 'education', 'nonprofit'].includes(selectedSector.toLowerCase())) {
+    const sectorNameMapping: Record<string, string> = {
+      'total': 'All Sectors',
+      'all': 'All Sectors',
+      'business': 'Business enterprise sector',
+      'government': 'Government sector',
+      'education': 'Higher education sector',
+      'nonprofit': 'Private non-profit sector'
+    };
+    sectorNameEn = sectorNameMapping[selectedSector.toLowerCase()] || 'All Sectors';
+  }
+  
   // Filtrar por año y sector seleccionados
   const filteredData = data.filter(d => {
     const yearMatch = d.Year && d.Year.toString().trim() === selectedYear.trim();
     const sectorMatch = d.Sector && 
-                      (selectedSector === 'all' || 
-                       normalizarTexto(d.Sector) === normalizarTexto(selectedSector));
+                      (sectorNameEn === 'All Sectors' || 
+                       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
     return yearMatch && sectorMatch;
   });
   
@@ -315,10 +341,31 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
   // Función para obtener el título del mapa basado en los datos seleccionados
   const getMapTitle = (): string => {
     const yearText = selectedYear || '';
-    let normalizedId = selectedSector;
-    if (selectedSector === 'all') normalizedId = 'total';
     
-    const sectorKey = `sector_${normalizedId}` as keyof typeof t;
+    // Determinar qué ID de sector usar para obtener el texto localizado
+    let sectorId: string;
+    
+    // Si el selectedSector parece ser un nombre completo en inglés
+    if (selectedSector.includes(' ')) {
+      // Mapeo de nombres completos a IDs
+      const sectorIdMapping: Record<string, string> = {
+        'All Sectors': 'total',
+        'Business enterprise sector': 'business',
+        'Government sector': 'government',
+        'Higher education sector': 'education',
+        'Private non-profit sector': 'nonprofit'
+      };
+      sectorId = sectorIdMapping[selectedSector] || 'total';
+    } else {
+      // Es probablemente ya un ID (total, business, etc.)
+      sectorId = selectedSector.toLowerCase();
+      // Normalizar para asegurar compatibilidad
+      if (sectorId === 'all') sectorId = 'total';
+    }
+    
+    console.log(`Generando título para sector: ${selectedSector} -> ID: ${sectorId}`);
+    
+    const sectorKey = `sector_${sectorId}` as keyof typeof t;
     const sectorText = t[sectorKey] || t.allSectors;
     
     return `${t.rdInvestmentByCountry} - ${sectorText} (${yearText})`;
@@ -427,14 +474,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           const countryName = getCountryName(d);
           const value = getCountryValueOptimized(d);
           
-          // Positioning directly - no React state for immediate feedback
+          // Positioning directly with clientX/clientY for better accuracy
           const tooltip = d3.select('.country-tooltip');
           
-          tooltip
-            .style('display', 'block')
-            .style('left', `${event.pageX + 15}px`)
-            .style('top', `${event.pageY - 30}px`);
-            
+          // Preparar el contenido antes de mostrar el tooltip
           tooltip.select('.country-name').text(countryName || 'Desconocido');
           
           if (value !== null) {
@@ -442,12 +485,19 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           } else {
             tooltip.select('.tooltip-data').text(t.noData);
           }
+          
+          // Posicionar y mostrar el tooltip con un pequeño desplazamiento
+          tooltip
+            .style('left', `${event.clientX + 5}px`)
+            .style('top', `${event.clientY - 40}px`)
+            .style('display', 'block')
+            .style('opacity', 1);
         })
         .on('mousemove', function(event: MouseEvent) {
-          // Update tooltip position on mouse move for smooth following
+          // Actualizar posición del tooltip con suavidad usando clientX/clientY
           d3.select('.country-tooltip')
-            .style('left', `${event.pageX + 15}px`)
-            .style('top', `${event.pageY - 30}px`);
+            .style('left', `${event.clientX + 5}px`)
+            .style('top', `${event.clientY - 40}px`);
         })
         .on('mouseout', function() {
           // Restaurar el estilo al quitar el mouse
@@ -455,8 +505,16 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
             .attr('stroke', '#fff')
             .attr('stroke-width', 0.5);
             
-          // Hide tooltip
-          d3.select('.country-tooltip').style('display', 'none');
+          // Fade out tooltip
+          const tooltip = d3.select('.country-tooltip');
+          tooltip.style('opacity', 0);
+          
+          // Ocultar después de la transición
+          setTimeout(() => {
+            if (tooltip.style('opacity') === '0') {
+              tooltip.style('display', 'none');
+            }
+          }, 100);
         })
         .on('click', (event: MouseEvent, d: GeoJsonFeature) => {
           if (!onClick) return;
@@ -549,6 +607,8 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         style={{
           display: 'none',
           position: 'fixed', // Usar posición fija para evitar problemas con contenedores anidados
+          opacity: 0,
+          transition: 'opacity 0.1s ease-in-out',
         }}
       >
         <p className="country-name font-bold text-black"></p>
