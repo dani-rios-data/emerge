@@ -54,35 +54,35 @@ const App: React.FC = () => {
       {/* Contenedor para elementos fijos */}
       <div className="fixed top-0 left-0 right-0 z-30">
         {/* Header con logo integrado */}
-        <header className="bg-white py-4 px-2 shadow-md border-b border-gray-200 relative">
+        <header className="bg-white py-4 px-6 shadow-md border-b border-gray-200 relative flex items-center justify-between">
           {/* Logo en el lado izquierdo, perfectamente centrado verticalmente */}
-          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+          <div className="flex-shrink-0">
             <img src="/emerge_logo.svg" alt="EMERGE Logo" className="h-12" />
           </div>
           
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-xl font-bold text-gray-800 mb-1">{t('title')}</h1>
+          <div className="flex-grow text-center">
+            <h1 className="text-xl font-bold mb-1" style={{ color: '#006480' }}>{t('title')}</h1>
             <p className="text-xs text-gray-600 font-normal">{t('subtitle')}</p>
           </div>
           
-          {/* Selector de idioma en la esquina superior derecha */}
-          <div className="absolute top-2 right-2 z-50">
+          {/* Selector de idioma alineado verticalmente al centro */}
+          <div className="flex-shrink-0 flex items-center">
             <div className="relative">
               <button 
                 onClick={() => setShowLangDropdown(!showLangDropdown)}
-                className="px-2 py-1 border border-blue-500 rounded bg-blue-50 text-blue-700 text-xs font-medium hover:bg-blue-100 flex items-center shadow-sm transition-all hover:shadow"
+                className="px-3 py-1.5 border border-gray-300 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 flex items-center shadow-sm transition-all"
               >
-                {language === 'es' ? 'ES' : 'EN'}
-                <svg className="ml-1 w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg className="w-4 h-4 mr-1.5 text-blue-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
                 </svg>
+                {language === 'es' ? 'ES' : 'EN'}
               </button>
               
               {showLangDropdown && (
-                <div className="absolute right-0 mt-0.5 w-12 bg-white border border-gray-200 rounded shadow-md ring-1 ring-black ring-opacity-5">
+                <div className="absolute right-0 mt-1 w-20 bg-white border border-gray-200 rounded shadow-md ring-1 ring-black ring-opacity-5 z-50">
                   <button 
                     onClick={toggleLanguage}
-                    className="block w-full text-center px-1.5 py-1 text-xs font-medium hover:bg-blue-50 transition-colors duration-150"
+                    className="block w-full text-center px-2 py-1.5 text-sm font-medium hover:bg-gray-50 transition-colors duration-150"
                   >
                     {language === 'es' ? 'EN' : 'ES'}
                   </button>
@@ -93,87 +93,97 @@ const App: React.FC = () => {
         </header>
 
         {/* Navigation - ancho completo, justo debajo del header */}
-        <nav className="bg-white shadow-sm w-full border-b border-gray-200 py-0.5">
+        <nav style={{ backgroundColor: '#006480' }} className="shadow-sm w-full border-b py-0.5" >
           <div className="max-w-7xl mx-auto">
-            <ul className="flex">
+            <ul className="flex pt-2 px-2">
               <li 
-                className={`cursor-pointer px-2 py-2.5 text-center flex-1 border-b transition-all duration-200 ${activeTab === 'overview' ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium' : 'border-transparent hover:bg-gray-50 hover:border-gray-300'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md ${activeTab === 'overview' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                style={{ color: activeTab === 'overview' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('overview')}
               >
                 <div className="flex items-center justify-center">
                   <svg 
-                    className={`w-4 h-4 mr-1 ${activeTab === 'overview' ? 'text-blue-700' : 'text-gray-800'}`} 
+                    className={`w-5 h-5 mr-2`}
+                    style={{ color: activeTab === 'overview' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                   </svg>
-                  <span className="text-xs font-semibold">{t('overview')}</span>
+                  <span className="text-sm font-semibold">{t('overview')}</span>
                 </div>
               </li>
               <li 
-                className={`cursor-pointer px-2 py-2.5 text-center flex-1 border-b transition-all duration-200 ${activeTab === 'investment' ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium' : 'border-transparent hover:bg-gray-50 hover:border-gray-300'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'investment' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                style={{ color: activeTab === 'investment' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('investment')}
               >
                 <div className="flex items-center justify-center">
                   <svg 
-                    className={`w-4 h-4 mr-1 ${activeTab === 'investment' ? 'text-blue-700' : 'text-gray-800'}`} 
+                    className={`w-5 h-5 mr-2`}
+                    style={{ color: activeTab === 'investment' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
                   </svg>
-                  <span className="text-xs font-semibold">{t('investment')}</span>
+                  <span className="text-sm font-semibold">{t('investment')}</span>
                 </div>
               </li>
               <li 
-                className={`cursor-pointer px-2 py-2.5 text-center flex-1 border-b transition-all duration-200 ${activeTab === 'researchers' ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium' : 'border-transparent hover:bg-gray-50 hover:border-gray-300'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'researchers' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                style={{ color: activeTab === 'researchers' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('researchers')}
               >
                 <div className="flex items-center justify-center">
                   <svg 
-                    className={`w-4 h-4 mr-1 ${activeTab === 'researchers' ? 'text-blue-700' : 'text-gray-800'}`} 
+                    className={`w-5 h-5 mr-2`}
+                    style={{ color: activeTab === 'researchers' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                   </svg>
-                  <span className="text-xs font-semibold">{t('researchers')}</span>
+                  <span className="text-sm font-semibold">{t('researchers')}</span>
                 </div>
               </li>
               <li 
-                className={`cursor-pointer px-2 py-2.5 text-center flex-1 border-b transition-all duration-200 ${activeTab === 'patents' ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium' : 'border-transparent hover:bg-gray-50 hover:border-gray-300'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'patents' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                style={{ color: activeTab === 'patents' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('patents')}
               >
                 <div className="flex items-center justify-center">
                   <svg 
-                    className={`w-4 h-4 mr-1 ${activeTab === 'patents' ? 'text-blue-700' : 'text-gray-800'}`} 
+                    className={`w-5 h-5 mr-2`}
+                    style={{ color: activeTab === 'patents' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
                   </svg>
-                  <span className="text-xs font-semibold">{t('patents')}</span>
+                  <span className="text-sm font-semibold">{t('patents')}</span>
                 </div>
               </li>
               <li 
-                className={`cursor-pointer px-2 py-2.5 text-center flex-1 border-b transition-all duration-200 ${activeTab === 'sources' ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium' : 'border-transparent hover:bg-gray-50 hover:border-gray-300'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md ${activeTab === 'sources' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                style={{ color: activeTab === 'sources' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('sources')}
               >
                 <div className="flex items-center justify-center">
                   <svg 
-                    className={`w-4 h-4 mr-1 ${activeTab === 'sources' ? 'text-blue-700' : 'text-gray-800'}`} 
+                    className={`w-5 h-5 mr-2`}
+                    style={{ color: activeTab === 'sources' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
                   </svg>
-                  <span className="text-xs font-semibold">{t('sources')}</span>
+                  <span className="text-sm font-semibold">{t('sources')}</span>
                 </div>
               </li>
             </ul>
