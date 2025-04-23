@@ -38,7 +38,8 @@ const CHART_PALETTE = {
   HIGHLIGHT: '#CC0000',            // Mantener el rojo para España
   TEXT: '#000000',                 // Color del texto (negro) 
   BORDER: '#E5E7EB',               // Color del borde (gris suave)
-  YELLOW: EU_COLORS.PRIMARY_YELLOW // Amarillo UE para potenciales destacados
+  YELLOW: EU_COLORS.PRIMARY_YELLOW, // Amarillo UE para Unión Europea
+  GREEN: '#009900'                 // Verde para las zonas Euro
 };
 
 const CountryRankingChart: React.FC<CountryRankingChartProps> = ({ 
@@ -104,7 +105,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   if (countryDataForYear.length > 0 && countryDataForYear.length < 50) {
     console.log("Nombres de países originales vs. normalizados:");
     countryDataForYear.forEach(item => {
-      const original = item['Country'];
+      const original = language === 'es' ? item['País'] : item['Country'];
       const normalized = normalizeText(original);
       console.log(`  ${original} => ${normalized}`);
     });
@@ -112,81 +113,44 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Agrupar por país (para evitar duplicados)
   const countryMap = new Map<string, number>();
-  
-  // Lista de entidades a excluir (no son países individuales)
-  const excludedEntities = [
-    'european union',
-    'euro area',
-    'oecd',
-    'eu28',
-    'eu27',
-    'zone euro',
-    'zona euro'
-  ];
 
+  // MODIFICADO: Usar directamente las columnas 'Country' o 'País' según el idioma
   countryDataForYear.forEach(item => {
-    const countryName = item['Country']; // Usar solo el nombre en inglés
+    // Usar la columna según el idioma seleccionado
+    const countryName = language === 'es' ? item['País'] : item['Country'];
     const rdValue = parseFloat(item['%GDP'].replace(',', '.'));
     
-    // Comprobar si es un país individual y no una agrupación o promedio
-    const isIndividualCountry = countryName && 
-      !excludedEntities.some(entity => 
-        countryName.toLowerCase().includes(entity)
-      );
-    
-    if (!isNaN(rdValue) && isIndividualCountry) {
-      // Traducir algunos nombres comunes si el idioma es español
+    if (!isNaN(rdValue) && countryName) {
+      // Aplicar alias para simplificar nombres de entidades
       let displayName = countryName;
-      if (language === 'es') {
-        const translations: {[key: string]: string} = {
-          'Spain': 'España',
-          'Germany': 'Alemania',
-          'Germany (until 1990 former territory of the FRG)': 'Alemania',
-          'France': 'Francia',
-          'Italy': 'Italia',
-          'Belgium': 'Bélgica',
-          'Portugal': 'Portugal',
-          'Netherlands': 'Países Bajos',
-          'The Netherlands': 'Países Bajos',
-          'Sweden': 'Suecia',
-          'Finland': 'Finlandia',
-          'Denmark': 'Dinamarca',
-          'Austria': 'Austria',
-          'Hungary': 'Hungría',
-          'Czechia': 'República Checa',
-          'Czech Republic': 'República Checa',
-          'Poland': 'Polonia',
-          'Ireland': 'Irlanda',
-          'Luxembourg': 'Luxemburgo',
-          'Greece': 'Grecia',
-          'Romania': 'Rumanía',
-          'Bulgaria': 'Bulgaria',
-          'Croatia': 'Croacia',
-          'Slovenia': 'Eslovenia',
-          'Slovakia': 'Eslovaquia',
-          'Switzerland': 'Suiza',
-          'United Kingdom': 'Reino Unido',
-          'United States': 'Estados Unidos',
-          'Japan': 'Japón',
-          'South Korea': 'Corea del Sur',
-          'China except Hong Kong': 'China (excepto Hong Kong)',
-          'Norway': 'Noruega',
-          'Iceland': 'Islandia',
-          'Turkey': 'Turquía',
-          'Estonia': 'Estonia',
-          'Latvia': 'Letonia',
-          'Lithuania': 'Lituania',
-          'Cyprus': 'Chipre',
-          'Malta': 'Malta',
-          'Montenegro': 'Montenegro',
-          'North Macedonia': 'Macedonia del Norte',
-          'Albania': 'Albania',
-          'Serbia': 'Serbia',
-          'Bosnia and Herzegovina': 'Bosnia y Herzegovina'
-        };
-        displayName = translations[countryName] || countryName;
+      
+      // Mapeo de nombres largos a alias más cortos según el idioma
+      const aliases: { [key: string]: { es: string, en: string } } = {
+        'European Union - 27 countries (from 2020)': {
+          en: 'European Union',
+          es: 'Unión Europea'
+        },
+        'Euro area – 20 countries (from 2023)': {
+          en: 'Euro area (from 2023)',
+          es: 'Zona Euro (Desde 2023)'
+        },
+        'Euro area - 19 countries (2015-2022)': {
+          en: 'Euro area (2015-2022)',
+          es: 'Zona Euro (2015-2022)'
+        },
+        // Manejar variantes con espacios
+        'Euro area - 19 countries  (2015-2022)': {
+          en: 'Euro area (2015-2022)',
+          es: 'Zona Euro (2015-2022)'
+        }
+      };
+      
+      // Aplicar el alias si existe para este país/entidad
+      if (countryName in aliases) {
+        displayName = aliases[countryName][language];
       }
       
+      // Ya no necesitamos traducir manualmente, usamos directamente el nombre en el idioma correcto
       countryMap.set(displayName, rdValue);
     }
   });
@@ -195,8 +159,8 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   
   // Ordenar países por valor (de mayor a menor)
   const sortedCountries = Array.from(countryMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 20); // Mostrar los 20 primeros para una mejor comparación
+    .sort((a, b) => b[1] - a[1]); 
+    // MODIFICADO: Mostrar todos los países, no solo los 20 primeros
   
   // Crear datos para el gráfico
   const labels = sortedCountries.map(([country]) => country);
@@ -205,13 +169,22 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   // Obtener el color del sector seleccionado
   const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
   
-  // Crear colores - España en rojo y el resto con el color del sector seleccionado
+  // Crear colores - España en rojo, UE en amarillo, Zona Euro en verde, y el resto con el color del sector seleccionado
   const barColors = labels.map(country => {
-    // Normalizar tanto el país actual como el destacado para la comparación
+    // Normalizar el país para la comparación
     const normalizedCountry = normalizeText(country);
     
+    // Verificar si es España (tanto en español como en inglés)
     if (normalizedCountry === 'espana' || normalizedCountry === 'spain') {
       return CHART_PALETTE.HIGHLIGHT; // Rojo para España
+    } 
+    // Verificar si es alguna entidad de la Unión Europea
+    else if (normalizedCountry.includes('union europea') || normalizedCountry.includes('european union')) {
+      return CHART_PALETTE.YELLOW; // Amarillo para Unión Europea
+    }
+    // Verificar si es alguna entidad de la Zona Euro
+    else if (normalizedCountry.includes('zona euro') || normalizedCountry.includes('euro area')) {
+      return CHART_PALETTE.GREEN; // Verde para Zona Euro
     }
     
     return sectorColor; // Color según el sector seleccionado para el resto de países
@@ -276,8 +249,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     },
     scales: {
       x: {
+        display: false, // Oculta todo el eje X
         title: {
-          display: true,
+          display: false,
           text: t.axisLabel,
           font: {
             weight: 600,
@@ -287,21 +261,13 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           color: CHART_PALETTE.TEXT
         },
         grid: {
-          display: false // Eliminar líneas de cuadrícula
+          display: false
         },
         border: {
-          color: CHART_PALETTE.BORDER // Borde de eje más suave
+          display: false // Oculta el borde del eje
         },
         ticks: {
-          color: CHART_PALETTE.TEXT, // Texto negro en vez de gris
-          font: {
-            size: 12,
-            weight: 400,
-            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
-          },
-          callback: function(value) {
-            return value + '%';
-          }
+          display: false // Oculta los valores numéricos del eje
         }
       },
       y: {
@@ -326,8 +292,21 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     }
   };
 
+  // Estilos para el contenedor con scroll - altura específica para coincidir con el mapa
+  const scrollContainerStyle: React.CSSProperties = {
+    height: '400px',
+    overflowY: 'auto',
+    border: '1px solid #f0f0f0',
+    borderRadius: '8px',
+    padding: '0 10px'
+  };
+
+  // Altura dinámica para el gráfico en función del número de países
+  const chartHeight = Math.max(400, sortedCountries.length * 25);
+
   return (
-    <div className="relative h-full">
+    <div className="flex flex-col h-full">
+      {/* Gráfica principal */}
       <div className="mb-2 text-center">
         <h3 className="text-sm font-semibold text-gray-800">
           {t.title}
@@ -335,18 +314,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       </div>
       
       {sortedCountries.length > 0 ? (
-        <div className="h-full"> 
-          <Bar data={chartData} options={{
-            ...options,
-            plugins: {
-              ...options.plugins,
-              title: {
-                ...options.plugins?.title,
-                display: false  // Ocultar el título del gráfico ya que lo mostramos fuera
-              }
-            }
-          }} />
-        </div>
+        <>
+          <div style={scrollContainerStyle} className="mb-1">
+            <div style={{ height: `${chartHeight}px`, width: '100%' }}>
+              <Bar data={chartData} options={{
+                ...options,
+                plugins: {
+                  ...options.plugins,
+                  title: {
+                    ...options.plugins?.title,
+                    display: false
+                  }
+                }
+              }} />
+            </div>
+          </div>
+          
+          {/* Etiqueta del eje X centrada */}
+          <div className="text-center mb-2 text-sm font-medium text-gray-700">
+            {t.axisLabel}
+          </div>
+        </>
       ) : (
         <div className="flex justify-center items-center h-64 text-gray-800 font-medium">
           {t.noData}
@@ -355,5 +343,8 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     </div>
   );
 };
+
+// Exportar los colores para usarlos en otros componentes
+export { CHART_PALETTE };
 
 export default memo(CountryRankingChart); 

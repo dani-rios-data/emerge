@@ -1,5 +1,7 @@
 Country,País,Year,Sector,%GDP,ISO3
-European Union - 27 countries (from 2020),Unión Europea,2012,All Sectors,2.06,EUU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2012,All Sectors,2.06,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2012,All Sectors,2.08,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2012,All Sectors,2.08,EMU
 Belgium,Bélgica,2012,All Sectors,2.27,BEL
 Bulgaria,Bulgaria,2012,All Sectors,0.6,BGR
 Czechia,Chequia,2012,All Sectors,1.76,CZE
@@ -27,15 +29,10 @@ Slovenia,Eslovenia,2012,All Sectors,2.58,SVN
 Slovakia,Eslovaquia,2012,All Sectors,0.79,SVK
 Finland,Finlandia,2012,All Sectors,3.41,FIN
 Sweden,Suecia,2012,All Sectors,3.25,SWE
-Iceland,Islandia,2012,All Sectors,,ISL
-Liechtenstein,Liechtenstein,2012,All Sectors,,LIE
 Norway,Noruega,2012,All Sectors,1.61,NOR
 Switzerland,Suiza,2012,All Sectors,2.87,CHE
 United Kingdom,Reino Unido,2012,All Sectors,1.58,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2012,All Sectors,0.27,BIH
-Montenegro,Montenegro,2012,All Sectors,,MNE
-North Macedonia,Macedonia del Norte,2012,All Sectors,,MKD
-Albania,Albania,2012,All Sectors,,ALB
 Serbia,Serbia,2012,All Sectors,0.82,SRB
 Türkiye,Turquía,2012,All Sectors,0.83,TUR
 Russia,Rusia,2012,All Sectors,1.03,RUS
@@ -43,9 +40,9 @@ United States,Estados Unidos,2012,All Sectors,2.67,USA
 China except Hong Kong,China (excepto Hong Kong),2012,All Sectors,1.91,CHN
 Japan,Japón,2012,All Sectors,3.17,JPN
 South Korea,Corea del Sur,2012,All Sectors,3.69,KOR
-European Union - 27 countries (from 2020),Unión Europea,2013,All Sectors,2.08,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2013,All Sectors,2.1,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2013,All Sectors,2.1,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2013,All Sectors,2.08,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2013,All Sectors,2.1,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2013,All Sectors,2.1,EMU
 Belgium,Bélgica,2013,All Sectors,2.32,BEL
 Bulgaria,Bulgaria,2013,All Sectors,0.63,BGR
 Czechia,Chequia,2013,All Sectors,1.87,CZE
@@ -74,14 +71,10 @@ Slovakia,Eslovaquia,2013,All Sectors,0.82,SVK
 Finland,Finlandia,2013,All Sectors,3.28,FIN
 Sweden,Suecia,2013,All Sectors,3.28,SWE
 Iceland,Islandia,2013,All Sectors,1.69,ISL
-Liechtenstein,Liechtenstein,2013,All Sectors,,LIE
 Norway,Noruega,2013,All Sectors,1.64,NOR
-Switzerland,Suiza,2013,All Sectors,,CHE
 United Kingdom,Reino Unido,2013,All Sectors,1.62,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2013,All Sectors,0.32,BIH
 Montenegro,Montenegro,2013,All Sectors,0.37,MNE
-North Macedonia,Macedonia del Norte,2013,All Sectors,,MKD
-Albania,Albania,2013,All Sectors,,ALB
 Serbia,Serbia,2013,All Sectors,0.66,SRB
 Türkiye,Turquía,2013,All Sectors,0.81,TUR
 Russia,Rusia,2013,All Sectors,1.03,RUS
@@ -89,9 +82,9 @@ United States,Estados Unidos,2013,All Sectors,2.7,USA
 China except Hong Kong,China (excepto Hong Kong),2013,All Sectors,2.0,CHN
 Japan,Japón,2013,All Sectors,3.28,JPN
 South Korea,Corea del Sur,2013,All Sectors,3.77,KOR
-European Union - 27 countries (from 2020),Unión Europea,2014,All Sectors,2.09,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2014,All Sectors,2.12,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2014,All Sectors,2.12,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2014,All Sectors,2.09,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2014,All Sectors,2.12,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2014,All Sectors,2.12,EMU
 Belgium,Bélgica,2014,All Sectors,2.36,BEL
 Bulgaria,Bulgaria,2014,All Sectors,0.79,BGR
 Czechia,Chequia,2014,All Sectors,1.94,CZE
@@ -120,14 +113,10 @@ Slovakia,Eslovaquia,2014,All Sectors,0.87,SVK
 Finland,Finlandia,2014,All Sectors,3.16,FIN
 Sweden,Suecia,2014,All Sectors,3.12,SWE
 Iceland,Islandia,2014,All Sectors,1.94,ISL
-Liechtenstein,Liechtenstein,2014,All Sectors,,LIE
 Norway,Noruega,2014,All Sectors,1.7,NOR
-Switzerland,Suiza,2014,All Sectors,,CHE
 United Kingdom,Reino Unido,2014,All Sectors,1.64,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2014,All Sectors,0.26,BIH
 Montenegro,Montenegro,2014,All Sectors,0.36,MNE
-North Macedonia,Macedonia del Norte,2014,All Sectors,,MKD
-Albania,Albania,2014,All Sectors,,ALB
 Serbia,Serbia,2014,All Sectors,0.69,SRB
 Türkiye,Turquía,2014,All Sectors,0.86,TUR
 Russia,Rusia,2014,All Sectors,1.07,RUS
@@ -135,9 +124,9 @@ United States,Estados Unidos,2014,All Sectors,2.71,USA
 China except Hong Kong,China (excepto Hong Kong),2014,All Sectors,2.02,CHN
 Japan,Japón,2014,All Sectors,3.37,JPN
 South Korea,Corea del Sur,2014,All Sectors,3.89,KOR
-European Union - 27 countries (from 2020),Unión Europea,2015,All Sectors,2.1,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2015,All Sectors,2.11,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2015,All Sectors,2.12,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2015,All Sectors,2.1,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2015,All Sectors,2.11,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2015,All Sectors,2.12,EMU
 Belgium,Bélgica,2015,All Sectors,2.43,BEL
 Bulgaria,Bulgaria,2015,All Sectors,0.95,BGR
 Czechia,Chequia,2015,All Sectors,1.91,CZE
@@ -166,14 +155,11 @@ Slovakia,Eslovaquia,2015,All Sectors,1.15,SVK
 Finland,Finlandia,2015,All Sectors,2.89,FIN
 Sweden,Suecia,2015,All Sectors,3.24,SWE
 Iceland,Islandia,2015,All Sectors,2.18,ISL
-Liechtenstein,Liechtenstein,2015,All Sectors,,LIE
 Norway,Noruega,2015,All Sectors,1.92,NOR
 Switzerland,Suiza,2015,All Sectors,3.08,CHE
 United Kingdom,Reino Unido,2015,All Sectors,1.65,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2015,All Sectors,,BIH
 Montenegro,Montenegro,2015,All Sectors,0.37,MNE
 North Macedonia,Macedonia del Norte,2015,All Sectors,0.44,MKD
-Albania,Albania,2015,All Sectors,,ALB
 Serbia,Serbia,2015,All Sectors,0.78,SRB
 Türkiye,Turquía,2015,All Sectors,0.97,TUR
 Russia,Rusia,2015,All Sectors,1.1,RUS
@@ -181,9 +167,9 @@ United States,Estados Unidos,2015,All Sectors,2.77,USA
 China except Hong Kong,China (excepto Hong Kong),2015,All Sectors,2.06,CHN
 Japan,Japón,2015,All Sectors,3.24,JPN
 South Korea,Corea del Sur,2015,All Sectors,3.79,KOR
-European Union - 27 countries (from 2020),Unión Europea,2016,All Sectors,2.1,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2016,All Sectors,2.12,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2016,All Sectors,2.13,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2016,All Sectors,2.1,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2016,All Sectors,2.12,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2016,All Sectors,2.13,EMU
 Belgium,Bélgica,2016,All Sectors,2.53,BEL
 Bulgaria,Bulgaria,2016,All Sectors,0.77,BGR
 Czechia,Chequia,2016,All Sectors,1.65,CZE
@@ -212,24 +198,19 @@ Slovakia,Eslovaquia,2016,All Sectors,0.79,SVK
 Finland,Finlandia,2016,All Sectors,2.75,FIN
 Sweden,Suecia,2016,All Sectors,3.26,SWE
 Iceland,Islandia,2016,All Sectors,2.11,ISL
-Liechtenstein,Liechtenstein,2016,All Sectors,,LIE
 Norway,Noruega,2016,All Sectors,2.03,NOR
-Switzerland,Suiza,2016,All Sectors,,CHE
 United Kingdom,Reino Unido,2016,All Sectors,1.66,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2016,All Sectors,,BIH
 Montenegro,Montenegro,2016,All Sectors,0.32,MNE
 North Macedonia,Macedonia del Norte,2016,All Sectors,0.44,MKD
-Albania,Albania,2016,All Sectors,,ALB
 Serbia,Serbia,2016,All Sectors,0.81,SRB
 Türkiye,Turquía,2016,All Sectors,1.12,TUR
-Russia,Rusia,2016,All Sectors,,RUS
 United States,Estados Unidos,2016,All Sectors,2.84,USA
 China except Hong Kong,China (excepto Hong Kong),2016,All Sectors,2.1,CHN
 Japan,Japón,2016,All Sectors,3.11,JPN
 South Korea,Corea del Sur,2016,All Sectors,3.79,KOR
-European Union - 27 countries (from 2020),Unión Europea,2017,All Sectors,2.14,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2017,All Sectors,2.16,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2017,All Sectors,2.16,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2017,All Sectors,2.14,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2017,All Sectors,2.16,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2017,All Sectors,2.16,EMU
 Belgium,Bélgica,2017,All Sectors,2.68,BEL
 Bulgaria,Bulgaria,2017,All Sectors,0.74,BGR
 Czechia,Chequia,2017,All Sectors,1.75,CZE
@@ -258,14 +239,11 @@ Slovakia,Eslovaquia,2017,All Sectors,0.88,SVK
 Finland,Finlandia,2017,All Sectors,2.75,FIN
 Sweden,Suecia,2017,All Sectors,3.39,SWE
 Iceland,Islandia,2017,All Sectors,2.08,ISL
-Liechtenstein,Liechtenstein,2017,All Sectors,,LIE
 Norway,Noruega,2017,All Sectors,2.08,NOR
 Switzerland,Suiza,2017,All Sectors,3.08,CHE
 United Kingdom,Reino Unido,2017,All Sectors,1.68,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2017,All Sectors,,BIH
 Montenegro,Montenegro,2017,All Sectors,0.35,MNE
 North Macedonia,Macedonia del Norte,2017,All Sectors,0.35,MKD
-Albania,Albania,2017,All Sectors,,ALB
 Serbia,Serbia,2017,All Sectors,0.84,SRB
 Türkiye,Turquía,2017,All Sectors,1.18,TUR
 Russia,Rusia,2017,All Sectors,1.11,RUS
@@ -273,9 +251,9 @@ United States,Estados Unidos,2017,All Sectors,2.88,USA
 China except Hong Kong,China (excepto Hong Kong),2017,All Sectors,2.12,CHN
 Japan,Japón,2017,All Sectors,3.17,JPN
 South Korea,Corea del Sur,2017,All Sectors,4.07,KOR
-European Union - 27 countries (from 2020),Unión Europea,2018,All Sectors,2.17,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2018,All Sectors,2.19,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2018,All Sectors,2.2,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2018,All Sectors,2.17,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2018,All Sectors,2.19,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2018,All Sectors,2.2,EMU
 Belgium,Bélgica,2018,All Sectors,2.86,BEL
 Bulgaria,Bulgaria,2018,All Sectors,0.76,BGR
 Czechia,Chequia,2018,All Sectors,1.88,CZE
@@ -304,14 +282,10 @@ Slovakia,Eslovaquia,2018,All Sectors,0.83,SVK
 Finland,Finlandia,2018,All Sectors,2.78,FIN
 Sweden,Suecia,2018,All Sectors,3.35,SWE
 Iceland,Islandia,2018,All Sectors,2.0,ISL
-Liechtenstein,Liechtenstein,2018,All Sectors,,LIE
 Norway,Noruega,2018,All Sectors,2.03,NOR
-Switzerland,Suiza,2018,All Sectors,,CHE
 United Kingdom,Reino Unido,2018,All Sectors,1.73,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2018,All Sectors,,BIH
 Montenegro,Montenegro,2018,All Sectors,0.5,MNE
 North Macedonia,Macedonia del Norte,2018,All Sectors,0.36,MKD
-Albania,Albania,2018,All Sectors,,ALB
 Serbia,Serbia,2018,All Sectors,0.88,SRB
 Türkiye,Turquía,2018,All Sectors,1.27,TUR
 Russia,Rusia,2018,All Sectors,0.99,RUS
@@ -319,9 +293,9 @@ United States,Estados Unidos,2018,All Sectors,2.99,USA
 China except Hong Kong,China (excepto Hong Kong),2018,All Sectors,2.14,CHN
 Japan,Japón,2018,All Sectors,3.22,JPN
 South Korea,Corea del Sur,2018,All Sectors,4.27,KOR
-European Union - 27 countries (from 2020),Unión Europea,2019,All Sectors,2.21,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2019,All Sectors,2.23,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2019,All Sectors,2.24,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2019,All Sectors,2.21,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2019,All Sectors,2.23,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2019,All Sectors,2.24,EMU
 Belgium,Bélgica,2019,All Sectors,3.15,BEL
 Bulgaria,Bulgaria,2019,All Sectors,0.84,BGR
 Czechia,Chequia,2019,All Sectors,1.9,CZE
@@ -350,14 +324,12 @@ Slovakia,Eslovaquia,2019,All Sectors,0.82,SVK
 Finland,Finlandia,2019,All Sectors,2.82,FIN
 Sweden,Suecia,2019,All Sectors,3.4,SWE
 Iceland,Islandia,2019,All Sectors,2.34,ISL
-Liechtenstein,Liechtenstein,2019,All Sectors,,LIE
 Norway,Noruega,2019,All Sectors,2.14,NOR
 Switzerland,Suiza,2019,All Sectors,3.2,CHE
 United Kingdom,Reino Unido,2019,All Sectors,1.76,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2019,All Sectors,0.19,BIH
 Montenegro,Montenegro,2019,All Sectors,0.36,MNE
 North Macedonia,Macedonia del Norte,2019,All Sectors,0.37,MKD
-Albania,Albania,2019,All Sectors,,ALB
 Serbia,Serbia,2019,All Sectors,0.85,SRB
 Türkiye,Turquía,2019,All Sectors,1.32,TUR
 Russia,Rusia,2019,All Sectors,1.04,RUS
@@ -365,9 +337,9 @@ United States,Estados Unidos,2019,All Sectors,3.15,USA
 China except Hong Kong,China (excepto Hong Kong),2019,All Sectors,2.24,CHN
 Japan,Japón,2019,All Sectors,3.22,JPN
 South Korea,Corea del Sur,2019,All Sectors,4.36,KOR
-European Union - 27 countries (from 2020),Unión Europea,2020,All Sectors,2.28,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2020,All Sectors,2.31,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2020,All Sectors,2.31,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2020,All Sectors,2.28,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2020,All Sectors,2.31,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2020,All Sectors,2.31,EMU
 Belgium,Bélgica,2020,All Sectors,3.37,BEL
 Bulgaria,Bulgaria,2020,All Sectors,0.85,BGR
 Czechia,Chequia,2020,All Sectors,1.95,CZE
@@ -396,24 +368,18 @@ Slovakia,Eslovaquia,2020,All Sectors,0.89,SVK
 Finland,Finlandia,2020,All Sectors,2.93,FIN
 Sweden,Suecia,2020,All Sectors,3.5,SWE
 Iceland,Islandia,2020,All Sectors,2.49,ISL
-Liechtenstein,Liechtenstein,2020,All Sectors,,LIE
 Norway,Noruega,2020,All Sectors,2.24,NOR
-Switzerland,Suiza,2020,All Sectors,,CHE
-United Kingdom,Reino Unido,2020,All Sectors,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2020,All Sectors,0.2,BIH
-Montenegro,Montenegro,2020,All Sectors,,MNE
 North Macedonia,Macedonia del Norte,2020,All Sectors,0.37,MKD
-Albania,Albania,2020,All Sectors,,ALB
 Serbia,Serbia,2020,All Sectors,0.86,SRB
 Türkiye,Turquía,2020,All Sectors,1.37,TUR
-Russia,Rusia,2020,All Sectors,,RUS
 United States,Estados Unidos,2020,All Sectors,3.42,USA
 China except Hong Kong,China (excepto Hong Kong),2020,All Sectors,2.41,CHN
 Japan,Japón,2020,All Sectors,3.26,JPN
 South Korea,Corea del Sur,2020,All Sectors,4.52,KOR
-European Union - 27 countries (from 2020),Unión Europea,2021,All Sectors,2.24,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2021,All Sectors,2.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2021,All Sectors,2.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2021,All Sectors,2.24,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2021,All Sectors,2.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2021,All Sectors,2.27,EMU
 Belgium,Bélgica,2021,All Sectors,3.41,BEL
 Bulgaria,Bulgaria,2021,All Sectors,0.77,BGR
 Czechia,Chequia,2021,All Sectors,1.93,CZE
@@ -442,31 +408,24 @@ Slovakia,Eslovaquia,2021,All Sectors,0.9,SVK
 Finland,Finlandia,2021,All Sectors,3.01,FIN
 Sweden,Suecia,2021,All Sectors,3.42,SWE
 Iceland,Islandia,2021,All Sectors,2.78,ISL
-Liechtenstein,Liechtenstein,2021,All Sectors,,LIE
 Norway,Noruega,2021,All Sectors,1.89,NOR
 Switzerland,Suiza,2021,All Sectors,3.3,CHE
-United Kingdom,Reino Unido,2021,All Sectors,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2021,All Sectors,0.19,BIH
-Montenegro,Montenegro,2021,All Sectors,,MNE
-North Macedonia,Macedonia del Norte,2021,All Sectors,,MKD
-Albania,Albania,2021,All Sectors,,ALB
 Serbia,Serbia,2021,All Sectors,0.95,SRB
 Türkiye,Turquía,2021,All Sectors,1.4,TUR
-Russia,Rusia,2021,All Sectors,,RUS
 United States,Estados Unidos,2021,All Sectors,3.48,USA
 China except Hong Kong,China (excepto Hong Kong),2021,All Sectors,2.43,CHN
 Japan,Japón,2021,All Sectors,3.28,JPN
 South Korea,Corea del Sur,2021,All Sectors,4.6,KOR
-European Union - 27 countries (from 2020),Unión Europea,2022,All Sectors,2.21,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2022,All Sectors,2.24,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2022,All Sectors,2.25,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2022,All Sectors,2.21,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2022,All Sectors,2.24,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2022,All Sectors,2.25,EMU
 Belgium,Bélgica,2022,All Sectors,3.29,BEL
 Bulgaria,Bulgaria,2022,All Sectors,0.75,BGR
 Czechia,Chequia,2022,All Sectors,1.89,CZE
 Denmark,Dinamarca,2022,All Sectors,2.87,DNK
 Germany,Alemania,2022,All Sectors,3.07,DEU
 Estonia,Estonia,2022,All Sectors,1.76,EST
-Ireland,Irlanda,2022,All Sectors,,IRL
 Greece,Grecia,2022,All Sectors,1.48,GRC
 Spain,España,2022,All Sectors,1.41,ESP
 France,Francia,2022,All Sectors,2.22,FRA
@@ -488,31 +447,23 @@ Slovakia,Eslovaquia,2022,All Sectors,0.98,SVK
 Finland,Finlandia,2022,All Sectors,2.98,FIN
 Sweden,Suecia,2022,All Sectors,3.47,SWE
 Iceland,Islandia,2022,All Sectors,2.59,ISL
-Liechtenstein,Liechtenstein,2022,All Sectors,,LIE
 Norway,Noruega,2022,All Sectors,1.56,NOR
-Switzerland,Suiza,2022,All Sectors,,CHE
-United Kingdom,Reino Unido,2022,All Sectors,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2022,All Sectors,,BIH
-Montenegro,Montenegro,2022,All Sectors,,MNE
 North Macedonia,Macedonia del Norte,2022,All Sectors,0.37,MKD
-Albania,Albania,2022,All Sectors,,ALB
 Serbia,Serbia,2022,All Sectors,0.92,SRB
 Türkiye,Turquía,2022,All Sectors,1.32,TUR
-Russia,Rusia,2022,All Sectors,,RUS
 United States,Estados Unidos,2022,All Sectors,3.59,USA
 China except Hong Kong,China (excepto Hong Kong),2022,All Sectors,2.56,CHN
 Japan,Japón,2022,All Sectors,3.41,JPN
 South Korea,Corea del Sur,2022,All Sectors,4.85,KOR
-European Union - 27 countries (from 2020),Unión Europea,2023,All Sectors,2.22,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2023,All Sectors,2.25,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2023,All Sectors,2.25,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2023,All Sectors,2.22,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2023,All Sectors,2.25,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2023,All Sectors,2.25,EMU
 Belgium,Bélgica,2023,All Sectors,3.32,BEL
 Bulgaria,Bulgaria,2023,All Sectors,0.79,BGR
 Czechia,Chequia,2023,All Sectors,1.83,CZE
 Denmark,Dinamarca,2023,All Sectors,2.99,DNK
 Germany,Alemania,2023,All Sectors,3.11,DEU
 Estonia,Estonia,2023,All Sectors,1.84,EST
-Ireland,Irlanda,2023,All Sectors,,IRL
 Greece,Grecia,2023,All Sectors,1.49,GRC
 Spain,España,2023,All Sectors,1.49,ESP
 France,Francia,2023,All Sectors,2.19,FRA
@@ -534,24 +485,11 @@ Slovakia,Eslovaquia,2023,All Sectors,1.04,SVK
 Finland,Finlandia,2023,All Sectors,3.09,FIN
 Sweden,Suecia,2023,All Sectors,3.57,SWE
 Iceland,Islandia,2023,All Sectors,2.53,ISL
-Liechtenstein,Liechtenstein,2023,All Sectors,,LIE
 Norway,Noruega,2023,All Sectors,1.84,NOR
-Switzerland,Suiza,2023,All Sectors,,CHE
-United Kingdom,Reino Unido,2023,All Sectors,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2023,All Sectors,,BIH
-Montenegro,Montenegro,2023,All Sectors,,MNE
-North Macedonia,Macedonia del Norte,2023,All Sectors,,MKD
-Albania,Albania,2023,All Sectors,,ALB
 Serbia,Serbia,2023,All Sectors,0.88,SRB
-Türkiye,Turquía,2023,All Sectors,,TUR
-Russia,Rusia,2023,All Sectors,,RUS
-United States,Estados Unidos,2023,All Sectors,,USA
-China except Hong Kong,China (excepto Hong Kong),2023,All Sectors,,CHN
-Japan,Japón,2023,All Sectors,,JPN
-South Korea,Corea del Sur,2023,All Sectors,,KOR
-European Union - 27 countries (from 2020),Unión Europea,2012,Business enterprise sector,1.31,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2012,Business enterprise sector,1.32,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2012,Business enterprise sector,1.33,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2012,Business enterprise sector,1.31,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2012,Business enterprise sector,1.32,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2012,Business enterprise sector,1.33,EMU
 Belgium,Bélgica,2012,Business enterprise sector,1.59,BEL
 Bulgaria,Bulgaria,2012,Business enterprise sector,0.36,BGR
 Czechia,Chequia,2012,Business enterprise sector,0.93,CZE
@@ -579,15 +517,10 @@ Slovenia,Eslovenia,2012,Business enterprise sector,1.96,SVN
 Slovakia,Eslovaquia,2012,Business enterprise sector,0.33,SVK
 Finland,Finlandia,2012,Business enterprise sector,2.34,FIN
 Sweden,Suecia,2012,Business enterprise sector,2.2,SWE
-Iceland,Islandia,2012,Business enterprise sector,,ISL
-Liechtenstein,Liechtenstein,2012,Business enterprise sector,,LIE
 Norway,Noruega,2012,Business enterprise sector,0.84,NOR
 Switzerland,Suiza,2012,Business enterprise sector,1.99,CHE
 United Kingdom,Reino Unido,2012,Business enterprise sector,1.0,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2012,Business enterprise sector,0.16,BIH
-Montenegro,Montenegro,2012,Business enterprise sector,,MNE
-North Macedonia,Macedonia del Norte,2012,Business enterprise sector,,MKD
-Albania,Albania,2012,Business enterprise sector,,ALB
 Serbia,Serbia,2012,Business enterprise sector,0.2,SRB
 Türkiye,Turquía,2012,Business enterprise sector,0.37,TUR
 Russia,Rusia,2012,Business enterprise sector,0.6,RUS
@@ -595,9 +528,9 @@ United States,Estados Unidos,2012,Business enterprise sector,1.86,USA
 China except Hong Kong,China (excepto Hong Kong),2012,Business enterprise sector,1.46,CHN
 Japan,Japón,2012,Business enterprise sector,2.43,JPN
 South Korea,Corea del Sur,2012,Business enterprise sector,2.87,KOR
-European Union - 27 countries (from 2020),Unión Europea,2013,Business enterprise sector,1.33,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2013,Business enterprise sector,1.34,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2013,Business enterprise sector,1.35,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2013,Business enterprise sector,1.33,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2013,Business enterprise sector,1.34,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2013,Business enterprise sector,1.35,EMU
 Belgium,Bélgica,2013,Business enterprise sector,1.61,BEL
 Bulgaria,Bulgaria,2013,Business enterprise sector,0.39,BGR
 Czechia,Chequia,2013,Business enterprise sector,1.0,CZE
@@ -626,14 +559,10 @@ Slovakia,Eslovaquia,2013,Business enterprise sector,0.38,SVK
 Finland,Finlandia,2013,Business enterprise sector,2.26,FIN
 Sweden,Suecia,2013,Business enterprise sector,2.26,SWE
 Iceland,Islandia,2013,Business enterprise sector,0.95,ISL
-Liechtenstein,Liechtenstein,2013,Business enterprise sector,,LIE
 Norway,Noruega,2013,Business enterprise sector,0.86,NOR
-Switzerland,Suiza,2013,Business enterprise sector,,CHE
 United Kingdom,Reino Unido,2013,Business enterprise sector,1.04,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2013,Business enterprise sector,0.19,BIH
 Montenegro,Montenegro,2013,Business enterprise sector,0.18,MNE
-North Macedonia,Macedonia del Norte,2013,Business enterprise sector,,MKD
-Albania,Albania,2013,Business enterprise sector,,ALB
 Serbia,Serbia,2013,Business enterprise sector,0.09,SRB
 Türkiye,Turquía,2013,Business enterprise sector,0.39,TUR
 Russia,Rusia,2013,Business enterprise sector,0.62,RUS
@@ -641,9 +570,9 @@ United States,Estados Unidos,2013,Business enterprise sector,1.91,USA
 China except Hong Kong,China (excepto Hong Kong),2013,Business enterprise sector,1.53,CHN
 Japan,Japón,2013,Business enterprise sector,2.49,JPN
 South Korea,Corea del Sur,2013,Business enterprise sector,2.96,KOR
-European Union - 27 countries (from 2020),Unión Europea,2014,Business enterprise sector,1.34,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2014,Business enterprise sector,1.36,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2014,Business enterprise sector,1.37,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2014,Business enterprise sector,1.34,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2014,Business enterprise sector,1.36,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2014,Business enterprise sector,1.37,EMU
 Belgium,Bélgica,2014,Business enterprise sector,1.65,BEL
 Bulgaria,Bulgaria,2014,Business enterprise sector,0.52,BGR
 Czechia,Chequia,2014,Business enterprise sector,1.07,CZE
@@ -672,14 +601,10 @@ Slovakia,Eslovaquia,2014,Business enterprise sector,0.32,SVK
 Finland,Finlandia,2014,Business enterprise sector,2.14,FIN
 Sweden,Suecia,2014,Business enterprise sector,2.09,SWE
 Iceland,Islandia,2014,Business enterprise sector,1.18,ISL
-Liechtenstein,Liechtenstein,2014,Business enterprise sector,,LIE
 Norway,Noruega,2014,Business enterprise sector,0.92,NOR
-Switzerland,Suiza,2014,Business enterprise sector,,CHE
 United Kingdom,Reino Unido,2014,Business enterprise sector,1.07,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2014,Business enterprise sector,0.05,BIH
 Montenegro,Montenegro,2014,Business enterprise sector,0.14,MNE
-North Macedonia,Macedonia del Norte,2014,Business enterprise sector,,MKD
-Albania,Albania,2014,Business enterprise sector,,ALB
 Serbia,Serbia,2014,Business enterprise sector,0.21,SRB
 Türkiye,Turquía,2014,Business enterprise sector,0.43,TUR
 Russia,Rusia,2014,Business enterprise sector,0.64,RUS
@@ -687,9 +612,9 @@ United States,Estados Unidos,2014,Business enterprise sector,1.94,USA
 China except Hong Kong,China (excepto Hong Kong),2014,Business enterprise sector,1.56,CHN
 Japan,Japón,2014,Business enterprise sector,2.62,JPN
 South Korea,Corea del Sur,2014,Business enterprise sector,3.04,KOR
-European Union - 27 countries (from 2020),Unión Europea,2015,Business enterprise sector,1.36,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2015,Business enterprise sector,1.37,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2015,Business enterprise sector,1.38,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2015,Business enterprise sector,1.36,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2015,Business enterprise sector,1.37,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2015,Business enterprise sector,1.38,EMU
 Belgium,Bélgica,2015,Business enterprise sector,1.7,BEL
 Bulgaria,Bulgaria,2015,Business enterprise sector,0.7,BGR
 Czechia,Chequia,2015,Business enterprise sector,1.04,CZE
@@ -718,14 +643,11 @@ Slovakia,Eslovaquia,2015,Business enterprise sector,0.32,SVK
 Finland,Finlandia,2015,Business enterprise sector,1.93,FIN
 Sweden,Suecia,2015,Business enterprise sector,2.26,SWE
 Iceland,Islandia,2015,Business enterprise sector,1.44,ISL
-Liechtenstein,Liechtenstein,2015,Business enterprise sector,,LIE
 Norway,Noruega,2015,Business enterprise sector,1.04,NOR
 Switzerland,Suiza,2015,Business enterprise sector,2.09,CHE
 United Kingdom,Reino Unido,2015,Business enterprise sector,1.09,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2015,Business enterprise sector,,BIH
 Montenegro,Montenegro,2015,Business enterprise sector,0.11,MNE
 North Macedonia,Macedonia del Norte,2015,Business enterprise sector,0.08,MKD
-Albania,Albania,2015,Business enterprise sector,,ALB
 Serbia,Serbia,2015,Business enterprise sector,0.25,SRB
 Türkiye,Turquía,2015,Business enterprise sector,0.48,TUR
 Russia,Rusia,2015,Business enterprise sector,0.65,RUS
@@ -733,9 +655,9 @@ United States,Estados Unidos,2015,Business enterprise sector,2.01,USA
 China except Hong Kong,China (excepto Hong Kong),2015,Business enterprise sector,1.58,CHN
 Japan,Japón,2015,Business enterprise sector,2.54,JPN
 South Korea,Corea del Sur,2015,Business enterprise sector,2.94,KOR
-European Union - 27 countries (from 2020),Unión Europea,2016,Business enterprise sector,1.38,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2016,Business enterprise sector,1.38,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2016,Business enterprise sector,1.39,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2016,Business enterprise sector,1.38,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2016,Business enterprise sector,1.38,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2016,Business enterprise sector,1.39,EMU
 Belgium,Bélgica,2016,Business enterprise sector,1.74,BEL
 Bulgaria,Bulgaria,2016,Business enterprise sector,0.56,BGR
 Czechia,Chequia,2016,Business enterprise sector,1.01,CZE
@@ -764,24 +686,19 @@ Slovakia,Eslovaquia,2016,Business enterprise sector,0.4,SVK
 Finland,Finlandia,2016,Business enterprise sector,1.81,FIN
 Sweden,Suecia,2016,Business enterprise sector,2.27,SWE
 Iceland,Islandia,2016,Business enterprise sector,1.36,ISL
-Liechtenstein,Liechtenstein,2016,Business enterprise sector,,LIE
 Norway,Noruega,2016,Business enterprise sector,1.08,NOR
-Switzerland,Suiza,2016,Business enterprise sector,,CHE
 United Kingdom,Reino Unido,2016,Business enterprise sector,1.11,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2016,Business enterprise sector,,BIH
 Montenegro,Montenegro,2016,Business enterprise sector,0.05,MNE
 North Macedonia,Macedonia del Norte,2016,Business enterprise sector,0.1,MKD
-Albania,Albania,2016,Business enterprise sector,,ALB
 Serbia,Serbia,2016,Business enterprise sector,0.3,SRB
 Türkiye,Turquía,2016,Business enterprise sector,0.56,TUR
-Russia,Rusia,2016,Business enterprise sector,,RUS
 United States,Estados Unidos,2016,Business enterprise sector,2.08,USA
 China except Hong Kong,China (excepto Hong Kong),2016,Business enterprise sector,1.63,CHN
 Japan,Japón,2016,Business enterprise sector,2.45,JPN
 South Korea,Corea del Sur,2016,Business enterprise sector,2.94,KOR
-European Union - 27 countries (from 2020),Unión Europea,2017,Business enterprise sector,1.42,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2017,Business enterprise sector,1.43,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2017,Business enterprise sector,1.43,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2017,Business enterprise sector,1.42,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2017,Business enterprise sector,1.43,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2017,Business enterprise sector,1.43,EMU
 Belgium,Bélgica,2017,Business enterprise sector,1.88,BEL
 Bulgaria,Bulgaria,2017,Business enterprise sector,0.52,BGR
 Czechia,Chequia,2017,Business enterprise sector,1.1,CZE
@@ -810,14 +727,11 @@ Slovakia,Eslovaquia,2017,Business enterprise sector,0.48,SVK
 Finland,Finlandia,2017,Business enterprise sector,1.79,FIN
 Sweden,Suecia,2017,Business enterprise sector,2.42,SWE
 Iceland,Islandia,2017,Business enterprise sector,1.34,ISL
-Liechtenstein,Liechtenstein,2017,Business enterprise sector,,LIE
 Norway,Noruega,2017,Business enterprise sector,1.1,NOR
 Switzerland,Suiza,2017,Business enterprise sector,2.06,CHE
 United Kingdom,Reino Unido,2017,Business enterprise sector,1.14,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2017,Business enterprise sector,,BIH
 Montenegro,Montenegro,2017,Business enterprise sector,0.07,MNE
 North Macedonia,Macedonia del Norte,2017,Business enterprise sector,0.09,MKD
-Albania,Albania,2017,Business enterprise sector,,ALB
 Serbia,Serbia,2017,Business enterprise sector,0.31,SRB
 Türkiye,Turquía,2017,Business enterprise sector,0.59,TUR
 Russia,Rusia,2017,Business enterprise sector,0.67,RUS
@@ -825,9 +739,9 @@ United States,Estados Unidos,2017,Business enterprise sector,2.12,USA
 China except Hong Kong,China (excepto Hong Kong),2017,Business enterprise sector,1.64,CHN
 Japan,Japón,2017,Business enterprise sector,2.49,JPN
 South Korea,Corea del Sur,2017,Business enterprise sector,3.23,KOR
-European Union - 27 countries (from 2020),Unión Europea,2018,Business enterprise sector,1.44,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2018,Business enterprise sector,1.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2018,Business enterprise sector,1.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2018,Business enterprise sector,1.44,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2018,Business enterprise sector,1.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2018,Business enterprise sector,1.46,EMU
 Belgium,Bélgica,2018,Business enterprise sector,2.05,BEL
 Bulgaria,Bulgaria,2018,Business enterprise sector,0.54,BGR
 Czechia,Chequia,2018,Business enterprise sector,1.16,CZE
@@ -856,14 +770,10 @@ Slovakia,Eslovaquia,2018,Business enterprise sector,0.45,SVK
 Finland,Finlandia,2018,Business enterprise sector,1.82,FIN
 Sweden,Suecia,2018,Business enterprise sector,2.37,SWE
 Iceland,Islandia,2018,Business enterprise sector,1.29,ISL
-Liechtenstein,Liechtenstein,2018,Business enterprise sector,,LIE
 Norway,Noruega,2018,Business enterprise sector,1.05,NOR
-Switzerland,Suiza,2018,Business enterprise sector,,CHE
 United Kingdom,Reino Unido,2018,Business enterprise sector,1.17,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2018,Business enterprise sector,,BIH
 Montenegro,Montenegro,2018,Business enterprise sector,0.19,MNE
 North Macedonia,Macedonia del Norte,2018,Business enterprise sector,0.11,MKD
-Albania,Albania,2018,Business enterprise sector,,ALB
 Serbia,Serbia,2018,Business enterprise sector,0.34,SRB
 Türkiye,Turquía,2018,Business enterprise sector,0.67,TUR
 Russia,Rusia,2018,Business enterprise sector,0.55,RUS
@@ -871,9 +781,9 @@ United States,Estados Unidos,2018,Business enterprise sector,2.22,USA
 China except Hong Kong,China (excepto Hong Kong),2018,Business enterprise sector,1.66,CHN
 Japan,Japón,2018,Business enterprise sector,2.56,JPN
 South Korea,Corea del Sur,2018,Business enterprise sector,3.43,KOR
-European Union - 27 countries (from 2020),Unión Europea,2019,Business enterprise sector,1.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2019,Business enterprise sector,1.49,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2019,Business enterprise sector,1.49,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2019,Business enterprise sector,1.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2019,Business enterprise sector,1.49,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2019,Business enterprise sector,1.49,EMU
 Belgium,Bélgica,2019,Business enterprise sector,2.32,BEL
 Bulgaria,Bulgaria,2019,Business enterprise sector,0.56,BGR
 Czechia,Chequia,2019,Business enterprise sector,1.17,CZE
@@ -902,14 +812,12 @@ Slovakia,Eslovaquia,2019,Business enterprise sector,0.45,SVK
 Finland,Finlandia,2019,Business enterprise sector,1.85,FIN
 Sweden,Suecia,2019,Business enterprise sector,2.44,SWE
 Iceland,Islandia,2019,Business enterprise sector,1.61,ISL
-Liechtenstein,Liechtenstein,2019,Business enterprise sector,,LIE
 Norway,Noruega,2019,Business enterprise sector,1.13,NOR
 Switzerland,Suiza,2019,Business enterprise sector,2.16,CHE
 United Kingdom,Reino Unido,2019,Business enterprise sector,1.19,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2019,Business enterprise sector,0.07,BIH
 Montenegro,Montenegro,2019,Business enterprise sector,0.05,MNE
 North Macedonia,Macedonia del Norte,2019,Business enterprise sector,0.1,MKD
-Albania,Albania,2019,Business enterprise sector,,ALB
 Serbia,Serbia,2019,Business enterprise sector,0.34,SRB
 Türkiye,Turquía,2019,Business enterprise sector,0.74,TUR
 Russia,Rusia,2019,Business enterprise sector,0.63,RUS
@@ -917,9 +825,9 @@ United States,Estados Unidos,2019,Business enterprise sector,2.36,USA
 China except Hong Kong,China (excepto Hong Kong),2019,Business enterprise sector,1.72,CHN
 Japan,Japón,2019,Business enterprise sector,2.55,JPN
 South Korea,Corea del Sur,2019,Business enterprise sector,3.5,KOR
-European Union - 27 countries (from 2020),Unión Europea,2020,Business enterprise sector,1.5,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2020,Business enterprise sector,1.51,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2020,Business enterprise sector,1.52,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2020,Business enterprise sector,1.5,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2020,Business enterprise sector,1.51,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2020,Business enterprise sector,1.52,EMU
 Belgium,Bélgica,2020,Business enterprise sector,2.49,BEL
 Bulgaria,Bulgaria,2020,Business enterprise sector,0.57,BGR
 Czechia,Chequia,2020,Business enterprise sector,1.19,CZE
@@ -948,24 +856,18 @@ Slovakia,Eslovaquia,2020,Business enterprise sector,0.48,SVK
 Finland,Finlandia,2020,Business enterprise sector,1.96,FIN
 Sweden,Suecia,2020,Business enterprise sector,2.53,SWE
 Iceland,Islandia,2020,Business enterprise sector,1.69,ISL
-Liechtenstein,Liechtenstein,2020,Business enterprise sector,,LIE
 Norway,Noruega,2020,Business enterprise sector,1.22,NOR
-Switzerland,Suiza,2020,Business enterprise sector,,CHE
-United Kingdom,Reino Unido,2020,Business enterprise sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2020,Business enterprise sector,0.08,BIH
-Montenegro,Montenegro,2020,Business enterprise sector,,MNE
 North Macedonia,Macedonia del Norte,2020,Business enterprise sector,0.1,MKD
-Albania,Albania,2020,Business enterprise sector,,ALB
 Serbia,Serbia,2020,Business enterprise sector,0.34,SRB
 Türkiye,Turquía,2020,Business enterprise sector,0.76,TUR
-Russia,Rusia,2020,Business enterprise sector,,RUS
 United States,Estados Unidos,2020,Business enterprise sector,2.6,USA
 China except Hong Kong,China (excepto Hong Kong),2020,Business enterprise sector,1.84,CHN
 Japan,Japón,2020,Business enterprise sector,2.57,JPN
 South Korea,Corea del Sur,2020,Business enterprise sector,3.58,KOR
-European Union - 27 countries (from 2020),Unión Europea,2021,Business enterprise sector,1.48,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2021,Business enterprise sector,1.49,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2021,Business enterprise sector,1.49,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2021,Business enterprise sector,1.48,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2021,Business enterprise sector,1.49,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2021,Business enterprise sector,1.49,EMU
 Belgium,Bélgica,2021,Business enterprise sector,2.54,BEL
 Bulgaria,Bulgaria,2021,Business enterprise sector,0.51,BGR
 Czechia,Chequia,2021,Business enterprise sector,1.21,CZE
@@ -994,31 +896,24 @@ Slovakia,Eslovaquia,2021,Business enterprise sector,0.5,SVK
 Finland,Finlandia,2021,Business enterprise sector,2.07,FIN
 Sweden,Suecia,2021,Business enterprise sector,2.47,SWE
 Iceland,Islandia,2021,Business enterprise sector,1.99,ISL
-Liechtenstein,Liechtenstein,2021,Business enterprise sector,,LIE
 Norway,Noruega,2021,Business enterprise sector,1.02,NOR
 Switzerland,Suiza,2021,Business enterprise sector,2.25,CHE
-United Kingdom,Reino Unido,2021,Business enterprise sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2021,Business enterprise sector,0.07,BIH
-Montenegro,Montenegro,2021,Business enterprise sector,,MNE
-North Macedonia,Macedonia del Norte,2021,Business enterprise sector,,MKD
-Albania,Albania,2021,Business enterprise sector,,ALB
 Serbia,Serbia,2021,Business enterprise sector,0.43,SRB
 Türkiye,Turquía,2021,Business enterprise sector,0.86,TUR
-Russia,Rusia,2021,Business enterprise sector,,RUS
 United States,Estados Unidos,2021,Business enterprise sector,2.71,USA
 China except Hong Kong,China (excepto Hong Kong),2021,Business enterprise sector,1.87,CHN
 Japan,Japón,2021,Business enterprise sector,2.57,JPN
 South Korea,Corea del Sur,2021,Business enterprise sector,3.64,KOR
-European Union - 27 countries (from 2020),Unión Europea,2022,Business enterprise sector,1.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2022,Business enterprise sector,1.48,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2022,Business enterprise sector,1.49,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2022,Business enterprise sector,1.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2022,Business enterprise sector,1.48,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2022,Business enterprise sector,1.49,EMU
 Belgium,Bélgica,2022,Business enterprise sector,2.43,BEL
 Bulgaria,Bulgaria,2022,Business enterprise sector,0.51,BGR
 Czechia,Chequia,2022,Business enterprise sector,1.21,CZE
 Denmark,Dinamarca,2022,Business enterprise sector,1.76,DNK
 Germany,Alemania,2022,Business enterprise sector,2.07,DEU
 Estonia,Estonia,2022,Business enterprise sector,0.99,EST
-Ireland,Irlanda,2022,Business enterprise sector,,IRL
 Greece,Grecia,2022,Business enterprise sector,0.72,GRC
 Spain,España,2022,Business enterprise sector,0.79,ESP
 France,Francia,2022,Business enterprise sector,1.47,FRA
@@ -1040,31 +935,23 @@ Slovakia,Eslovaquia,2022,Business enterprise sector,0.56,SVK
 Finland,Finlandia,2022,Business enterprise sector,2.03,FIN
 Sweden,Suecia,2022,Business enterprise sector,2.56,SWE
 Iceland,Islandia,2022,Business enterprise sector,1.88,ISL
-Liechtenstein,Liechtenstein,2022,Business enterprise sector,,LIE
 Norway,Noruega,2022,Business enterprise sector,0.86,NOR
-Switzerland,Suiza,2022,Business enterprise sector,,CHE
-United Kingdom,Reino Unido,2022,Business enterprise sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2022,Business enterprise sector,,BIH
-Montenegro,Montenegro,2022,Business enterprise sector,,MNE
 North Macedonia,Macedonia del Norte,2022,Business enterprise sector,0.1,MKD
-Albania,Albania,2022,Business enterprise sector,,ALB
 Serbia,Serbia,2022,Business enterprise sector,0.4,SRB
 Türkiye,Turquía,2022,Business enterprise sector,0.81,TUR
-Russia,Rusia,2022,Business enterprise sector,,RUS
 United States,Estados Unidos,2022,Business enterprise sector,2.83,USA
 China except Hong Kong,China (excepto Hong Kong),2022,Business enterprise sector,1.98,CHN
 Japan,Japón,2022,Business enterprise sector,2.7,JPN
 South Korea,Corea del Sur,2022,Business enterprise sector,3.85,KOR
-European Union - 27 countries (from 2020),Unión Europea,2023,Business enterprise sector,1.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2023,Business enterprise sector,1.49,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2023,Business enterprise sector,1.49,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2023,Business enterprise sector,1.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2023,Business enterprise sector,1.49,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2023,Business enterprise sector,1.49,EMU
 Belgium,Bélgica,2023,Business enterprise sector,2.46,BEL
 Bulgaria,Bulgaria,2023,Business enterprise sector,0.51,BGR
 Czechia,Chequia,2023,Business enterprise sector,1.19,CZE
 Denmark,Dinamarca,2023,Business enterprise sector,1.83,DNK
 Germany,Alemania,2023,Business enterprise sector,2.12,DEU
 Estonia,Estonia,2023,Business enterprise sector,1.06,EST
-Ireland,Irlanda,2023,Business enterprise sector,,IRL
 Greece,Grecia,2023,Business enterprise sector,0.74,GRC
 Spain,España,2023,Business enterprise sector,0.84,ESP
 France,Francia,2023,Business enterprise sector,1.44,FRA
@@ -1086,24 +973,11 @@ Slovakia,Eslovaquia,2023,Business enterprise sector,0.58,SVK
 Finland,Finlandia,2023,Business enterprise sector,2.09,FIN
 Sweden,Suecia,2023,Business enterprise sector,2.65,SWE
 Iceland,Islandia,2023,Business enterprise sector,1.87,ISL
-Liechtenstein,Liechtenstein,2023,Business enterprise sector,,LIE
 Norway,Noruega,2023,Business enterprise sector,1.05,NOR
-Switzerland,Suiza,2023,Business enterprise sector,,CHE
-United Kingdom,Reino Unido,2023,Business enterprise sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2023,Business enterprise sector,,BIH
-Montenegro,Montenegro,2023,Business enterprise sector,,MNE
-North Macedonia,Macedonia del Norte,2023,Business enterprise sector,,MKD
-Albania,Albania,2023,Business enterprise sector,,ALB
 Serbia,Serbia,2023,Business enterprise sector,0.38,SRB
-Türkiye,Turquía,2023,Business enterprise sector,,TUR
-Russia,Rusia,2023,Business enterprise sector,,RUS
-United States,Estados Unidos,2023,Business enterprise sector,,USA
-China except Hong Kong,China (excepto Hong Kong),2023,Business enterprise sector,,CHN
-Japan,Japón,2023,Business enterprise sector,,JPN
-South Korea,Corea del Sur,2023,Business enterprise sector,,KOR
-European Union - 27 countries (from 2020),Unión Europea,2012,Government sector,0.27,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2012,Government sector,0.28,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2012,Government sector,0.28,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2012,Government sector,0.27,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2012,Government sector,0.28,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2012,Government sector,0.28,EMU
 Belgium,Bélgica,2012,Government sector,0.19,BEL
 Bulgaria,Bulgaria,2012,Government sector,0.18,BGR
 Czechia,Chequia,2012,Government sector,0.34,CZE
@@ -1131,15 +1005,10 @@ Slovenia,Eslovenia,2012,Government sector,0.34,SVN
 Slovakia,Eslovaquia,2012,Government sector,0.19,SVK
 Finland,Finlandia,2012,Government sector,0.31,FIN
 Sweden,Suecia,2012,Government sector,0.16,SWE
-Iceland,Islandia,2012,Government sector,,ISL
-Liechtenstein,Liechtenstein,2012,Government sector,,LIE
 Norway,Noruega,2012,Government sector,0.26,NOR
 Switzerland,Suiza,2012,Government sector,0.02,CHE
 United Kingdom,Reino Unido,2012,Government sector,0.13,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2012,Government sector,0.04,BIH
-Montenegro,Montenegro,2012,Government sector,,MNE
-North Macedonia,Macedonia del Norte,2012,Government sector,,MKD
-Albania,Albania,2012,Government sector,,ALB
 Serbia,Serbia,2012,Government sector,0.24,SRB
 Türkiye,Turquía,2012,Government sector,0.09,TUR
 Russia,Rusia,2012,Government sector,0.33,RUS
@@ -1147,9 +1016,9 @@ United States,Estados Unidos,2012,Government sector,0.33,USA
 China except Hong Kong,China (excepto Hong Kong),2012,Government sector,0.31,CHN
 Japan,Japón,2012,Government sector,0.27,JPN
 South Korea,Corea del Sur,2012,Government sector,0.41,KOR
-European Union - 27 countries (from 2020),Unión Europea,2013,Government sector,0.26,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2013,Government sector,0.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2013,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2013,Government sector,0.26,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2013,Government sector,0.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2013,Government sector,0.27,EMU
 Belgium,Bélgica,2013,Government sector,0.2,BEL
 Bulgaria,Bulgaria,2013,Government sector,0.19,BGR
 Czechia,Chequia,2013,Government sector,0.36,CZE
@@ -1178,14 +1047,10 @@ Slovakia,Eslovaquia,2013,Government sector,0.17,SVK
 Finland,Finlandia,2013,Government sector,0.29,FIN
 Sweden,Suecia,2013,Government sector,0.12,SWE
 Iceland,Islandia,2013,Government sector,0.12,ISL
-Liechtenstein,Liechtenstein,2013,Government sector,,LIE
 Norway,Noruega,2013,Government sector,0.26,NOR
-Switzerland,Suiza,2013,Government sector,,CHE
 United Kingdom,Reino Unido,2013,Government sector,0.13,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2013,Government sector,0.02,BIH
 Montenegro,Montenegro,2013,Government sector,0.06,MNE
-North Macedonia,Macedonia del Norte,2013,Government sector,,MKD
-Albania,Albania,2013,Government sector,,ALB
 Serbia,Serbia,2013,Government sector,0.22,SRB
 Türkiye,Turquía,2013,Government sector,0.08,TUR
 Russia,Rusia,2013,Government sector,0.31,RUS
@@ -1193,9 +1058,9 @@ United States,Estados Unidos,2013,Government sector,0.31,USA
 China except Hong Kong,China (excepto Hong Kong),2013,Government sector,0.32,CHN
 Japan,Japón,2013,Government sector,0.3,JPN
 South Korea,Corea del Sur,2013,Government sector,0.41,KOR
-European Union - 27 countries (from 2020),Unión Europea,2014,Government sector,0.26,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2014,Government sector,0.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2014,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2014,Government sector,0.26,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2014,Government sector,0.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2014,Government sector,0.27,EMU
 Belgium,Bélgica,2014,Government sector,0.21,BEL
 Bulgaria,Bulgaria,2014,Government sector,0.2,BGR
 Czechia,Chequia,2014,Government sector,0.37,CZE
@@ -1224,14 +1089,11 @@ Slovakia,Eslovaquia,2014,Government sector,0.25,SVK
 Finland,Finlandia,2014,Government sector,0.27,FIN
 Sweden,Suecia,2014,Government sector,0.12,SWE
 Iceland,Islandia,2014,Government sector,0.12,ISL
-Liechtenstein,Liechtenstein,2014,Government sector,,LIE
 Norway,Noruega,2014,Government sector,0.26,NOR
 Switzerland,Suiza,2014,Government sector,0.03,CHE
 United Kingdom,Reino Unido,2014,Government sector,0.12,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2014,Government sector,0.05,BIH
 Montenegro,Montenegro,2014,Government sector,0.08,MNE
-North Macedonia,Macedonia del Norte,2014,Government sector,,MKD
-Albania,Albania,2014,Government sector,,ALB
 Serbia,Serbia,2014,Government sector,0.17,SRB
 Türkiye,Turquía,2014,Government sector,0.08,TUR
 Russia,Rusia,2014,Government sector,0.33,RUS
@@ -1239,9 +1101,9 @@ United States,Estados Unidos,2014,Government sector,0.31,USA
 China except Hong Kong,China (excepto Hong Kong),2014,Government sector,0.32,CHN
 Japan,Japón,2014,Government sector,0.28,JPN
 South Korea,Corea del Sur,2014,Government sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2015,Government sector,0.26,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2015,Government sector,0.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2015,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2015,Government sector,0.26,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2015,Government sector,0.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2015,Government sector,0.27,EMU
 Belgium,Bélgica,2015,Government sector,0.22,BEL
 Bulgaria,Bulgaria,2015,Government sector,0.2,BGR
 Czechia,Chequia,2015,Government sector,0.39,CZE
@@ -1270,14 +1132,11 @@ Slovakia,Eslovaquia,2015,Government sector,0.32,SVK
 Finland,Finlandia,2015,Government sector,0.24,FIN
 Sweden,Suecia,2015,Government sector,0.11,SWE
 Iceland,Islandia,2015,Government sector,0.1,ISL
-Liechtenstein,Liechtenstein,2015,Government sector,,LIE
 Norway,Noruega,2015,Government sector,0.29,NOR
 Switzerland,Suiza,2015,Government sector,0.03,CHE
 United Kingdom,Reino Unido,2015,Government sector,0.11,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2015,Government sector,,BIH
 Montenegro,Montenegro,2015,Government sector,0.07,MNE
 North Macedonia,Macedonia del Norte,2015,Government sector,0.06,MKD
-Albania,Albania,2015,Government sector,,ALB
 Serbia,Serbia,2015,Government sector,0.21,SRB
 Türkiye,Turquía,2015,Government sector,0.09,TUR
 Russia,Rusia,2015,Government sector,0.34,RUS
@@ -1285,9 +1144,9 @@ United States,Estados Unidos,2015,Government sector,0.3,USA
 China except Hong Kong,China (excepto Hong Kong),2015,Government sector,0.33,CHN
 Japan,Japón,2015,Government sector,0.26,JPN
 South Korea,Corea del Sur,2015,Government sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2016,Government sector,0.24,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2016,Government sector,0.26,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2016,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2016,Government sector,0.24,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2016,Government sector,0.26,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2016,Government sector,0.27,EMU
 Belgium,Bélgica,2016,Government sector,0.24,BEL
 Bulgaria,Bulgaria,2016,Government sector,0.16,BGR
 Czechia,Chequia,2016,Government sector,0.3,CZE
@@ -1316,24 +1175,19 @@ Slovakia,Eslovaquia,2016,Government sector,0.17,SVK
 Finland,Finlandia,2016,Government sector,0.22,FIN
 Sweden,Suecia,2016,Government sector,0.11,SWE
 Iceland,Islandia,2016,Government sector,0.1,ISL
-Liechtenstein,Liechtenstein,2016,Government sector,,LIE
 Norway,Noruega,2016,Government sector,0.29,NOR
-Switzerland,Suiza,2016,Government sector,,CHE
 United Kingdom,Reino Unido,2016,Government sector,0.11,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2016,Government sector,,BIH
 Montenegro,Montenegro,2016,Government sector,0.07,MNE
 North Macedonia,Macedonia del Norte,2016,Government sector,0.05,MKD
-Albania,Albania,2016,Government sector,,ALB
 Serbia,Serbia,2016,Government sector,0.21,SRB
 Türkiye,Turquía,2016,Government sector,0.09,TUR
-Russia,Rusia,2016,Government sector,,RUS
 United States,Estados Unidos,2016,Government sector,0.28,USA
 China except Hong Kong,China (excepto Hong Kong),2016,Government sector,0.33,CHN
 Japan,Japón,2016,Government sector,0.23,JPN
 South Korea,Corea del Sur,2016,Government sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2017,Government sector,0.24,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2017,Government sector,0.26,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2017,Government sector,0.26,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2017,Government sector,0.24,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2017,Government sector,0.26,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2017,Government sector,0.26,EMU
 Belgium,Bélgica,2017,Government sector,0.25,BEL
 Bulgaria,Bulgaria,2017,Government sector,0.17,BGR
 Czechia,Chequia,2017,Government sector,0.3,CZE
@@ -1362,14 +1216,11 @@ Slovakia,Eslovaquia,2017,Government sector,0.18,SVK
 Finland,Finlandia,2017,Government sector,0.23,FIN
 Sweden,Suecia,2017,Government sector,0.12,SWE
 Iceland,Islandia,2017,Government sector,0.09,ISL
-Liechtenstein,Liechtenstein,2017,Government sector,,LIE
 Norway,Noruega,2017,Government sector,0.28,NOR
 Switzerland,Suiza,2017,Government sector,0.03,CHE
 United Kingdom,Reino Unido,2017,Government sector,0.11,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2017,Government sector,,BIH
 Montenegro,Montenegro,2017,Government sector,0.1,MNE
 North Macedonia,Macedonia del Norte,2017,Government sector,0.04,MKD
-Albania,Albania,2017,Government sector,,ALB
 Serbia,Serbia,2017,Government sector,0.23,SRB
 Türkiye,Turquía,2017,Government sector,0.09,TUR
 Russia,Rusia,2017,Government sector,0.34,RUS
@@ -1377,9 +1228,9 @@ United States,Estados Unidos,2017,Government sector,0.28,USA
 China except Hong Kong,China (excepto Hong Kong),2017,Government sector,0.32,CHN
 Japan,Japón,2017,Government sector,0.25,JPN
 South Korea,Corea del Sur,2017,Government sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2018,Government sector,0.25,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2018,Government sector,0.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2018,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2018,Government sector,0.25,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2018,Government sector,0.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2018,Government sector,0.27,EMU
 Belgium,Bélgica,2018,Government sector,0.26,BEL
 Bulgaria,Bulgaria,2018,Government sector,0.17,BGR
 Czechia,Chequia,2018,Government sector,0.31,CZE
@@ -1408,14 +1259,10 @@ Slovakia,Eslovaquia,2018,Government sector,0.18,SVK
 Finland,Finlandia,2018,Government sector,0.23,FIN
 Sweden,Suecia,2018,Government sector,0.12,SWE
 Iceland,Islandia,2018,Government sector,0.08,ISL
-Liechtenstein,Liechtenstein,2018,Government sector,,LIE
 Norway,Noruega,2018,Government sector,0.28,NOR
-Switzerland,Suiza,2018,Government sector,,CHE
 United Kingdom,Reino Unido,2018,Government sector,0.11,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2018,Government sector,,BIH
 Montenegro,Montenegro,2018,Government sector,0.13,MNE
 North Macedonia,Macedonia del Norte,2018,Government sector,0.04,MKD
-Albania,Albania,2018,Government sector,,ALB
 Serbia,Serbia,2018,Government sector,0.25,SRB
 Türkiye,Turquía,2018,Government sector,0.09,TUR
 Russia,Rusia,2018,Government sector,0.34,RUS
@@ -1423,9 +1270,9 @@ United States,Estados Unidos,2018,Government sector,0.29,USA
 China except Hong Kong,China (excepto Hong Kong),2018,Government sector,0.32,CHN
 Japan,Japón,2018,Government sector,0.25,JPN
 South Korea,Corea del Sur,2018,Government sector,0.43,KOR
-European Union - 27 countries (from 2020),Unión Europea,2019,Government sector,0.25,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2019,Government sector,0.27,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2019,Government sector,0.27,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2019,Government sector,0.25,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2019,Government sector,0.27,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2019,Government sector,0.27,EMU
 Belgium,Bélgica,2019,Government sector,0.28,BEL
 Bulgaria,Bulgaria,2019,Government sector,0.21,BGR
 Czechia,Chequia,2019,Government sector,0.31,CZE
@@ -1454,14 +1301,12 @@ Slovakia,Eslovaquia,2019,Government sector,0.16,SVK
 Finland,Finlandia,2019,Government sector,0.23,FIN
 Sweden,Suecia,2019,Government sector,0.15,SWE
 Iceland,Islandia,2019,Government sector,0.08,ISL
-Liechtenstein,Liechtenstein,2019,Government sector,,LIE
 Norway,Noruega,2019,Government sector,0.27,NOR
 Switzerland,Suiza,2019,Government sector,0.03,CHE
 United Kingdom,Reino Unido,2019,Government sector,0.12,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2019,Government sector,0.01,BIH
 Montenegro,Montenegro,2019,Government sector,0.18,MNE
 North Macedonia,Macedonia del Norte,2019,Government sector,0.03,MKD
-Albania,Albania,2019,Government sector,,ALB
 Serbia,Serbia,2019,Government sector,0.22,SRB
 Türkiye,Turquía,2019,Government sector,0.07,TUR
 Russia,Rusia,2019,Government sector,0.29,RUS
@@ -1469,9 +1314,9 @@ United States,Estados Unidos,2019,Government sector,0.3,USA
 China except Hong Kong,China (excepto Hong Kong),2019,Government sector,0.35,CHN
 Japan,Japón,2019,Government sector,0.25,JPN
 South Korea,Corea del Sur,2019,Government sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2020,Government sector,0.27,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2020,Government sector,0.29,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2020,Government sector,0.29,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2020,Government sector,0.27,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2020,Government sector,0.29,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2020,Government sector,0.29,EMU
 Belgium,Bélgica,2020,Government sector,0.3,BEL
 Bulgaria,Bulgaria,2020,Government sector,0.22,BGR
 Czechia,Chequia,2020,Government sector,0.33,CZE
@@ -1500,24 +1345,18 @@ Slovakia,Eslovaquia,2020,Government sector,0.18,SVK
 Finland,Finlandia,2020,Government sector,0.22,FIN
 Sweden,Suecia,2020,Government sector,0.15,SWE
 Iceland,Islandia,2020,Government sector,0.09,ISL
-Liechtenstein,Liechtenstein,2020,Government sector,,LIE
 Norway,Noruega,2020,Government sector,0.28,NOR
-Switzerland,Suiza,2020,Government sector,,CHE
-United Kingdom,Reino Unido,2020,Government sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2020,Government sector,0.01,BIH
-Montenegro,Montenegro,2020,Government sector,,MNE
 North Macedonia,Macedonia del Norte,2020,Government sector,0.04,MKD
-Albania,Albania,2020,Government sector,,ALB
 Serbia,Serbia,2020,Government sector,0.25,SRB
 Türkiye,Turquía,2020,Government sector,0.07,TUR
-Russia,Rusia,2020,Government sector,,RUS
 United States,Estados Unidos,2020,Government sector,0.32,USA
 China except Hong Kong,China (excepto Hong Kong),2020,Government sector,0.38,CHN
 Japan,Japón,2020,Government sector,0.27,JPN
 South Korea,Corea del Sur,2020,Government sector,0.46,KOR
-European Union - 27 countries (from 2020),Unión Europea,2021,Government sector,0.26,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2021,Government sector,0.28,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2021,Government sector,0.28,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2021,Government sector,0.26,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2021,Government sector,0.28,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2021,Government sector,0.28,EMU
 Belgium,Bélgica,2021,Government sector,0.29,BEL
 Bulgaria,Bulgaria,2021,Government sector,0.21,BGR
 Czechia,Chequia,2021,Government sector,0.32,CZE
@@ -1546,24 +1385,18 @@ Slovakia,Eslovaquia,2021,Government sector,0.17,SVK
 Finland,Finlandia,2021,Government sector,0.22,FIN
 Sweden,Suecia,2021,Government sector,0.15,SWE
 Iceland,Islandia,2021,Government sector,0.08,ISL
-Liechtenstein,Liechtenstein,2021,Government sector,,LIE
 Norway,Noruega,2021,Government sector,0.25,NOR
 Switzerland,Suiza,2021,Government sector,0.03,CHE
-United Kingdom,Reino Unido,2021,Government sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2021,Government sector,0.01,BIH
-Montenegro,Montenegro,2021,Government sector,,MNE
-North Macedonia,Macedonia del Norte,2021,Government sector,,MKD
-Albania,Albania,2021,Government sector,,ALB
 Serbia,Serbia,2021,Government sector,0.25,SRB
 Türkiye,Turquía,2021,Government sector,0.06,TUR
-Russia,Rusia,2021,Government sector,,RUS
 United States,Estados Unidos,2021,Government sector,0.29,USA
 China except Hong Kong,China (excepto Hong Kong),2021,Government sector,0.37,CHN
 Japan,Japón,2021,Government sector,0.27,JPN
 South Korea,Corea del Sur,2021,Government sector,0.45,KOR
-European Union - 27 countries (from 2020),Unión Europea,2022,Government sector,0.24,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2022,Government sector,0.25,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2022,Government sector,0.25,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2022,Government sector,0.24,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2022,Government sector,0.25,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2022,Government sector,0.25,EMU
 Belgium,Bélgica,2022,Government sector,0.29,BEL
 Bulgaria,Bulgaria,2022,Government sector,0.19,BGR
 Czechia,Chequia,2022,Government sector,0.3,CZE
@@ -1592,24 +1425,18 @@ Slovakia,Eslovaquia,2022,Government sector,0.17,SVK
 Finland,Finlandia,2022,Government sector,0.22,FIN
 Sweden,Suecia,2022,Government sector,0.15,SWE
 Iceland,Islandia,2022,Government sector,0.07,ISL
-Liechtenstein,Liechtenstein,2022,Government sector,,LIE
 Norway,Noruega,2022,Government sector,0.19,NOR
 Switzerland,Suiza,2022,Government sector,0.03,CHE
-United Kingdom,Reino Unido,2022,Government sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2022,Government sector,,BIH
-Montenegro,Montenegro,2022,Government sector,,MNE
 North Macedonia,Macedonia del Norte,2022,Government sector,0.03,MKD
-Albania,Albania,2022,Government sector,,ALB
 Serbia,Serbia,2022,Government sector,0.24,SRB
 Türkiye,Turquía,2022,Government sector,0.06,TUR
-Russia,Rusia,2022,Government sector,,RUS
 United States,Estados Unidos,2022,Government sector,0.29,USA
 China except Hong Kong,China (excepto Hong Kong),2022,Government sector,0.37,CHN
 Japan,Japón,2022,Government sector,0.27,JPN
 South Korea,Corea del Sur,2022,Government sector,0.45,KOR
-European Union - 27 countries (from 2020),Unión Europea,2023,Government sector,0.24,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2023,Government sector,0.26,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2023,Government sector,0.26,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2023,Government sector,0.24,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2023,Government sector,0.26,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2023,Government sector,0.26,EMU
 Belgium,Bélgica,2023,Government sector,0.31,BEL
 Bulgaria,Bulgaria,2023,Government sector,0.23,BGR
 Czechia,Chequia,2023,Government sector,0.29,CZE
@@ -1638,24 +1465,11 @@ Slovakia,Eslovaquia,2023,Government sector,0.19,SVK
 Finland,Finlandia,2023,Government sector,0.23,FIN
 Sweden,Suecia,2023,Government sector,0.15,SWE
 Iceland,Islandia,2023,Government sector,0.06,ISL
-Liechtenstein,Liechtenstein,2023,Government sector,,LIE
 Norway,Noruega,2023,Government sector,0.22,NOR
-Switzerland,Suiza,2023,Government sector,,CHE
-United Kingdom,Reino Unido,2023,Government sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2023,Government sector,,BIH
-Montenegro,Montenegro,2023,Government sector,,MNE
-North Macedonia,Macedonia del Norte,2023,Government sector,,MKD
-Albania,Albania,2023,Government sector,,ALB
 Serbia,Serbia,2023,Government sector,0.23,SRB
-Türkiye,Turquía,2023,Government sector,,TUR
-Russia,Rusia,2023,Government sector,,RUS
-United States,Estados Unidos,2023,Government sector,,USA
-China except Hong Kong,China (excepto Hong Kong),2023,Government sector,,CHN
-Japan,Japón,2023,Government sector,,JPN
-South Korea,Corea del Sur,2023,Government sector,,KOR
-European Union - 27 countries (from 2020),Unión Europea,2012,Higher education sector,0.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2012,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2012,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2012,Higher education sector,0.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2012,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2012,Higher education sector,0.46,EMU
 Belgium,Bélgica,2012,Higher education sector,0.48,BEL
 Bulgaria,Bulgaria,2012,Higher education sector,0.05,BGR
 Czechia,Chequia,2012,Higher education sector,0.48,CZE
@@ -1683,15 +1497,10 @@ Slovenia,Eslovenia,2012,Higher education sector,0.29,SVN
 Slovakia,Eslovaquia,2012,Higher education sector,0.27,SVK
 Finland,Finlandia,2012,Higher education sector,0.74,FIN
 Sweden,Suecia,2012,Higher education sector,0.88,SWE
-Iceland,Islandia,2012,Higher education sector,,ISL
-Liechtenstein,Liechtenstein,2012,Higher education sector,,LIE
 Norway,Noruega,2012,Higher education sector,0.5,NOR
 Switzerland,Suiza,2012,Higher education sector,0.81,CHE
 United Kingdom,Reino Unido,2012,Higher education sector,0.42,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2012,Higher education sector,0.07,BIH
-Montenegro,Montenegro,2012,Higher education sector,,MNE
-North Macedonia,Macedonia del Norte,2012,Higher education sector,,MKD
-Albania,Albania,2012,Higher education sector,,ALB
 Serbia,Serbia,2012,Higher education sector,0.38,SRB
 Türkiye,Turquía,2012,Higher education sector,0.36,TUR
 Russia,Rusia,2012,Higher education sector,0.1,RUS
@@ -1699,9 +1508,9 @@ United States,Estados Unidos,2012,Higher education sector,0.37,USA
 China except Hong Kong,China (excepto Hong Kong),2012,Higher education sector,0.14,CHN
 Japan,Japón,2012,Higher education sector,0.42,JPN
 South Korea,Corea del Sur,2012,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2013,Higher education sector,0.48,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2013,Higher education sector,0.47,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2013,Higher education sector,0.47,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2013,Higher education sector,0.48,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2013,Higher education sector,0.47,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2013,Higher education sector,0.47,EMU
 Belgium,Bélgica,2013,Higher education sector,0.5,BEL
 Bulgaria,Bulgaria,2013,Higher education sector,0.05,BGR
 Czechia,Chequia,2013,Higher education sector,0.51,CZE
@@ -1730,14 +1539,10 @@ Slovakia,Eslovaquia,2013,Higher education sector,0.27,SVK
 Finland,Finlandia,2013,Higher education sector,0.71,FIN
 Sweden,Suecia,2013,Higher education sector,0.89,SWE
 Iceland,Islandia,2013,Higher education sector,0.63,ISL
-Liechtenstein,Liechtenstein,2013,Higher education sector,,LIE
 Norway,Noruega,2013,Higher education sector,0.52,NOR
-Switzerland,Suiza,2013,Higher education sector,,CHE
 United Kingdom,Reino Unido,2013,Higher education sector,0.43,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2013,Higher education sector,0.11,BIH
 Montenegro,Montenegro,2013,Higher education sector,0.12,MNE
-North Macedonia,Macedonia del Norte,2013,Higher education sector,,MKD
-Albania,Albania,2013,Higher education sector,,ALB
 Serbia,Serbia,2013,Higher education sector,0.35,SRB
 Türkiye,Turquía,2013,Higher education sector,0.34,TUR
 Russia,Rusia,2013,Higher education sector,0.09,RUS
@@ -1745,9 +1550,9 @@ United States,Estados Unidos,2013,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2013,Higher education sector,0.14,CHN
 Japan,Japón,2013,Higher education sector,0.44,JPN
 South Korea,Corea del Sur,2013,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2014,Higher education sector,0.48,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2014,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2014,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2014,Higher education sector,0.48,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2014,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2014,Higher education sector,0.46,EMU
 Belgium,Bélgica,2014,Higher education sector,0.49,BEL
 Bulgaria,Bulgaria,2014,Higher education sector,0.07,BGR
 Czechia,Chequia,2014,Higher education sector,0.49,CZE
@@ -1776,14 +1581,11 @@ Slovakia,Eslovaquia,2014,Higher education sector,0.3,SVK
 Finland,Finlandia,2014,Higher education sector,0.72,FIN
 Sweden,Suecia,2014,Higher education sector,0.91,SWE
 Iceland,Islandia,2014,Higher education sector,0.64,ISL
-Liechtenstein,Liechtenstein,2014,Higher education sector,,LIE
 Norway,Noruega,2014,Higher education sector,0.53,NOR
 Switzerland,Suiza,2014,Higher education sector,0.85,CHE
 United Kingdom,Reino Unido,2014,Higher education sector,0.42,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2014,Higher education sector,0.16,BIH
 Montenegro,Montenegro,2014,Higher education sector,0.14,MNE
-North Macedonia,Macedonia del Norte,2014,Higher education sector,,MKD
-Albania,Albania,2014,Higher education sector,,ALB
 Serbia,Serbia,2014,Higher education sector,0.32,SRB
 Türkiye,Turquía,2014,Higher education sector,0.35,TUR
 Russia,Rusia,2014,Higher education sector,0.1,RUS
@@ -1791,9 +1593,9 @@ United States,Estados Unidos,2014,Higher education sector,0.35,USA
 China except Hong Kong,China (excepto Hong Kong),2014,Higher education sector,0.14,CHN
 Japan,Japón,2014,Higher education sector,0.42,JPN
 South Korea,Corea del Sur,2014,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2015,Higher education sector,0.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2015,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2015,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2015,Higher education sector,0.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2015,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2015,Higher education sector,0.46,EMU
 Belgium,Bélgica,2015,Higher education sector,0.49,BEL
 Bulgaria,Bulgaria,2015,Higher education sector,0.05,BGR
 Czechia,Chequia,2015,Higher education sector,0.47,CZE
@@ -1822,14 +1624,11 @@ Slovakia,Eslovaquia,2015,Higher education sector,0.51,SVK
 Finland,Finlandia,2015,Higher education sector,0.7,FIN
 Sweden,Suecia,2015,Higher education sector,0.87,SWE
 Iceland,Islandia,2015,Higher education sector,0.64,ISL
-Liechtenstein,Liechtenstein,2015,Higher education sector,,LIE
 Norway,Noruega,2015,Higher education sector,0.6,NOR
 Switzerland,Suiza,2015,Higher education sector,0.88,CHE
 United Kingdom,Reino Unido,2015,Higher education sector,0.42,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2015,Higher education sector,,BIH
 Montenegro,Montenegro,2015,Higher education sector,0.17,MNE
 North Macedonia,Macedonia del Norte,2015,Higher education sector,0.3,MKD
-Albania,Albania,2015,Higher education sector,,ALB
 Serbia,Serbia,2015,Higher education sector,0.32,SRB
 Türkiye,Turquía,2015,Higher education sector,0.4,TUR
 Russia,Rusia,2015,Higher education sector,0.11,RUS
@@ -1837,9 +1636,9 @@ United States,Estados Unidos,2015,Higher education sector,0.35,USA
 China except Hong Kong,China (excepto Hong Kong),2015,Higher education sector,0.14,CHN
 Japan,Japón,2015,Higher education sector,0.4,JPN
 South Korea,Corea del Sur,2015,Higher education sector,0.34,KOR
-European Union - 27 countries (from 2020),Unión Europea,2016,Higher education sector,0.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2016,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2016,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2016,Higher education sector,0.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2016,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2016,Higher education sector,0.46,EMU
 Belgium,Bélgica,2016,Higher education sector,0.54,BEL
 Bulgaria,Bulgaria,2016,Higher education sector,0.04,BGR
 Czechia,Chequia,2016,Higher education sector,0.34,CZE
@@ -1868,24 +1667,19 @@ Slovakia,Eslovaquia,2016,Higher education sector,0.22,SVK
 Finland,Finlandia,2016,Higher education sector,0.69,FIN
 Sweden,Suecia,2016,Higher education sector,0.87,SWE
 Iceland,Islandia,2016,Higher education sector,0.65,ISL
-Liechtenstein,Liechtenstein,2016,Higher education sector,,LIE
 Norway,Noruega,2016,Higher education sector,0.66,NOR
-Switzerland,Suiza,2016,Higher education sector,,CHE
 United Kingdom,Reino Unido,2016,Higher education sector,0.4,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2016,Higher education sector,,BIH
 Montenegro,Montenegro,2016,Higher education sector,0.19,MNE
 North Macedonia,Macedonia del Norte,2016,Higher education sector,0.27,MKD
-Albania,Albania,2016,Higher education sector,,ALB
 Serbia,Serbia,2016,Higher education sector,0.29,SRB
 Türkiye,Turquía,2016,Higher education sector,0.48,TUR
-Russia,Rusia,2016,Higher education sector,,RUS
 United States,Estados Unidos,2016,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2016,Higher education sector,0.14,CHN
 Japan,Japón,2016,Higher education sector,0.38,JPN
 South Korea,Corea del Sur,2016,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2017,Higher education sector,0.46,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2017,Higher education sector,0.45,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2017,Higher education sector,0.45,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2017,Higher education sector,0.46,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2017,Higher education sector,0.45,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2017,Higher education sector,0.45,EMU
 Belgium,Bélgica,2017,Higher education sector,0.53,BEL
 Bulgaria,Bulgaria,2017,Higher education sector,0.04,BGR
 Czechia,Chequia,2017,Higher education sector,0.34,CZE
@@ -1914,14 +1708,11 @@ Slovakia,Eslovaquia,2017,Higher education sector,0.22,SVK
 Finland,Finlandia,2017,Higher education sector,0.7,FIN
 Sweden,Suecia,2017,Higher education sector,0.85,SWE
 Iceland,Islandia,2017,Higher education sector,0.66,ISL
-Liechtenstein,Liechtenstein,2017,Higher education sector,,LIE
 Norway,Noruega,2017,Higher education sector,0.7,NOR
 Switzerland,Suiza,2017,Higher education sector,0.91,CHE
 United Kingdom,Reino Unido,2017,Higher education sector,0.4,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2017,Higher education sector,,BIH
 Montenegro,Montenegro,2017,Higher education sector,0.17,MNE
 North Macedonia,Macedonia del Norte,2017,Higher education sector,0.22,MKD
-Albania,Albania,2017,Higher education sector,,ALB
 Serbia,Serbia,2017,Higher education sector,0.3,SRB
 Türkiye,Turquía,2017,Higher education sector,0.5,TUR
 Russia,Rusia,2017,Higher education sector,0.1,RUS
@@ -1929,9 +1720,9 @@ United States,Estados Unidos,2017,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2017,Higher education sector,0.15,CHN
 Japan,Japón,2017,Higher education sector,0.38,JPN
 South Korea,Corea del Sur,2017,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2018,Higher education sector,0.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2018,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2018,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2018,Higher education sector,0.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2018,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2018,Higher education sector,0.46,EMU
 Belgium,Bélgica,2018,Higher education sector,0.53,BEL
 Bulgaria,Bulgaria,2018,Higher education sector,0.04,BGR
 Czechia,Chequia,2018,Higher education sector,0.4,CZE
@@ -1960,14 +1751,10 @@ Slovakia,Eslovaquia,2018,Higher education sector,0.2,SVK
 Finland,Finlandia,2018,Higher education sector,0.7,FIN
 Sweden,Suecia,2018,Higher education sector,0.85,SWE
 Iceland,Islandia,2018,Higher education sector,0.63,ISL
-Liechtenstein,Liechtenstein,2018,Higher education sector,,LIE
 Norway,Noruega,2018,Higher education sector,0.7,NOR
-Switzerland,Suiza,2018,Higher education sector,,CHE
 United Kingdom,Reino Unido,2018,Higher education sector,0.41,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2018,Higher education sector,,BIH
 Montenegro,Montenegro,2018,Higher education sector,0.17,MNE
 North Macedonia,Macedonia del Norte,2018,Higher education sector,0.21,MKD
-Albania,Albania,2018,Higher education sector,,ALB
 Serbia,Serbia,2018,Higher education sector,0.29,SRB
 Türkiye,Turquía,2018,Higher education sector,0.5,TUR
 Russia,Rusia,2018,Higher education sector,0.1,RUS
@@ -1975,9 +1762,9 @@ United States,Estados Unidos,2018,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2018,Higher education sector,0.16,CHN
 Japan,Japón,2018,Higher education sector,0.37,JPN
 South Korea,Corea del Sur,2018,Higher education sector,0.35,KOR
-European Union - 27 countries (from 2020),Unión Europea,2019,Higher education sector,0.47,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2019,Higher education sector,0.46,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2019,Higher education sector,0.46,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2019,Higher education sector,0.47,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2019,Higher education sector,0.46,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2019,Higher education sector,0.46,EMU
 Belgium,Bélgica,2019,Higher education sector,0.53,BEL
 Bulgaria,Bulgaria,2019,Higher education sector,0.06,BGR
 Czechia,Chequia,2019,Higher education sector,0.41,CZE
@@ -2006,14 +1793,12 @@ Slovakia,Eslovaquia,2019,Higher education sector,0.21,SVK
 Finland,Finlandia,2019,Higher education sector,0.71,FIN
 Sweden,Suecia,2019,Higher education sector,0.8,SWE
 Iceland,Islandia,2019,Higher education sector,0.66,ISL
-Liechtenstein,Liechtenstein,2019,Higher education sector,,LIE
 Norway,Noruega,2019,Higher education sector,0.73,NOR
 Switzerland,Suiza,2019,Higher education sector,0.92,CHE
 United Kingdom,Reino Unido,2019,Higher education sector,0.41,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2019,Higher education sector,0.11,BIH
 Montenegro,Montenegro,2019,Higher education sector,0.13,MNE
 North Macedonia,Macedonia del Norte,2019,Higher education sector,0.23,MKD
-Albania,Albania,2019,Higher education sector,,ALB
 Serbia,Serbia,2019,Higher education sector,0.29,SRB
 Türkiye,Turquía,2019,Higher education sector,0.51,TUR
 Russia,Rusia,2019,Higher education sector,0.11,RUS
@@ -2021,9 +1806,9 @@ United States,Estados Unidos,2019,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2019,Higher education sector,0.18,CHN
 Japan,Japón,2019,Higher education sector,0.38,JPN
 South Korea,Corea del Sur,2019,Higher education sector,0.36,KOR
-European Union - 27 countries (from 2020),Unión Europea,2020,Higher education sector,0.5,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2020,Higher education sector,0.49,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2020,Higher education sector,0.49,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2020,Higher education sector,0.5,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2020,Higher education sector,0.49,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2020,Higher education sector,0.49,EMU
 Belgium,Bélgica,2020,Higher education sector,0.56,BEL
 Bulgaria,Bulgaria,2020,Higher education sector,0.05,BGR
 Czechia,Chequia,2020,Higher education sector,0.42,CZE
@@ -2052,24 +1837,18 @@ Slovakia,Eslovaquia,2020,Higher education sector,0.23,SVK
 Finland,Finlandia,2020,Higher education sector,0.72,FIN
 Sweden,Suecia,2020,Higher education sector,0.81,SWE
 Iceland,Islandia,2020,Higher education sector,0.71,ISL
-Liechtenstein,Liechtenstein,2020,Higher education sector,,LIE
 Norway,Noruega,2020,Higher education sector,0.75,NOR
-Switzerland,Suiza,2020,Higher education sector,,CHE
-United Kingdom,Reino Unido,2020,Higher education sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2020,Higher education sector,0.11,BIH
-Montenegro,Montenegro,2020,Higher education sector,,MNE
 North Macedonia,Macedonia del Norte,2020,Higher education sector,0.24,MKD
-Albania,Albania,2020,Higher education sector,,ALB
 Serbia,Serbia,2020,Higher education sector,0.27,SRB
 Türkiye,Turquía,2020,Higher education sector,0.53,TUR
-Russia,Rusia,2020,Higher education sector,,RUS
 United States,Estados Unidos,2020,Higher education sector,0.38,USA
 China except Hong Kong,China (excepto Hong Kong),2020,Higher education sector,0.19,CHN
 Japan,Japón,2020,Higher education sector,0.38,JPN
 South Korea,Corea del Sur,2020,Higher education sector,0.41,KOR
-European Union - 27 countries (from 2020),Unión Europea,2021,Higher education sector,0.49,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2021,Higher education sector,0.48,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2021,Higher education sector,0.48,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2021,Higher education sector,0.49,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2021,Higher education sector,0.48,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2021,Higher education sector,0.48,EMU
 Belgium,Bélgica,2021,Higher education sector,0.55,BEL
 Bulgaria,Bulgaria,2021,Higher education sector,0.05,BGR
 Czechia,Chequia,2021,Higher education sector,0.39,CZE
@@ -2098,24 +1877,18 @@ Slovakia,Eslovaquia,2021,Higher education sector,0.23,SVK
 Finland,Finlandia,2021,Higher education sector,0.7,FIN
 Sweden,Suecia,2021,Higher education sector,0.79,SWE
 Iceland,Islandia,2021,Higher education sector,0.71,ISL
-Liechtenstein,Liechtenstein,2021,Higher education sector,,LIE
 Norway,Noruega,2021,Higher education sector,0.62,NOR
 Switzerland,Suiza,2021,Higher education sector,0.93,CHE
-United Kingdom,Reino Unido,2021,Higher education sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2021,Higher education sector,0.11,BIH
-Montenegro,Montenegro,2021,Higher education sector,,MNE
-North Macedonia,Macedonia del Norte,2021,Higher education sector,,MKD
-Albania,Albania,2021,Higher education sector,,ALB
 Serbia,Serbia,2021,Higher education sector,0.27,SRB
 Türkiye,Turquía,2021,Higher education sector,0.48,TUR
-Russia,Rusia,2021,Higher education sector,,RUS
 United States,Estados Unidos,2021,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2021,Higher education sector,0.19,CHN
 Japan,Japón,2021,Higher education sector,0.39,JPN
 South Korea,Corea del Sur,2021,Higher education sector,0.42,KOR
-European Union - 27 countries (from 2020),Unión Europea,2022,Higher education sector,0.48,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2022,Higher education sector,0.47,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2022,Higher education sector,0.47,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2022,Higher education sector,0.48,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2022,Higher education sector,0.47,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2022,Higher education sector,0.47,EMU
 Belgium,Bélgica,2022,Higher education sector,0.56,BEL
 Bulgaria,Bulgaria,2022,Higher education sector,0.05,BGR
 Czechia,Chequia,2022,Higher education sector,0.37,CZE
@@ -2144,24 +1917,18 @@ Slovakia,Eslovaquia,2022,Higher education sector,0.25,SVK
 Finland,Finlandia,2022,Higher education sector,0.71,FIN
 Sweden,Suecia,2022,Higher education sector,0.76,SWE
 Iceland,Islandia,2022,Higher education sector,0.65,ISL
-Liechtenstein,Liechtenstein,2022,Higher education sector,,LIE
 Norway,Noruega,2022,Higher education sector,0.51,NOR
 Switzerland,Suiza,2022,Higher education sector,0.9,CHE
-United Kingdom,Reino Unido,2022,Higher education sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2022,Higher education sector,,BIH
-Montenegro,Montenegro,2022,Higher education sector,,MNE
 North Macedonia,Macedonia del Norte,2022,Higher education sector,0.24,MKD
-Albania,Albania,2022,Higher education sector,,ALB
 Serbia,Serbia,2022,Higher education sector,0.28,SRB
 Türkiye,Turquía,2022,Higher education sector,0.45,TUR
-Russia,Rusia,2022,Higher education sector,,RUS
 United States,Estados Unidos,2022,Higher education sector,0.36,USA
 China except Hong Kong,China (excepto Hong Kong),2022,Higher education sector,0.2,CHN
 Japan,Japón,2022,Higher education sector,0.39,JPN
 South Korea,Corea del Sur,2022,Higher education sector,0.44,KOR
-European Union - 27 countries (from 2020),Unión Europea,2023,Higher education sector,0.48,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2023,Higher education sector,0.47,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2023,Higher education sector,0.47,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2023,Higher education sector,0.48,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2023,Higher education sector,0.47,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2023,Higher education sector,0.47,EMU
 Belgium,Bélgica,2023,Higher education sector,0.54,BEL
 Bulgaria,Bulgaria,2023,Higher education sector,0.05,BGR
 Czechia,Chequia,2023,Higher education sector,0.34,CZE
@@ -2190,43 +1957,22 @@ Slovakia,Eslovaquia,2023,Higher education sector,0.27,SVK
 Finland,Finlandia,2023,Higher education sector,0.75,FIN
 Sweden,Suecia,2023,Higher education sector,0.77,SWE
 Iceland,Islandia,2023,Higher education sector,0.6,ISL
-Liechtenstein,Liechtenstein,2023,Higher education sector,,LIE
 Norway,Noruega,2023,Higher education sector,0.58,NOR
-Switzerland,Suiza,2023,Higher education sector,,CHE
-United Kingdom,Reino Unido,2023,Higher education sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2023,Higher education sector,,BIH
-Montenegro,Montenegro,2023,Higher education sector,,MNE
-North Macedonia,Macedonia del Norte,2023,Higher education sector,,MKD
-Albania,Albania,2023,Higher education sector,,ALB
 Serbia,Serbia,2023,Higher education sector,0.26,SRB
-Türkiye,Turquía,2023,Higher education sector,,TUR
-Russia,Rusia,2023,Higher education sector,,RUS
-United States,Estados Unidos,2023,Higher education sector,,USA
-China except Hong Kong,China (excepto Hong Kong),2023,Higher education sector,,CHN
-Japan,Japón,2023,Higher education sector,,JPN
-South Korea,Corea del Sur,2023,Higher education sector,,KOR
-European Union - 27 countries (from 2020),Unión Europea,2012,Private non-profit sector,0.02,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2012,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2012,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2012,Private non-profit sector,0.02,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2012,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2012,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2012,Private non-profit sector,0.01,BEL
 Bulgaria,Bulgaria,2012,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2012,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2012,Private non-profit sector,0.01,DNK
-Germany,Alemania,2012,Private non-profit sector,,DEU
 Estonia,Estonia,2012,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2012,Private non-profit sector,,IRL
 Greece,Grecia,2012,Private non-profit sector,0.01,GRC
 Spain,España,2012,Private non-profit sector,0.0,ESP
 France,Francia,2012,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2012,Private non-profit sector,,HRV
 Italy,Italia,2012,Private non-profit sector,0.04,ITA
 Cyprus,Chipre,2012,Private non-profit sector,0.06,CYP
-Latvia,Letonia,2012,Private non-profit sector,,LVA
-Lithuania,Lituania,2012,Private non-profit sector,,LTU
 Luxembourg,Luxemburgo,2012,Private non-profit sector,0.0,LUX
-Hungary,Hungría,2012,Private non-profit sector,,HUN
-Malta,Malta,2012,Private non-profit sector,,MLT
-Netherlands,Países Bajos,2012,Private non-profit sector,,NLD
 Austria,Austria,2012,Private non-profit sector,0.01,AUT
 Poland,Polonia,2012,Private non-profit sector,0.0,POL
 Portugal,Portugal,2012,Private non-profit sector,0.12,PRT
@@ -2235,43 +1981,27 @@ Slovenia,Eslovenia,2012,Private non-profit sector,0.0,SVN
 Slovakia,Eslovaquia,2012,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2012,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2012,Private non-profit sector,0.01,SWE
-Iceland,Islandia,2012,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2012,Private non-profit sector,,LIE
-Norway,Noruega,2012,Private non-profit sector,,NOR
 Switzerland,Suiza,2012,Private non-profit sector,0.05,CHE
 United Kingdom,Reino Unido,2012,Private non-profit sector,0.03,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2012,Private non-profit sector,0.0,BIH
-Montenegro,Montenegro,2012,Private non-profit sector,,MNE
-North Macedonia,Macedonia del Norte,2012,Private non-profit sector,,MKD
-Albania,Albania,2012,Private non-profit sector,,ALB
 Serbia,Serbia,2012,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2012,Private non-profit sector,,TUR
 Russia,Rusia,2012,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2012,Private non-profit sector,0.11,USA
-China except Hong Kong,China (excepto Hong Kong),2012,Private non-profit sector,,CHN
 Japan,Japón,2012,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2012,Private non-profit sector,0.05,KOR
-European Union - 27 countries (from 2020),Unión Europea,2013,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2013,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2013,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2013,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2013,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2013,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2013,Private non-profit sector,0.01,BEL
 Bulgaria,Bulgaria,2013,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2013,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2013,Private non-profit sector,0.01,DNK
-Germany,Alemania,2013,Private non-profit sector,,DEU
 Estonia,Estonia,2013,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2013,Private non-profit sector,,IRL
 Greece,Grecia,2013,Private non-profit sector,0.01,GRC
 Spain,España,2013,Private non-profit sector,0.0,ESP
 France,Francia,2013,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2013,Private non-profit sector,,HRV
 Italy,Italia,2013,Private non-profit sector,0.04,ITA
 Cyprus,Chipre,2013,Private non-profit sector,0.06,CYP
-Latvia,Letonia,2013,Private non-profit sector,,LVA
-Lithuania,Lituania,2013,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2013,Private non-profit sector,,LUX
-Hungary,Hungría,2013,Private non-profit sector,,HUN
-Malta,Malta,2013,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2013,Private non-profit sector,0.0,NLD
 Austria,Austria,2013,Private non-profit sector,0.01,AUT
 Poland,Polonia,2013,Private non-profit sector,0.0,POL
@@ -2282,42 +2012,27 @@ Slovakia,Eslovaquia,2013,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2013,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2013,Private non-profit sector,0.01,SWE
 Iceland,Islandia,2013,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2013,Private non-profit sector,,LIE
-Norway,Noruega,2013,Private non-profit sector,,NOR
-Switzerland,Suiza,2013,Private non-profit sector,,CHE
 United Kingdom,Reino Unido,2013,Private non-profit sector,0.03,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2013,Private non-profit sector,0.0,BIH
 Montenegro,Montenegro,2013,Private non-profit sector,0.01,MNE
-North Macedonia,Macedonia del Norte,2013,Private non-profit sector,,MKD
-Albania,Albania,2013,Private non-profit sector,,ALB
 Serbia,Serbia,2013,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2013,Private non-profit sector,,TUR
 Russia,Rusia,2013,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2013,Private non-profit sector,0.11,USA
-China except Hong Kong,China (excepto Hong Kong),2013,Private non-profit sector,,CHN
 Japan,Japón,2013,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2013,Private non-profit sector,0.05,KOR
-European Union - 27 countries (from 2020),Unión Europea,2014,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2014,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2014,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2014,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2014,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2014,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2014,Private non-profit sector,0.01,BEL
 Bulgaria,Bulgaria,2014,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2014,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2014,Private non-profit sector,0.01,DNK
-Germany,Alemania,2014,Private non-profit sector,,DEU
 Estonia,Estonia,2014,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2014,Private non-profit sector,,IRL
 Greece,Grecia,2014,Private non-profit sector,0.01,GRC
 Spain,España,2014,Private non-profit sector,0.0,ESP
 France,Francia,2014,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2014,Private non-profit sector,,HRV
 Italy,Italia,2014,Private non-profit sector,0.04,ITA
 Cyprus,Chipre,2014,Private non-profit sector,0.08,CYP
-Latvia,Letonia,2014,Private non-profit sector,,LVA
-Lithuania,Lituania,2014,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2014,Private non-profit sector,,LUX
-Hungary,Hungría,2014,Private non-profit sector,,HUN
-Malta,Malta,2014,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2014,Private non-profit sector,0.0,NLD
 Austria,Austria,2014,Private non-profit sector,0.01,AUT
 Poland,Polonia,2014,Private non-profit sector,0.0,POL
@@ -2328,42 +2043,27 @@ Slovakia,Eslovaquia,2014,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2014,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2014,Private non-profit sector,0.01,SWE
 Iceland,Islandia,2014,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2014,Private non-profit sector,,LIE
-Norway,Noruega,2014,Private non-profit sector,,NOR
-Switzerland,Suiza,2014,Private non-profit sector,,CHE
 United Kingdom,Reino Unido,2014,Private non-profit sector,0.03,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2014,Private non-profit sector,0.0,BIH
 Montenegro,Montenegro,2014,Private non-profit sector,0.01,MNE
-North Macedonia,Macedonia del Norte,2014,Private non-profit sector,,MKD
-Albania,Albania,2014,Private non-profit sector,,ALB
 Serbia,Serbia,2014,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2014,Private non-profit sector,,TUR
 Russia,Rusia,2014,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2014,Private non-profit sector,0.11,USA
-China except Hong Kong,China (excepto Hong Kong),2014,Private non-profit sector,,CHN
 Japan,Japón,2014,Private non-profit sector,0.05,JPN
 South Korea,Corea del Sur,2014,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2015,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2015,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2015,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2015,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2015,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2015,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2015,Private non-profit sector,0.01,BEL
 Bulgaria,Bulgaria,2015,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2015,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2015,Private non-profit sector,0.01,DNK
-Germany,Alemania,2015,Private non-profit sector,,DEU
 Estonia,Estonia,2015,Private non-profit sector,0.03,EST
-Ireland,Irlanda,2015,Private non-profit sector,,IRL
 Greece,Grecia,2015,Private non-profit sector,0.01,GRC
 Spain,España,2015,Private non-profit sector,0.0,ESP
 France,Francia,2015,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2015,Private non-profit sector,,HRV
 Italy,Italia,2015,Private non-profit sector,0.04,ITA
 Cyprus,Chipre,2015,Private non-profit sector,0.07,CYP
-Latvia,Letonia,2015,Private non-profit sector,,LVA
-Lithuania,Lituania,2015,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2015,Private non-profit sector,,LUX
-Hungary,Hungría,2015,Private non-profit sector,,HUN
-Malta,Malta,2015,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2015,Private non-profit sector,0.0,NLD
 Austria,Austria,2015,Private non-profit sector,0.02,AUT
 Poland,Polonia,2015,Private non-profit sector,0.0,POL
@@ -2374,42 +2074,28 @@ Slovakia,Eslovaquia,2015,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2015,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2015,Private non-profit sector,0.01,SWE
 Iceland,Islandia,2015,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2015,Private non-profit sector,,LIE
-Norway,Noruega,2015,Private non-profit sector,,NOR
 Switzerland,Suiza,2015,Private non-profit sector,0.08,CHE
 United Kingdom,Reino Unido,2015,Private non-profit sector,0.03,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2015,Private non-profit sector,,BIH
 Montenegro,Montenegro,2015,Private non-profit sector,0.01,MNE
 North Macedonia,Macedonia del Norte,2015,Private non-profit sector,0.0,MKD
-Albania,Albania,2015,Private non-profit sector,,ALB
 Serbia,Serbia,2015,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2015,Private non-profit sector,,TUR
 Russia,Rusia,2015,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2015,Private non-profit sector,0.11,USA
-China except Hong Kong,China (excepto Hong Kong),2015,Private non-profit sector,,CHN
 Japan,Japón,2015,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2015,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2016,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2016,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2016,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2016,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2016,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2016,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2016,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2016,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2016,Private non-profit sector,0.0,CZE
 Denmark,Dinamarca,2016,Private non-profit sector,0.01,DNK
-Germany,Alemania,2016,Private non-profit sector,,DEU
 Estonia,Estonia,2016,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2016,Private non-profit sector,,IRL
 Greece,Grecia,2016,Private non-profit sector,0.01,GRC
 Spain,España,2016,Private non-profit sector,0.0,ESP
 France,Francia,2016,Private non-profit sector,0.04,FRA
-Croatia,Croacia,2016,Private non-profit sector,,HRV
 Italy,Italia,2016,Private non-profit sector,0.03,ITA
 Cyprus,Chipre,2016,Private non-profit sector,0.07,CYP
-Latvia,Letonia,2016,Private non-profit sector,,LVA
-Lithuania,Lituania,2016,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2016,Private non-profit sector,,LUX
-Hungary,Hungría,2016,Private non-profit sector,,HUN
-Malta,Malta,2016,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2016,Private non-profit sector,0.0,NLD
 Austria,Austria,2016,Private non-profit sector,0.02,AUT
 Poland,Polonia,2016,Private non-profit sector,0.0,POL
@@ -2419,43 +2105,26 @@ Slovenia,Eslovenia,2016,Private non-profit sector,0.0,SVN
 Slovakia,Eslovaquia,2016,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2016,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2016,Private non-profit sector,0.01,SWE
-Iceland,Islandia,2016,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2016,Private non-profit sector,,LIE
-Norway,Noruega,2016,Private non-profit sector,,NOR
-Switzerland,Suiza,2016,Private non-profit sector,,CHE
 United Kingdom,Reino Unido,2016,Private non-profit sector,0.04,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2016,Private non-profit sector,,BIH
 Montenegro,Montenegro,2016,Private non-profit sector,0.02,MNE
 North Macedonia,Macedonia del Norte,2016,Private non-profit sector,0.01,MKD
-Albania,Albania,2016,Private non-profit sector,,ALB
 Serbia,Serbia,2016,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2016,Private non-profit sector,,TUR
-Russia,Rusia,2016,Private non-profit sector,,RUS
 United States,Estados Unidos,2016,Private non-profit sector,0.12,USA
-China except Hong Kong,China (excepto Hong Kong),2016,Private non-profit sector,,CHN
 Japan,Japón,2016,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2016,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2017,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2017,Private non-profit sector,0.01,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2017,Private non-profit sector,0.01,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2017,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2017,Private non-profit sector,0.01,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2017,Private non-profit sector,0.01,EMU
 Belgium,Bélgica,2017,Private non-profit sector,0.01,BEL
 Bulgaria,Bulgaria,2017,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2017,Private non-profit sector,0.0,CZE
 Denmark,Dinamarca,2017,Private non-profit sector,0.01,DNK
-Germany,Alemania,2017,Private non-profit sector,,DEU
 Estonia,Estonia,2017,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2017,Private non-profit sector,,IRL
 Greece,Grecia,2017,Private non-profit sector,0.01,GRC
 Spain,España,2017,Private non-profit sector,0.0,ESP
 France,Francia,2017,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2017,Private non-profit sector,,HRV
 Italy,Italia,2017,Private non-profit sector,0.02,ITA
 Cyprus,Chipre,2017,Private non-profit sector,0.06,CYP
-Latvia,Letonia,2017,Private non-profit sector,,LVA
-Lithuania,Lituania,2017,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2017,Private non-profit sector,,LUX
-Hungary,Hungría,2017,Private non-profit sector,,HUN
-Malta,Malta,2017,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2017,Private non-profit sector,0.0,NLD
 Austria,Austria,2017,Private non-profit sector,0.02,AUT
 Poland,Polonia,2017,Private non-profit sector,0.0,POL
@@ -2466,42 +2135,28 @@ Slovakia,Eslovaquia,2017,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2017,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2017,Private non-profit sector,0.0,SWE
 Iceland,Islandia,2017,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2017,Private non-profit sector,,LIE
-Norway,Noruega,2017,Private non-profit sector,,NOR
 Switzerland,Suiza,2017,Private non-profit sector,0.08,CHE
 United Kingdom,Reino Unido,2017,Private non-profit sector,0.04,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2017,Private non-profit sector,,BIH
 Montenegro,Montenegro,2017,Private non-profit sector,0.01,MNE
 North Macedonia,Macedonia del Norte,2017,Private non-profit sector,0.01,MKD
-Albania,Albania,2017,Private non-profit sector,,ALB
 Serbia,Serbia,2017,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2017,Private non-profit sector,,TUR
 Russia,Rusia,2017,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2017,Private non-profit sector,0.12,USA
-China except Hong Kong,China (excepto Hong Kong),2017,Private non-profit sector,,CHN
 Japan,Japón,2017,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2017,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2018,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2018,Private non-profit sector,0.01,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2018,Private non-profit sector,0.01,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2018,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2018,Private non-profit sector,0.01,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2018,Private non-profit sector,0.01,EMU
 Belgium,Bélgica,2018,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2018,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2018,Private non-profit sector,0.0,CZE
 Denmark,Dinamarca,2018,Private non-profit sector,0.01,DNK
-Germany,Alemania,2018,Private non-profit sector,,DEU
 Estonia,Estonia,2018,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2018,Private non-profit sector,,IRL
 Greece,Grecia,2018,Private non-profit sector,0.01,GRC
 Spain,España,2018,Private non-profit sector,0.0,ESP
 France,Francia,2018,Private non-profit sector,0.03,FRA
-Croatia,Croacia,2018,Private non-profit sector,,HRV
 Italy,Italia,2018,Private non-profit sector,0.02,ITA
 Cyprus,Chipre,2018,Private non-profit sector,0.07,CYP
-Latvia,Letonia,2018,Private non-profit sector,,LVA
-Lithuania,Lituania,2018,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2018,Private non-profit sector,,LUX
-Hungary,Hungría,2018,Private non-profit sector,,HUN
-Malta,Malta,2018,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2018,Private non-profit sector,0.0,NLD
 Austria,Austria,2018,Private non-profit sector,0.02,AUT
 Poland,Polonia,2018,Private non-profit sector,0.0,POL
@@ -2512,42 +2167,27 @@ Slovakia,Eslovaquia,2018,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2018,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2018,Private non-profit sector,0.0,SWE
 Iceland,Islandia,2018,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2018,Private non-profit sector,,LIE
-Norway,Noruega,2018,Private non-profit sector,,NOR
-Switzerland,Suiza,2018,Private non-profit sector,,CHE
 United Kingdom,Reino Unido,2018,Private non-profit sector,0.04,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2018,Private non-profit sector,,BIH
 Montenegro,Montenegro,2018,Private non-profit sector,0.01,MNE
 North Macedonia,Macedonia del Norte,2018,Private non-profit sector,0.01,MKD
-Albania,Albania,2018,Private non-profit sector,,ALB
 Serbia,Serbia,2018,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2018,Private non-profit sector,,TUR
 Russia,Rusia,2018,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2018,Private non-profit sector,0.12,USA
-China except Hong Kong,China (excepto Hong Kong),2018,Private non-profit sector,,CHN
 Japan,Japón,2018,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2018,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2019,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2019,Private non-profit sector,0.01,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2019,Private non-profit sector,0.01,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2019,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2019,Private non-profit sector,0.01,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2019,Private non-profit sector,0.01,EMU
 Belgium,Bélgica,2019,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2019,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2019,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2019,Private non-profit sector,0.01,DNK
-Germany,Alemania,2019,Private non-profit sector,,DEU
 Estonia,Estonia,2019,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2019,Private non-profit sector,,IRL
 Greece,Grecia,2019,Private non-profit sector,0.01,GRC
 Spain,España,2019,Private non-profit sector,0.0,ESP
 France,Francia,2019,Private non-profit sector,0.04,FRA
-Croatia,Croacia,2019,Private non-profit sector,,HRV
 Italy,Italia,2019,Private non-profit sector,0.03,ITA
 Cyprus,Chipre,2019,Private non-profit sector,0.08,CYP
-Latvia,Letonia,2019,Private non-profit sector,,LVA
-Lithuania,Lituania,2019,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2019,Private non-profit sector,,LUX
-Hungary,Hungría,2019,Private non-profit sector,,HUN
-Malta,Malta,2019,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2019,Private non-profit sector,0.0,NLD
 Austria,Austria,2019,Private non-profit sector,0.02,AUT
 Poland,Polonia,2019,Private non-profit sector,0.0,POL
@@ -2557,43 +2197,29 @@ Slovenia,Eslovenia,2019,Private non-profit sector,0.01,SVN
 Slovakia,Eslovaquia,2019,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2019,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2019,Private non-profit sector,0.0,SWE
-Iceland,Islandia,2019,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2019,Private non-profit sector,,LIE
-Norway,Noruega,2019,Private non-profit sector,,NOR
 Switzerland,Suiza,2019,Private non-profit sector,0.09,CHE
 United Kingdom,Reino Unido,2019,Private non-profit sector,0.04,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2019,Private non-profit sector,0.0,BIH
 Montenegro,Montenegro,2019,Private non-profit sector,0.0,MNE
 North Macedonia,Macedonia del Norte,2019,Private non-profit sector,0.01,MKD
-Albania,Albania,2019,Private non-profit sector,,ALB
 Serbia,Serbia,2019,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2019,Private non-profit sector,,TUR
 Russia,Rusia,2019,Private non-profit sector,0.0,RUS
 United States,Estados Unidos,2019,Private non-profit sector,0.12,USA
-China except Hong Kong,China (excepto Hong Kong),2019,Private non-profit sector,,CHN
 Japan,Japón,2019,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2019,Private non-profit sector,0.06,KOR
-European Union - 27 countries (from 2020),Unión Europea,2020,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2020,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2020,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2020,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2020,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2020,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2020,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2020,Private non-profit sector,0.01,BGR
 Czechia,Chequia,2020,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2020,Private non-profit sector,0.01,DNK
-Germany,Alemania,2020,Private non-profit sector,,DEU
 Estonia,Estonia,2020,Private non-profit sector,0.03,EST
-Ireland,Irlanda,2020,Private non-profit sector,,IRL
 Greece,Grecia,2020,Private non-profit sector,0.01,GRC
 Spain,España,2020,Private non-profit sector,0.0,ESP
 France,Francia,2020,Private non-profit sector,0.05,FRA
-Croatia,Croacia,2020,Private non-profit sector,,HRV
 Italy,Italia,2020,Private non-profit sector,0.03,ITA
 Cyprus,Chipre,2020,Private non-profit sector,0.11,CYP
-Latvia,Letonia,2020,Private non-profit sector,,LVA
-Lithuania,Lituania,2020,Private non-profit sector,,LTU
-Luxembourg,Luxemburgo,2020,Private non-profit sector,,LUX
-Hungary,Hungría,2020,Private non-profit sector,,HUN
-Malta,Malta,2020,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2020,Private non-profit sector,0.0,NLD
 Austria,Austria,2020,Private non-profit sector,0.02,AUT
 Poland,Polonia,2020,Private non-profit sector,0.0,POL
@@ -2603,43 +2229,27 @@ Slovenia,Eslovenia,2020,Private non-profit sector,0.02,SVN
 Slovakia,Eslovaquia,2020,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2020,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2020,Private non-profit sector,0.0,SWE
-Iceland,Islandia,2020,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2020,Private non-profit sector,,LIE
-Norway,Noruega,2020,Private non-profit sector,,NOR
-Switzerland,Suiza,2020,Private non-profit sector,,CHE
-United Kingdom,Reino Unido,2020,Private non-profit sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2020,Private non-profit sector,0.0,BIH
-Montenegro,Montenegro,2020,Private non-profit sector,,MNE
 North Macedonia,Macedonia del Norte,2020,Private non-profit sector,0.0,MKD
-Albania,Albania,2020,Private non-profit sector,,ALB
 Serbia,Serbia,2020,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2020,Private non-profit sector,,TUR
-Russia,Rusia,2020,Private non-profit sector,,RUS
 United States,Estados Unidos,2020,Private non-profit sector,0.13,USA
-China except Hong Kong,China (excepto Hong Kong),2020,Private non-profit sector,,CHN
 Japan,Japón,2020,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2020,Private non-profit sector,0.08,KOR
-European Union - 27 countries (from 2020),Unión Europea,2021,Private non-profit sector,0.01,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2021,Private non-profit sector,0.02,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2021,Private non-profit sector,0.02,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2021,Private non-profit sector,0.01,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2021,Private non-profit sector,0.02,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2021,Private non-profit sector,0.02,EMU
 Belgium,Bélgica,2021,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2021,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2021,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2021,Private non-profit sector,0.01,DNK
-Germany,Alemania,2021,Private non-profit sector,,DEU
 Estonia,Estonia,2021,Private non-profit sector,0.02,EST
-Ireland,Irlanda,2021,Private non-profit sector,,IRL
 Greece,Grecia,2021,Private non-profit sector,0.01,GRC
 Spain,España,2021,Private non-profit sector,0.0,ESP
 France,Francia,2021,Private non-profit sector,0.05,FRA
 Croatia,Croacia,2021,Private non-profit sector,0.0,HRV
 Italy,Italia,2021,Private non-profit sector,0.03,ITA
 Cyprus,Chipre,2021,Private non-profit sector,0.1,CYP
-Latvia,Letonia,2021,Private non-profit sector,,LVA
-Lithuania,Lituania,2021,Private non-profit sector,,LTU
 Luxembourg,Luxemburgo,2021,Private non-profit sector,0.0,LUX
-Hungary,Hungría,2021,Private non-profit sector,,HUN
-Malta,Malta,2021,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2021,Private non-profit sector,0.0,NLD
 Austria,Austria,2021,Private non-profit sector,0.02,AUT
 Poland,Polonia,2021,Private non-profit sector,0.0,POL
@@ -2649,43 +2259,28 @@ Slovenia,Eslovenia,2021,Private non-profit sector,0.02,SVN
 Slovakia,Eslovaquia,2021,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2021,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2021,Private non-profit sector,0.0,SWE
-Iceland,Islandia,2021,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2021,Private non-profit sector,,LIE
-Norway,Noruega,2021,Private non-profit sector,,NOR
 Switzerland,Suiza,2021,Private non-profit sector,0.09,CHE
-United Kingdom,Reino Unido,2021,Private non-profit sector,,GBR
 Bosnia and Herzegovina,Bosnia y Herzegovina,2021,Private non-profit sector,0.0,BIH
-Montenegro,Montenegro,2021,Private non-profit sector,,MNE
-North Macedonia,Macedonia del Norte,2021,Private non-profit sector,,MKD
-Albania,Albania,2021,Private non-profit sector,,ALB
 Serbia,Serbia,2021,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2021,Private non-profit sector,,TUR
-Russia,Rusia,2021,Private non-profit sector,,RUS
 United States,Estados Unidos,2021,Private non-profit sector,0.12,USA
-China except Hong Kong,China (excepto Hong Kong),2021,Private non-profit sector,,CHN
 Japan,Japón,2021,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2021,Private non-profit sector,0.09,KOR
-European Union - 27 countries (from 2020),Unión Europea,2022,Private non-profit sector,0.03,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2022,Private non-profit sector,0.04,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2022,Private non-profit sector,0.04,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2022,Private non-profit sector,0.03,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2022,Private non-profit sector,0.04,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2022,Private non-profit sector,0.04,EMU
 Belgium,Bélgica,2022,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2022,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2022,Private non-profit sector,0.01,CZE
 Denmark,Dinamarca,2022,Private non-profit sector,0.01,DNK
 Germany,Alemania,2022,Private non-profit sector,0.07,DEU
 Estonia,Estonia,2022,Private non-profit sector,0.01,EST
-Ireland,Irlanda,2022,Private non-profit sector,,IRL
 Greece,Grecia,2022,Private non-profit sector,0.01,GRC
 Spain,España,2022,Private non-profit sector,0.0,ESP
 France,Francia,2022,Private non-profit sector,0.04,FRA
 Croatia,Croacia,2022,Private non-profit sector,0.0,HRV
 Italy,Italia,2022,Private non-profit sector,0.02,ITA
 Cyprus,Chipre,2022,Private non-profit sector,0.11,CYP
-Latvia,Letonia,2022,Private non-profit sector,,LVA
-Lithuania,Lituania,2022,Private non-profit sector,,LTU
 Luxembourg,Luxemburgo,2022,Private non-profit sector,0.0,LUX
-Hungary,Hungría,2022,Private non-profit sector,,HUN
-Malta,Malta,2022,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2022,Private non-profit sector,0.0,NLD
 Austria,Austria,2022,Private non-profit sector,0.02,AUT
 Poland,Polonia,2022,Private non-profit sector,0.0,POL
@@ -2695,25 +2290,15 @@ Slovenia,Eslovenia,2022,Private non-profit sector,0.02,SVN
 Slovakia,Eslovaquia,2022,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2022,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2022,Private non-profit sector,0.01,SWE
-Iceland,Islandia,2022,Private non-profit sector,,ISL
-Liechtenstein,Liechtenstein,2022,Private non-profit sector,,LIE
 Norway,Noruega,2022,Private non-profit sector,0.0,NOR
-Switzerland,Suiza,2022,Private non-profit sector,,CHE
-United Kingdom,Reino Unido,2022,Private non-profit sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2022,Private non-profit sector,,BIH
-Montenegro,Montenegro,2022,Private non-profit sector,,MNE
 North Macedonia,Macedonia del Norte,2022,Private non-profit sector,0.0,MKD
-Albania,Albania,2022,Private non-profit sector,,ALB
 Serbia,Serbia,2022,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2022,Private non-profit sector,,TUR
-Russia,Rusia,2022,Private non-profit sector,,RUS
 United States,Estados Unidos,2022,Private non-profit sector,0.11,USA
-China except Hong Kong,China (excepto Hong Kong),2022,Private non-profit sector,,CHN
 Japan,Japón,2022,Private non-profit sector,0.04,JPN
 South Korea,Corea del Sur,2022,Private non-profit sector,0.1,KOR
-European Union - 27 countries (from 2020),Unión Europea,2023,Private non-profit sector,0.03,EUU
-Euro area – 20 countries (from 2023),Zona Euro,2023,Private non-profit sector,0.04,EMU
-Euro area - 19 countries  (2015-2022),Zona Euro,2023,Private non-profit sector,0.04,EMU
+European Union - 27 countries (from 2020),Unión Europea (27 países),2023,Private non-profit sector,0.03,EUU
+Euro area – 20 countries (from 2023),Zona Euro (20 países),2023,Private non-profit sector,0.04,EMU
+Euro area - 19 countries  (2015-2022),Zona Euro (19 países),2023,Private non-profit sector,0.04,EMU
 Belgium,Bélgica,2023,Private non-profit sector,0.02,BEL
 Bulgaria,Bulgaria,2023,Private non-profit sector,0.0,BGR
 Czechia,Chequia,2023,Private non-profit sector,0.02,CZE
@@ -2727,11 +2312,7 @@ France,Francia,2023,Private non-profit sector,0.04,FRA
 Croatia,Croacia,2023,Private non-profit sector,0.0,HRV
 Italy,Italia,2023,Private non-profit sector,0.02,ITA
 Cyprus,Chipre,2023,Private non-profit sector,0.11,CYP
-Latvia,Letonia,2023,Private non-profit sector,,LVA
-Lithuania,Lituania,2023,Private non-profit sector,,LTU
 Luxembourg,Luxemburgo,2023,Private non-profit sector,0.0,LUX
-Hungary,Hungría,2023,Private non-profit sector,,HUN
-Malta,Malta,2023,Private non-profit sector,,MLT
 Netherlands,Países Bajos,2023,Private non-profit sector,0.0,NLD
 Austria,Austria,2023,Private non-profit sector,0.02,AUT
 Poland,Polonia,2023,Private non-profit sector,0.0,POL
@@ -2742,18 +2323,5 @@ Slovakia,Eslovaquia,2023,Private non-profit sector,0.0,SVK
 Finland,Finlandia,2023,Private non-profit sector,0.02,FIN
 Sweden,Suecia,2023,Private non-profit sector,0.01,SWE
 Iceland,Islandia,2023,Private non-profit sector,0.0,ISL
-Liechtenstein,Liechtenstein,2023,Private non-profit sector,,LIE
 Norway,Noruega,2023,Private non-profit sector,0.0,NOR
-Switzerland,Suiza,2023,Private non-profit sector,,CHE
-United Kingdom,Reino Unido,2023,Private non-profit sector,,GBR
-Bosnia and Herzegovina,Bosnia y Herzegovina,2023,Private non-profit sector,,BIH
-Montenegro,Montenegro,2023,Private non-profit sector,,MNE
-North Macedonia,Macedonia del Norte,2023,Private non-profit sector,,MKD
-Albania,Albania,2023,Private non-profit sector,,ALB
 Serbia,Serbia,2023,Private non-profit sector,0.0,SRB
-Türkiye,Turquía,2023,Private non-profit sector,,TUR
-Russia,Rusia,2023,Private non-profit sector,,RUS
-United States,Estados Unidos,2023,Private non-profit sector,,USA
-China except Hong Kong,China (excepto Hong Kong),2023,Private non-profit sector,,CHN
-Japan,Japón,2023,Private non-profit sector,,JPN
-South Korea,Corea del Sur,2023,Private non-profit sector,,KOR

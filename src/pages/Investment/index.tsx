@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
-import CountryRankingChart from '../../components/CountryRankingChart';
+import CountryRankingChart, { CHART_PALETTE } from '../../components/CountryRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
-// Interfaz para los datos CSV
-interface EuropeCSVData {
+// Interfaz para los datos CSV con tipado seguro para uso interno en este componente
+interface ExtendedEuropeCSVData {
   Country: string;
   País: string;
   Year: string;
   Sector: string;
   Value: string;
-  '%GDP'?: string;
+  '%GDP': string;
   ISO3?: string;
   [key: string]: string | undefined;
 }
@@ -25,7 +25,25 @@ const texts = {
     sector: "Sector:",
     loading: "Cargando datos...",
     errorPrefix: "Error al cargar datos:",
-    noDataAvailable: "No hay datos disponibles para esta selección"
+    noDataAvailable: "No hay datos disponibles para esta selección",
+    supranational: "ENTIDADES SUPRANACIONALES",
+    euroArea19: "Zona Euro (2015-2022)",
+    euroArea20: "Zona Euro (desde 2023)",
+    europeanUnion: "Unión Europea",
+    euroArea19Full: "Zona Euro - 19 países (2015-2022)",
+    euroArea20Full: "Zona Euro - 20 países (desde 2023)",
+    euFull: "27 países (desde 2020)",
+    observationFlags: "Observation flags",
+    estimated: "Estimado",
+    provisional: "Provisional",
+    definitionDiffers: "Definición difiere",
+    breakInTimeSeries: "Ruptura en series temporales",
+    definitionDiffersEstimated: "Definición difiere, estimado",
+    estimatedProvisional: "Estimado, provisional",
+    definitionDiffersProvisional: "Definición difiere, provisional",
+    breakInTimeSeriesDefinitionDiffers: "Ruptura en series temporales, definición difiere",
+    breakInTimeSeriesProvisional: "Ruptura en series temporales, provisional",
+    lowReliability: "Baja fiabilidad"
   },
   en: {
     investmentTitle: "R&D Investment",
@@ -34,7 +52,25 @@ const texts = {
     sector: "Sector:",
     loading: "Loading data...",
     errorPrefix: "Error loading data:",
-    noDataAvailable: "No data available for this selection"
+    noDataAvailable: "No data available for this selection",
+    supranational: "SUPRANATIONAL ENTITIES",
+    euroArea19: "Euro area (2015-2022)",
+    euroArea20: "Euro area (from 2023)",
+    europeanUnion: "European Union",
+    euroArea19Full: "Euro area - 19 countries (2015-2022)",
+    euroArea20Full: "Euro area - 20 countries (from 2023)",
+    euFull: "27 countries (from 2020)",
+    observationFlags: "Observation flags",
+    estimated: "Estimated",
+    provisional: "Provisional",
+    definitionDiffers: "Definition differs",
+    breakInTimeSeries: "Break in time series",
+    definitionDiffersEstimated: "Definition differs, estimated",
+    estimatedProvisional: "Estimated, provisional",
+    definitionDiffersProvisional: "Definition differs, provisional",
+    breakInTimeSeriesDefinitionDiffers: "Break in time series, definition differs",
+    breakInTimeSeriesProvisional: "Break in time series, provisional",
+    lowReliability: "Low reliability"
   }
 };
 
@@ -43,18 +79,15 @@ interface InvestmentProps {
 }
 
 const Investment: React.FC<InvestmentProps> = ({ language }) => {
-  const [europeData, setEuropeData] = useState<EuropeCSVData[]>([]); 
+  const [europeData, setEuropeData] = useState<ExtendedEuropeCSVData[]>([]); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(2021); // Año inicial, se actualizará al más reciente
-  const [highlightedCountry, setHighlightedCountry] = useState<string>("españa");
   const [selectedSector, setSelectedSector] = useState<string>("All Sectors"); // Usar el valor exacto del CSV
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   
   // Función auxiliar para acceder a los textos según el idioma actual
-  const getLocalizedText = (key: keyof typeof texts.es) => {
-    return texts[language][key];
-  };
+  const t = texts[language];
 
   // Efecto para cargar los datos desde los archivos CSV
   useEffect(() => {
@@ -68,7 +101,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         // Cargar datos de Europa
         const europeResponse = await fetch(DATA_PATHS.GDP_EUROPE);
         if (!europeResponse.ok) {
-          throw new Error(`${getLocalizedText('errorPrefix')} ${europeResponse.status} - ${europeResponse.statusText}`);
+          throw new Error(`${t.errorPrefix} ${europeResponse.status} - ${europeResponse.statusText}`);
         }
         
         console.log("Respuesta recibida:", europeResponse.status, europeResponse.statusText);
@@ -77,7 +110,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         console.log("Tamaño de datos CSV recibidos:", europeCSV.length, "caracteres");
         
         // Procesar los CSV con PapaParse - Usamos coma como delimitador
-        const europeResult = Papa.parse<EuropeCSVData>(europeCSV, {
+        const europeResult = Papa.parse<ExtendedEuropeCSVData>(europeCSV, {
           header: true,
           delimiter: ',', // El archivo usa coma, no punto y coma
           skipEmptyLines: true
@@ -98,7 +131,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         // Extraer los años disponibles
         const years = new Set<number>();
         processedData.forEach(row => {
-          const year = parseInt(row['Year']);
+          const year = parseInt(row.Year);
           if (!isNaN(year)) {
             years.add(year);
           }
@@ -126,13 +159,13 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         setIsLoading(false);
       } catch (err) {
         console.error('Error cargando datos:', err);
-        setError(err instanceof Error ? err.message : `${getLocalizedText('errorPrefix')} Error desconocido`);
+        setError(err instanceof Error ? err.message : `${t.errorPrefix} Error desconocido`);
         setIsLoading(false);
       }
     };
     
     loadCSVData();
-  }, []); // Solo se ejecuta una vez al montar el componente
+  }, [t]); // Se ejecuta solo una vez al montar el componente
 
   // Filtrar datos cuando cambia el año o sector
   useEffect(() => {
@@ -142,8 +175,8 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     
     // Verificar si hay datos para el año y sector seleccionados
     const dataForSelection = europeData.filter(row => 
-      parseInt(row['Year']) === selectedYear && 
-      row['Sector'] === selectedSector
+      parseInt(row.Year) === selectedYear && 
+      row.Sector === selectedSector
     );
     
     if (dataForSelection.length === 0) {
@@ -158,12 +191,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     }
   }, [selectedYear, selectedSector, europeData]);
 
-  // Función para manejar el clic en un país del mapa
-  const handleCountryClick = (countryId: string) => {
-    console.log("País seleccionado:", countryId);
-    setHighlightedCountry(countryId);
-  };
-  
   // Función para manejar el cambio de sector
   const handleSectorChange = (sectorId: string) => {
     // Transformar el ID del sector al valor esperado en el CSV
@@ -186,13 +213,92 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     return sector?.id || 'total';
   };
 
+  // Componente para mostrar la leyenda de entidades supranacionales
+  const SupranationalEntities = () => (
+    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
+      <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
+        <span className="text-xs">Supranational entities</span>
+      </div>
+      <div className="border border-blue-200 rounded-b-md border-t-0">
+        <div className="flex border-b border-blue-100 py-1.5 px-2 items-center">
+          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.GREEN }}></div>
+          <div className="text-xs mr-2">{t.euroArea19}</div>
+          <div className="text-xs text-gray-600">{t.euroArea19Full}</div>
+        </div>
+        <div className="flex border-b border-blue-100 py-1.5 px-2 items-center">
+          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.GREEN }}></div>
+          <div className="text-xs mr-2">{t.euroArea20}</div>
+          <div className="text-xs text-gray-600">{t.euroArea20Full}</div>
+        </div>
+        <div className="flex py-1.5 px-2 items-center">
+          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.YELLOW }}></div>
+          <div className="text-xs mr-2">{t.europeanUnion}</div>
+          <div className="text-xs text-gray-600">{t.euFull}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Componente para mostrar la leyenda de banderas de observación
+  const ObservationFlags = () => (
+    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
+      <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
+        {t.observationFlags}
+      </div>
+      <div className="border border-blue-200 rounded-b-md border-t-0">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 p-3 text-xs text-gray-600">
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(e)</span>
+            <span>{t.estimated}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(p)</span>
+            <span>{t.provisional}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(d)</span>
+            <span>{t.definitionDiffers}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(bd)</span>
+            <span>{t.breakInTimeSeriesDefinitionDiffers}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(b)</span>
+            <span>{t.breakInTimeSeries}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(de)</span>
+            <span>{t.definitionDiffersEstimated}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(dp)</span>
+            <span>{t.definitionDiffersProvisional}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(ep)</span>
+            <span>{t.estimatedProvisional}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(bp)</span>
+            <span>{t.breakInTimeSeriesProvisional}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="font-medium mr-2 text-black">(u)</span>
+            <span>{t.lowReliability}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       {/* Selectores de año y sector en la misma fila */}
       <div className="flex flex-wrap items-center mb-6 gap-4">
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {getLocalizedText('year')}
+            {t.year}
           </label>
           <select 
             value={selectedYear}
@@ -207,7 +313,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         
         <div className="flex items-center">
           <label className="font-semibold text-gray-700 mr-2">
-            {getLocalizedText('sector')}
+            {t.sector}
           </label>
           <select 
             value={getSectorId(selectedSector)}
@@ -225,36 +331,45 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
       
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">{getLocalizedText('loading')}</p>
+          <p className="text-gray-500">{t.loading}</p>
         </div>
       ) : error ? (
         <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700">
           <p>{error}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Mapa de Europa */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
-            <EuropeanRDMap 
-              data={europeData} 
-              selectedYear={selectedYear} 
-              language={language} 
-              selectedSector={selectedSector}
-              onClick={handleCountryClick}
-            />
+        <>
+          {/* Primera fila: Mapa y Gráfica */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Mapa de Europa */}
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+              <EuropeanRDMap 
+                // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                data={europeData} 
+                selectedYear={selectedYear} 
+                language={language} 
+                selectedSector={selectedSector}
+              />
+            </div>
+            
+            {/* Gráfico de ranking de países */}
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+              <CountryRankingChart 
+                // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                data={europeData} 
+                selectedYear={selectedYear} 
+                language={language}
+                selectedSector={getSectorId(selectedSector)}
+              />
+            </div>
           </div>
-          
-          {/* Gráfico de ranking de países */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
-            <CountryRankingChart 
-              data={europeData as any} 
-              selectedYear={selectedYear} 
-              language={language}
-              highlightCountry={highlightedCountry}
-              selectedSector={getSectorId(selectedSector)}
-            />
+
+          {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ObservationFlags />
+            <SupranationalEntities />
           </div>
-        </div>
+        </>
       )}
     </div>
   );
