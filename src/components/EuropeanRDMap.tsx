@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import * as d3 from 'd3';
 import { Feature, Geometry } from 'geojson';
+import { SECTOR_COLORS } from '../utils/colors';
 
 // Definir la interfaz para los datos de entrada
 interface EuropeCSVData {
@@ -44,14 +45,33 @@ interface EuropeanRDMapProps {
 // URL del archivo GeoJSON de Europa
 const EUROPE_GEOJSON_URL = '/data/geo/europe.geojson';
 
-// Paleta de colores para el mapa
-const RED_PALETTE = {
-  NULL: '#f5f5f5',  // Gris claro para valores nulos
-  MIN: '#ffcccb',   // Rojo muy claro
-  LOW: '#ff9999',   // Rojo claro
-  MID: '#ff6666',   // Rojo medio
-  HIGH: '#ff3333',  // Rojo fuerte
-  MAX: '#cc0000'    // Rojo muy intenso
+// Paleta de colores para el mapa basada en los colores de sectores
+const getSectorPalette = (sectorId: string) => {
+  // Normalizar el ID del sector para asegurar compatibilidad
+  let normalizedId = sectorId.toLowerCase();
+  
+  // Transformar nombres de sectores en inglés a IDs
+  if (normalizedId === 'all sectors') normalizedId = 'total';
+  if (normalizedId === 'business enterprise sector') normalizedId = 'business';
+  if (normalizedId === 'government sector') normalizedId = 'government';
+  if (normalizedId === 'higher education sector') normalizedId = 'education';
+  if (normalizedId === 'private non-profit sector') normalizedId = 'nonprofit';
+  
+  // Asegurar que usamos una clave válida para SECTOR_COLORS
+  const validSectorId = (normalizedId in SECTOR_COLORS) ? normalizedId : 'total';
+  const baseColor = SECTOR_COLORS[validSectorId as keyof typeof SECTOR_COLORS];
+  
+  console.log(`Sector ID: ${sectorId} -> Normalized: ${normalizedId} -> Valid: ${validSectorId} -> Color: ${baseColor}`);
+  
+  // Crear gradiente basado en el color del sector
+  return {
+    NULL: '#f5f5f5',           // Gris claro para valores nulos
+    MIN: d3.color(baseColor)?.brighter(1.5)?.toString() || '#f5f5f5',  // Muy claro
+    LOW: d3.color(baseColor)?.brighter(1)?.toString() || '#d0d0d0',    // Claro
+    MID: baseColor,                                                    // Color base del sector
+    HIGH: d3.color(baseColor)?.darker(0.7)?.toString() || '#909090',   // Oscuro
+    MAX: d3.color(baseColor)?.darker(1.2)?.toString() || '#707070',    // Muy oscuro
+  };
 };
 
 // Textos localizados para el mapa
@@ -64,12 +84,18 @@ const mapTexts = {
     rdInvestment: "Inversión I+D",
     ofGDP: "del PIB",
     lessThan: "< 1%",
-    between1: "1% - 1.5%",
-    between2: "1.5% - 2%",
-    between3: "2% - 2.5%",
-    between4: "2.5% - 3%",
+    between1: "1% - 1.8%",
+    between2: "1.8% - 2.5%",
+    between3: "2.5% - 3.2%",
+    between4: "> 3.2%",
     allSectors: "Todos los sectores",
-    rdInvestmentByCountry: "Inversión en I+D por país"
+    rdInvestmentByCountry: "Inversión en I+D por país",
+    // Sectores traducidos
+    sector_business: "Empresas",
+    sector_government: "Gobierno",
+    sector_education: "Educación superior",
+    sector_nonprofit: "Organizaciones sin ánimo de lucro",
+    sector_total: "Todos los sectores"
   },
   en: {
     title: "R&D Investment by Country",
@@ -79,23 +105,20 @@ const mapTexts = {
     rdInvestment: "R&D Investment",
     ofGDP: "of GDP",
     lessThan: "< 1%",
-    between1: "1% - 1.5%",
-    between2: "1.5% - 2%",
-    between3: "2% - 2.5%",
-    between4: "2.5% - 3%",
+    between1: "1% - 1.8%",
+    between2: "1.8% - 2.5%",
+    between3: "2.5% - 3.2%",
+    between4: "> 3.2%",
     allSectors: "All Sectors",
-    rdInvestmentByCountry: "R&D Investment by Country"
+    rdInvestmentByCountry: "R&D Investment by Country",
+    // Sectores traducidos
+    sector_business: "Business enterprise",
+    sector_government: "Government",
+    sector_education: "Higher education",
+    sector_nonprofit: "Private non-profit",
+    sector_total: "All sectors"
   }
 };
-
-// Tooltip interface para mostrar información al pasar el mouse
-interface TooltipState {
-  visible: boolean;
-  country: string;
-  value: string;
-  x: number;
-  y: number;
-}
 
 // Función para normalizar texto (remover acentos y caracteres especiales)
 function normalizarTexto(texto: string | undefined): string {
@@ -138,6 +161,18 @@ function getCountryValue(
 
   const countryName = getCountryName(feature);
   const countryIso3 = getCountryIso3(feature);
+  
+  // Mapeo entre ID de sector y nombre en inglés para consultas
+  const sectorNameMapping: Record<string, string> = {
+    'total': 'All Sectors',
+    'all': 'All Sectors',
+    'business': 'Business enterprise sector',
+    'government': 'Government sector',
+    'education': 'Higher education sector',
+    'nonprofit': 'Private non-profit sector'
+  };
+  
+  const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
 
   // Intentar coincidir primero por ISO3
   let countryData = data.filter(d => {
@@ -165,9 +200,9 @@ function getCountryValue(
   const filteredData = countryData.filter(d => {
     const yearMatch = d.Year && selectedYear && 
                      d.Year.toString().trim() === selectedYear.toString().trim();
-    const sectorMatch = d.Sector && selectedSector && 
-                       (selectedSector === 'all' || 
-                        normalizarTexto(d.Sector) === normalizarTexto(selectedSector));
+    const sectorMatch = d.Sector && 
+                       (selectedSector === 'all' || selectedSector === 'total' || 
+                        normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
     return yearMatch && sectorMatch;
   });
 
@@ -192,44 +227,109 @@ function getCountryValue(
   }
 }
 
-// Función para obtener el color basado en el valor
-const getColorForValue = (value: number | null): string => {
-  if (value === null) return RED_PALETTE.NULL;
+// Crear una función para obtener los rangos de valores de un sector específico
+function getSectorValueRange(data: EuropeCSVData[], selectedYear: string, selectedSector: string): { min: number, max: number } {
+  // Valores predeterminados en caso de no tener datos
+  const defaultRange = { min: 0, max: 3.5 };
   
-  if (value < 1.0) return RED_PALETTE.MIN;
-  if (value < 1.5) return RED_PALETTE.LOW;
-  if (value < 2.0) return RED_PALETTE.MID;
-  if (value < 2.5) return RED_PALETTE.HIGH;
-  return RED_PALETTE.MAX;
+  if (!data || data.length === 0) return defaultRange;
+  
+  // Filtrar por año y sector seleccionados
+  const filteredData = data.filter(d => {
+    const yearMatch = d.Year && d.Year.toString().trim() === selectedYear.trim();
+    const sectorMatch = d.Sector && 
+                      (selectedSector === 'all' || 
+                       normalizarTexto(d.Sector) === normalizarTexto(selectedSector));
+    return yearMatch && sectorMatch;
+  });
+  
+  if (filteredData.length === 0) return defaultRange;
+  
+  // Obtener valores numéricos
+  const values = filteredData
+    .map(d => {
+      const valueStr = d['%GDP'] || d.Value || '';
+      if (!valueStr) return null;
+      try {
+        return parseFloat(String(valueStr).replace(',', '.'));
+      } catch {
+        return null;
+      }
+    })
+    .filter((v): v is number => v !== null);
+  
+  if (values.length === 0) return defaultRange;
+  
+  // Calcular min y max
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  
+  return { 
+    min: Math.max(0, min), // Asegurar que el mínimo no sea negativo
+    max: max 
+  };
+}
+
+// Función para obtener el color basado en el valor y el sector seleccionado
+const getColorForValue = (value: number | null, palette: Record<string, string>, valueRange: {min: number, max: number}): string => {
+  if (value === null) return palette.NULL;
+  
+  // Ajustar los umbrales basados en el rango de valores del sector
+  const min = valueRange.min;
+  const max = valueRange.max;
+  const range = max - min;
+  
+  // Definir umbrtales dinámicos basados en el rango de valores
+  const threshold1 = min + (range * 0.2);
+  const threshold2 = min + (range * 0.4);
+  const threshold3 = min + (range * 0.6);
+  const threshold4 = min + (range * 0.8);
+  
+  if (value < threshold1) return palette.MIN;
+  if (value < threshold2) return palette.LOW;
+  if (value < threshold3) return palette.MID;
+  if (value < threshold4) return palette.HIGH;
+  return palette.MAX;
 };
 
 const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [tooltipContent, setTooltipContent] = useState<TooltipState>({ 
-    visible: false,
-    country: '', 
-    value: 'No disponible', 
-    x: 0, 
-    y: 0 
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [geojsonData, setGeojsonData] = useState<GeoJsonData | null>(null);
+  const [valueRange, setValueRange] = useState<{min: number, max: number}>({min: 0, max: 3.5});
 
   // Acceso a los textos localizados
   const t = mapTexts[language];
 
+  // Obtener la paleta de colores para el sector seleccionado
+  const colorPalette = getSectorPalette(selectedSector);
+  
+  // Log del sector seleccionado y su paleta
+  useEffect(() => {
+    console.log('Sector actual:', selectedSector);
+    console.log('Paleta de colores:', colorPalette);
+  }, [selectedSector, colorPalette]);
+
   // Función para obtener el título del mapa basado en los datos seleccionados
   const getMapTitle = (): string => {
     const yearText = selectedYear || '';
-    const sectorText = selectedSector === 'all' 
-      ? t.allSectors 
-      : t[`sector_${selectedSector}` as keyof typeof t] || selectedSector;
+    let normalizedId = selectedSector;
+    if (selectedSector === 'all') normalizedId = 'total';
+    
+    const sectorKey = `sector_${normalizedId}` as keyof typeof t;
+    const sectorText = t[sectorKey] || t.allSectors;
     
     return `${t.rdInvestmentByCountry} - ${sectorText} (${yearText})`;
   };
+
+  // Calcular el rango de valores cuando cambia el sector o el año
+  useEffect(() => {
+    const newRange = getSectorValueRange(data, selectedYear.toString(), selectedSector);
+    setValueRange(newRange);
+    console.log(`Rango de valores para ${selectedSector} (${selectedYear}):`, newRange);
+  }, [data, selectedYear, selectedSector]);
 
   // Cargar el GeoJSON
   useEffect(() => {
@@ -284,9 +384,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
   useEffect(() => {
     if (!svgRef.current || !geojsonData) return;
 
-    // Prevenir rerenderizados innecesarios
     const currentSvg = svgRef.current;
-    let isMounted = true;
 
     const renderMap = () => {
       const svg = d3.select(currentSvg);
@@ -315,76 +413,82 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         .attr('d', (d: GeoJsonFeature) => path(d) || '')
         .attr('fill', (d: GeoJsonFeature) => {
           const value = getCountryValueOptimized(d);
-          return getColorForValue(value);
+          return getColorForValue(value, colorPalette, valueRange);
         })
         .attr('stroke', '#fff')
         .attr('stroke-width', 0.5)
         .attr('class', 'country')
-        .on('mouseover', (event: MouseEvent, d: GeoJsonFeature) => {
-          if (!isMounted) return;
-          
+        .on('mouseover', function(event: MouseEvent, d: GeoJsonFeature) {
+          // Cambiar el estilo al pasar el mouse
+          d3.select(this)
+            .attr('stroke', '#333')
+            .attr('stroke-width', 1);
+            
           const countryName = getCountryName(d);
           const value = getCountryValueOptimized(d);
           
-          // Obtener la posición relativa al contenedor del mapa
-          const rect = currentSvg.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
+          // Positioning directly - no React state for immediate feedback
+          const tooltip = d3.select('.country-tooltip');
           
-          const newTooltipContent = { 
-            visible: true,
-            country: countryName || 'Desconocido',
-            value: value !== null ? value.toFixed(2) : 'No disponible',
-            x,
-            y
-          };
-          
-          setTooltipContent(newTooltipContent);
-          setTooltipVisible(true);
-        })
-        .on('mousemove', (event: MouseEvent) => {
-          if (!isMounted) return;
-          
-          // Usar requestAnimationFrame para suavizar la actualización del tooltip
-          requestAnimationFrame(() => {
-            if (!isMounted) return;
+          tooltip
+            .style('display', 'block')
+            .style('left', `${event.pageX + 15}px`)
+            .style('top', `${event.pageY - 30}px`);
             
-            // Obtener la posición relativa al contenedor del mapa
-            if (currentSvg) {
-              const rect = currentSvg.getBoundingClientRect();
-              const x = event.clientX - rect.left;
-              const y = event.clientY - rect.top;
-              
-              setTooltipContent(prev => ({ 
-                ...prev, 
-                x, 
-                y 
-              }));
-            }
-          });
+          tooltip.select('.country-name').text(countryName || 'Desconocido');
+          
+          if (value !== null) {
+            tooltip.select('.tooltip-data').html(`${t.rdInvestment}: <b>${value.toFixed(2)}% ${t.ofGDP}</b>`);
+          } else {
+            tooltip.select('.tooltip-data').text(t.noData);
+          }
         })
-        .on('mouseout', () => {
-          if (!isMounted) return;
-          setTooltipVisible(false);
+        .on('mousemove', function(event: MouseEvent) {
+          // Update tooltip position on mouse move for smooth following
+          d3.select('.country-tooltip')
+            .style('left', `${event.pageX + 15}px`)
+            .style('top', `${event.pageY - 30}px`);
+        })
+        .on('mouseout', function() {
+          // Restaurar el estilo al quitar el mouse
+          d3.select(this)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 0.5);
+            
+          // Hide tooltip
+          d3.select('.country-tooltip').style('display', 'none');
         })
         .on('click', (event: MouseEvent, d: GeoJsonFeature) => {
-          if (!isMounted || !onClick) return;
+          if (!onClick) return;
           const countryName = getCountryName(d);
           onClick(countryName);
         })
         .style('cursor', onClick ? 'pointer' : 'default');
       
+      // Crear etiquetas para la leyenda basadas en el rango de valores
+      const min = valueRange.min;
+      const max = valueRange.max;
+      const range = max - min;
+      
+      const threshold1 = min + (range * 0.2);
+      const threshold2 = min + (range * 0.4);
+      const threshold3 = min + (range * 0.6);
+      const threshold4 = min + (range * 0.8);
+      
+      // Redondear los umbrales para mayor legibilidad
+      const formatValue = (value: number) => value.toFixed(1);
+
       // Añadir leyenda
       const legendGroup = svg.append('g')
         .attr('transform', `translate(20, ${height - 150})`);
       
       const legend = [
-        { color: RED_PALETTE.MIN, label: t.lessThan },
-        { color: RED_PALETTE.LOW, label: t.between1 },
-        { color: RED_PALETTE.MID, label: t.between2 },
-        { color: RED_PALETTE.HIGH, label: t.between3 },
-        { color: RED_PALETTE.MAX, label: t.between4 },
-        { color: RED_PALETTE.NULL, label: t.noData }
+        { color: colorPalette.MIN, label: `< ${formatValue(threshold1)}%` },
+        { color: colorPalette.LOW, label: `${formatValue(threshold1)} - ${formatValue(threshold2)}%` },
+        { color: colorPalette.MID, label: `${formatValue(threshold2)} - ${formatValue(threshold3)}%` },
+        { color: colorPalette.HIGH, label: `${formatValue(threshold3)} - ${formatValue(threshold4)}%` },
+        { color: colorPalette.MAX, label: `> ${formatValue(threshold4)}%` },
+        { color: colorPalette.NULL, label: t.noData }
       ];
       
       // Con tipos explícitos para corregir errores del linter
@@ -401,17 +505,13 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           .attr('x', 20)
           .attr('y', i * 20 + 12)
           .text(item.label)
-          .attr('font-size', '12px');
+          .attr('font-size', '12px')
+          .attr('fill', '#000000'); // Texto negro
       });
     };
 
     renderMap();
-
-    // Función de limpieza
-    return () => {
-      isMounted = false;
-    };
-  }, [geojsonData, getCountryValueOptimized, language, onClick]);
+  }, [geojsonData, getCountryValueOptimized, language, onClick, colorPalette, valueRange, t]);
   
   return (
     <div className="relative w-full h-full" ref={mapContainerRef}>
@@ -443,25 +543,17 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         preserveAspectRatio="xMidYMid meet"
       />
       
-      {tooltipVisible && (
-        <div 
-          className="absolute z-50 p-2 bg-white border border-gray-300 rounded shadow-md pointer-events-none"
-          style={{
-            left: `${tooltipContent.x}px`,
-            top: `${tooltipContent.y}px`,
-            transform: 'translate(15px, 15px)'
-          }}
-        >
-          <p className="font-bold">{tooltipContent.country}</p>
-          {tooltipContent.value !== 'No disponible' ? (
-            <p>
-              {t.rdInvestment}: <span className="font-semibold">{tooltipContent.value}% {t.ofGDP}</span>
-            </p>
-          ) : (
-            <p>{t.noData}</p>
-          )}
-        </div>
-      )}
+      {/* Tooltip permanente en el DOM, controlado por D3 directamente */}
+      <div 
+        className="country-tooltip absolute z-50 p-2 bg-white border border-gray-300 rounded shadow-md pointer-events-none"
+        style={{
+          display: 'none',
+          position: 'fixed', // Usar posición fija para evitar problemas con contenedores anidados
+        }}
+      >
+        <p className="country-name font-bold text-black"></p>
+        <p className="tooltip-data text-black"></p>
+      </div>
     </div>
   );
 };

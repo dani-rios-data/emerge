@@ -11,7 +11,7 @@ import {
   ChartOptions
 } from 'chart.js';
 import { EuropeCSVData, rdSectors } from '../data/rdInvestment';
-import COLORS from '../utils/colors';
+import { EU_COLORS, SECTOR_COLORS } from '../utils/colors';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -27,23 +27,24 @@ interface CountryRankingChartProps {
   data: EuropeCSVData[];
   selectedYear: number;
   language: 'es' | 'en';
-  highlightCountry?: string;
   selectedSector?: string;
 }
 
-// Colores para la gráfica - tonos de azul
-const BLUE_PALETTE = {
-  DEFAULT: '#4576b5', // Azul estándar para las barras
-  LIGHT: '#6b9bd2',   // Azul claro 
-  DARK: '#2c5282',    // Azul oscuro
-  HIGHLIGHT: COLORS.SPAIN.RED // Mantener España en rojo
+// Colores para la gráfica
+const CHART_PALETTE = {
+  DEFAULT: EU_COLORS.PRIMARY_BLUE, // Azul UE principal
+  LIGHT: EU_COLORS.ALT_BLUE,       // Azul UE más claro
+  DARK: '#002266',                 // Variante más oscura del azul UE
+  HIGHLIGHT: '#CC0000',            // Mantener el rojo para España
+  TEXT: '#000000',                 // Color del texto (negro) 
+  BORDER: '#E5E7EB',               // Color del borde (gris suave)
+  YELLOW: EU_COLORS.PRIMARY_YELLOW // Amarillo UE para potenciales destacados
 };
 
 const CountryRankingChart: React.FC<CountryRankingChartProps> = ({ 
   data, 
   selectedYear, 
   language,
-  highlightCountry,
   selectedSector = 'total'
 }) => {
   // Obtener el nombre del sector según el idioma - versión mejorada
@@ -201,25 +202,19 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   const labels = sortedCountries.map(([country]) => country);
   const values = sortedCountries.map(([, value]) => value);
   
-  // Crear colores - destacar el país seleccionado si existe usando la nueva paleta de azules
+  // Obtener el color del sector seleccionado
+  const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+  
+  // Crear colores - España en rojo y el resto con el color del sector seleccionado
   const barColors = labels.map(country => {
     // Normalizar tanto el país actual como el destacado para la comparación
     const normalizedCountry = normalizeText(country);
-    const normalizedHighlight = highlightCountry ? normalizeText(highlightCountry) : '';
-    
-    if (highlightCountry && normalizedCountry === normalizedHighlight) {
-      return BLUE_PALETTE.HIGHLIGHT; // Rojo para país seleccionado
-    }
     
     if (normalizedCountry === 'espana' || normalizedCountry === 'spain') {
-      return BLUE_PALETTE.HIGHLIGHT; // Rojo para España
+      return CHART_PALETTE.HIGHLIGHT; // Rojo para España
     }
     
-    // Variar ligeramente los tonos de azul para diferenciar países
-    const index = labels.indexOf(country);
-    if (index % 3 === 0) return BLUE_PALETTE.DARK;
-    if (index % 3 === 1) return BLUE_PALETTE.DEFAULT;
-    return BLUE_PALETTE.LIGHT;
+    return sectorColor; // Color según el sector seleccionado para el resto de países
   });
 
   // Datos para el gráfico
@@ -232,6 +227,8 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         borderColor: barColors.map(color => color + '80'),
         borderWidth: 1,
         borderRadius: 4,
+        barPercentage: 0.8, // Ajuste del ancho de las barras
+        categoryPercentage: 0.85 // Espacio entre grupos de barras
       }
     ]
   };
@@ -250,16 +247,26 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         text: t.title,
         font: {
           size: 14,
-          weight: 'bold'
+          weight: 600,
+          family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
         },
         padding: {
           top: 10,
           bottom: 20
         },
-        color: '#333',
+        color: CHART_PALETTE.TEXT,
         align: 'center'
       },
       tooltip: {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        titleColor: CHART_PALETTE.TEXT,
+        bodyColor: CHART_PALETTE.TEXT,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 1,
+        padding: 10,
+        boxPadding: 4,
+        cornerRadius: 4,
+        displayColors: false,
         callbacks: {
           label: function(context) {
             return `${context.parsed.x.toFixed(2)}%`;
@@ -273,10 +280,25 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           display: true,
           text: t.axisLabel,
           font: {
-            weight: 'bold'
-          }
+            weight: 600,
+            size: 13,
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
+          },
+          color: CHART_PALETTE.TEXT
+        },
+        grid: {
+          display: false // Eliminar líneas de cuadrícula
+        },
+        border: {
+          color: CHART_PALETTE.BORDER // Borde de eje más suave
         },
         ticks: {
+          color: CHART_PALETTE.TEXT, // Texto negro en vez de gris
+          font: {
+            size: 12,
+            weight: 400,
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
+          },
           callback: function(value) {
             return value + '%';
           }
@@ -285,6 +307,20 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       y: {
         title: {
           display: false
+        },
+        grid: {
+          display: false // Eliminar líneas de cuadrícula
+        },
+        border: {
+          color: CHART_PALETTE.BORDER // Borde de eje más suave
+        },
+        ticks: {
+          color: CHART_PALETTE.TEXT, // Texto negro en vez de gris
+          font: {
+            size: 12,
+            weight: 400,
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
+          }
         }
       }
     }
@@ -292,12 +328,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   return (
     <div className="relative h-full">
+      <div className="mb-2 text-center">
+        <h3 className="text-sm font-semibold text-gray-800">
+          {t.title}
+        </h3>
+      </div>
+      
       {sortedCountries.length > 0 ? (
         <div className="h-full"> 
-          <Bar data={chartData} options={options} />
+          <Bar data={chartData} options={{
+            ...options,
+            plugins: {
+              ...options.plugins,
+              title: {
+                ...options.plugins?.title,
+                display: false  // Ocultar el título del gráfico ya que lo mostramos fuera
+              }
+            }
+          }} />
         </div>
       ) : (
-        <div className="flex justify-center items-center h-64 text-gray-500">
+        <div className="flex justify-center items-center h-64 text-gray-800 font-medium">
           {t.noData}
         </div>
       )}
