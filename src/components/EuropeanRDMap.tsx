@@ -320,7 +320,7 @@ function getCountryValue(
   // Filtrar por año y sector
   const filteredByYear = countryData.filter(d => {
     return d.Year && selectedYear && 
-      d.Year.toString().trim() === selectedYear.toString().trim();
+                     d.Year.toString().trim() === selectedYear.toString().trim();
   });
 
   if (filteredByYear.length === 0) {
@@ -331,8 +331,8 @@ function getCountryValue(
   // Filtrar por sector específico
   const filteredData = filteredByYear.filter(d => {
     const sectorMatch = d.Sector && 
-      (sectorNameEn === 'All Sectors' || 
-       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
+                      (sectorNameEn === 'All Sectors' || 
+                       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
     console.log(`Comprobando sector: ${d.Sector} con ${sectorNameEn}, coincide: ${sectorMatch}`);
     return sectorMatch;
   });
@@ -1074,10 +1074,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
             // Preparar comparaciones
             let euComparisonHtml = '';
             if (!isEU && euValue !== null && euValue > 0) {
-              const difference = value - euValue;
-              const percentDiff = (difference / euValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
+                const difference = value - euValue;
+                const percentDiff = (difference / euValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
               const color = isPositive ? 'text-green-600' : 'text-red-600';
               
               euComparisonHtml = `
@@ -1097,10 +1097,10 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
             
             let spainComparisonHtml = '';
             if (!isSpain && spainValue !== null && spainValue > 0) {
-              const difference = value - spainValue;
-              const percentDiff = (difference / spainValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
+                const difference = value - spainValue;
+                const percentDiff = (difference / spainValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
               const color = isPositive ? 'text-green-600' : 'text-red-600';
               
               spainComparisonHtml = `

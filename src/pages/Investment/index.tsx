@@ -375,6 +375,13 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     </h2>
   );
 
+  // Componente para título de subsección
+  const SubsectionTitle = ({ title }: { title: string }) => (
+    <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
+      {title}
+    </h3>
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       {isLoading ? (
@@ -390,8 +397,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           {/* Sección 1: Key Metrics */}
           <div className="mb-10">
             <SectionTitle title={t.keyMetricsTitle} />
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic">
-              {/* Contenido de Key Metrics se añadirá posteriormente */}
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic mb-6">
+              {/* Contenido de subsecciones de Key Metrics se añadirá posteriormente */}
+              <p>Las subsecciones de métricas clave se añadirán próximamente</p>
             </div>
           </div>
           
@@ -399,82 +407,93 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <div className="mb-10">
             <SectionTitle title={t.euComparisonTitle} />
             
-            {/* Selectores de año y sector */}
-            <div className="flex flex-wrap items-center mb-6 gap-4">
-              <div className="flex items-center">
-                <label className="font-semibold text-gray-700 mr-2">
-                  {t.year}
-                </label>
-                <select 
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {availableYears.map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+            {/* Subsección 2.1: Mapa y ranking de países */}
+            <div className="mb-8">
+              <SubsectionTitle title={language === 'es' ? "Mapa y ranking de países" : "Map and country ranking"} />
+              
+              {/* Selectores de año y sector */}
+              <div className="flex flex-wrap items-center mb-6 gap-4">
+                <div className="flex items-center">
+                  <label className="font-semibold text-gray-700 mr-2">
+                    {t.year}
+                  </label>
+                  <select 
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {availableYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex items-center">
+                  <label className="font-semibold text-gray-700 mr-2">
+                    {t.sector}
+                  </label>
+                  <select 
+                    value={getSectorId(selectedSector)}
+                    onChange={(e) => handleSectorChange(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {rdSectors.map(sector => (
+                      <option key={sector.id} value={sector.id}>
+                        {sector.name[language]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               
-              <div className="flex items-center">
-                <label className="font-semibold text-gray-700 mr-2">
-                  {t.sector}
-                </label>
-                <select 
-                  value={getSectorId(selectedSector)}
-                  onChange={(e) => handleSectorChange(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {rdSectors.map(sector => (
-                    <option key={sector.id} value={sector.id}>
-                      {sector.name[language]}
-                    </option>
-                  ))}
-                </select>
+              {/* Primera fila: Mapa y Gráfica */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Mapa de Europa */}
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+                  <EuropeanRDMap 
+                    // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                    data={europeData} 
+                    selectedYear={selectedYear} 
+                    language={language} 
+                    selectedSector={selectedSector}
+                    labels={labelsData}
+                    autonomousCommunitiesData={autonomousCommunitiesData}
+                  />
+                </div>
+                
+                {/* Gráfico de ranking de países */}
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+                  <CountryRankingChart 
+                    // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                    data={europeData} 
+                    selectedYear={selectedYear} 
+                    language={language}
+                    selectedSector={getSectorId(selectedSector)}
+                    labels={labelsData}
+                    autonomousCommunitiesData={autonomousCommunitiesData}
+                  />
+                </div>
+              </div>
+
+              {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ObservationFlags />
+                <SupranationalEntities />
               </div>
             </div>
             
-            {/* Primera fila: Mapa y Gráfica */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Mapa de Europa */}
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                <EuropeanRDMap 
-                  // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
-                  data={europeData} 
-                  selectedYear={selectedYear} 
-                  language={language} 
-                  selectedSector={selectedSector}
-                  labels={labelsData}
-                  autonomousCommunitiesData={autonomousCommunitiesData}
-                />
-              </div>
-              
-              {/* Gráfico de ranking de países */}
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                <CountryRankingChart 
-                  // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
-                  data={europeData} 
-                  selectedYear={selectedYear} 
-                  language={language}
-                  selectedSector={getSectorId(selectedSector)}
-                  labels={labelsData}
-                  autonomousCommunitiesData={autonomousCommunitiesData}
-                />
-              </div>
-            </div>
-
-            {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ObservationFlags />
-              <SupranationalEntities />
+            {/* Espacio para futuras subsecciones */}
+            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
+              <p>{language === 'es' ? "Más subsecciones se añadirán próximamente" : "More subsections coming soon"}</p>
             </div>
           </div>
           
           {/* Sección 3: Comparación por comunidades autónomas de España */}
           <div className="mb-6">
             <SectionTitle title={t.spanishRegionsTitle} />
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic">
-              {/* Contenido de comparación por comunidades autónomas se añadirá posteriormente */}
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic mb-6">
+              {/* Contenido de subsecciones de comunidades autónomas se añadirá posteriormente */}
+              <p>{language === 'es' ? "Las subsecciones de comunidades autónomas se añadirán próximamente" : "Autonomous communities subsections coming soon"}</p>
             </div>
           </div>
         </>

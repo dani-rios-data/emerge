@@ -445,7 +445,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               labelValue = matchingLabel.Label;
             }
           }
-
+                     
           // Verificar si el país es la UE
           const normalizedName = normalizeText(displayName);
           const isEU = normalizedName.includes('union europea') || 

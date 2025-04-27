@@ -2,16 +2,55 @@ import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const Researchers: React.FC = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+
+  // Componente para título de sección
+  const SectionTitle = ({ title }: { title: string }) => (
+    <h2 className="text-lg font-bold mb-4 text-teal-800 border-b border-teal-200 pb-2">
+      {title}
+    </h2>
+  );
+
+  // Componente para título de subsección
+  const SubsectionTitle = ({ title }: { title: string }) => (
+    <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
+      {title}
+    </h3>
+  );
   
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">{t('researchers')}</h2>
-      <p className="mb-6">
-        {t('researchersDescription')}
-      </p>
-      <div className="h-80 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
-        <span className="text-gray-500">{t('chartPlaceholder')} {t('researchers').toLowerCase()}</span>
+      {/* Sección 1: Key Metrics */}
+      <div className="mb-10">
+        <SectionTitle title={language === 'es' ? "Métricas clave" : "Key Metrics"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Indicadores de investigación" : "Research Indicators"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
+        </div>
+      </div>
+      
+      {/* Sección 2: Comparación entre la UE y países */}
+      <div className="mb-10">
+        <SectionTitle title={language === 'es' ? "Comparación entre la UE y países" : "EU and Countries Comparison"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Investigadores por país" : "Researchers by Country"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
+        </div>
+      </div>
+      
+      {/* Sección 3: Comparación por comunidades autónomas de España */}
+      <div className="mb-6">
+        <SectionTitle title={language === 'es' ? "Comparación por comunidades autónomas de España" : "Spanish Autonomous Communities Comparison"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Distribución regional de investigadores" : "Regional Researchers Distribution"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -2,32 +2,54 @@ import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const Overview: React.FC = () => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+
+  // Componente para título de sección
+  const SectionTitle = ({ title }: { title: string }) => (
+    <h2 className="text-lg font-bold mb-4 text-teal-800 border-b border-teal-200 pb-2">
+      {title}
+    </h2>
+  );
+
+  // Componente para título de subsección
+  const SubsectionTitle = ({ title }: { title: string }) => (
+    <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
+      {title}
+    </h3>
+  );
   
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">{t('overview')}</h2>
-      <p className="mb-4">
-        {t('overviewDescription')}
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <h3 className="font-semibold">{t('gdp')}</h3> {/* Cambiado de investment a gdp */}
-          <p className="text-sm mt-2">
-            {t('gdpDescription')}
-          </p>
+      {/* Sección 1: Key Metrics */}
+      <div className="mb-10">
+        <SectionTitle title={language === 'es' ? "Métricas clave" : "Key Metrics"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Resumen de métricas" : "Metrics Summary"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
         </div>
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <h3 className="font-semibold">{t('researchers')}</h3>
-          <p className="text-sm mt-2">
-            {t('researchersDescription')}
-          </p>
+      </div>
+      
+      {/* Sección 2: Comparación entre la UE y países */}
+      <div className="mb-10">
+        <SectionTitle title={language === 'es' ? "Comparación entre la UE y países" : "EU and Countries Comparison"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Comparativa general" : "General Comparison"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
         </div>
-        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-          <h3 className="font-semibold">{t('patents')}</h3>
-          <p className="text-sm mt-2">
-            {t('patentsDescription')}
-          </p>
+      </div>
+      
+      {/* Sección 3: Comparación por comunidades autónomas de España */}
+      <div className="mb-6">
+        <SectionTitle title={language === 'es' ? "Comparación por comunidades autónomas de España" : "Spanish Autonomous Communities Comparison"} />
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Datos regionales" : "Regional Data"} />
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
+            {/* Espacio vacío para contenido futuro */}
+          </div>
         </div>
       </div>
     </div>

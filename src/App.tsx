@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import './index.css'; // Asegúrate de que este archivo importa correctamente los estilos de Tailwind
-import OverviewSection from './components/OverviewSection';
+import OverviewPage from './pages/Overview'; // Importar el componente de la página Overview
 import Investment from './pages/Investment';
+import Researchers from './pages/Researchers'; // Importar el componente de la página Researchers
+import Patents from './pages/Patents'; // Importar el componente de la página Patents
 import SourcesSection from './components/SourcesSection';
 
 // Definir tipos
@@ -197,8 +199,8 @@ const App: React.FC = () => {
           <div className="bg-white rounded shadow-md p-6 border border-gray-100">
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('overview')}</h2>
             
-            {/* Componente modular para la sección Overview */}
-            <OverviewSection language={language} />
+            {/* Componente de la página Overview */}
+            <OverviewPage />
           </div>
         )}
         
@@ -213,37 +215,19 @@ const App: React.FC = () => {
         
         {activeTab === 'researchers' && (
           <div className="bg-white rounded shadow-md p-6 border border-gray-100">
-            <h2 className="text-base font-bold mb-2 text-gray-800 border-b pb-1">{t('researchers')}</h2>
-            <p className="text-xs leading-relaxed text-gray-700">
-              {t('researchersDescription')}
-            </p>
+            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('researchers')}</h2>
             
-            <div className="h-64 bg-gray-50 rounded mt-4 flex items-center justify-center border border-gray-200 shadow-inner">
-              <p className="text-gray-500 flex items-center text-xs">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                Aquí se mostrará el gráfico de investigadores
-        </p>
-      </div>
+            {/* Componente de la página Researchers */}
+            <Researchers />
           </div>
         )}
         
         {activeTab === 'patents' && (
           <div className="bg-white rounded shadow-md p-6 border border-gray-100">
-            <h2 className="text-base font-bold mb-2 text-gray-800 border-b pb-1">{t('patents')}</h2>
-            <p className="text-xs leading-relaxed text-gray-700">
-              {t('patentsDescription')}
-            </p>
+            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('patents')}</h2>
             
-            <div className="h-64 bg-gray-50 rounded mt-4 flex items-center justify-center border border-gray-200 shadow-inner">
-              <p className="text-gray-500 flex items-center text-xs">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                Aquí se mostrará el gráfico de patentes
-              </p>
-            </div>
+            {/* Componente de la página Patents */}
+            <Patents />
           </div>
         )}
         
