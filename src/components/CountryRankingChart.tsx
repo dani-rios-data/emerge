@@ -13,6 +13,21 @@ import {
 } from 'chart.js';
 import { EuropeCSVData, rdSectors } from '../data/rdInvestment';
 import { EU_COLORS, SECTOR_COLORS } from '../utils/colors';
+// Importando datos de country_flags.json en lugar del archivo eliminado country-flags.tsx
+import countryFlagsData from '../logos/country_flags.json';
+// Para usar las banderas SVG, debes importarlas del archivo logos/country-flags.tsx
+// import { FlagSpain, FlagEU, FlagCanaryIslands, FlagSweden, FlagFinland } from '../logos/country-flags';
+
+// Interfaz para los elementos del archivo country_flags.json
+interface CountryFlag {
+  country: string;
+  code: string;
+  iso3: string;
+  flag: string;
+}
+
+// Aseguramos el tipo correcto para el array de flags
+const countryFlags = countryFlagsData as CountryFlag[];
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -33,12 +48,28 @@ interface LabelData {
   Label: string;
 }
 
+// Interfaz para los datos de comunidades autónomas
+interface AutonomousCommunityData {
+  "Comunidad (Original)": string;
+  "Comunidad Limpio": string;
+  "Comunidad en Inglés": string;
+  "Año": string;
+  "Sector Id": string;
+  "Sector": string;
+  "Gasto en I+D (Miles €)": string;
+  "PIB (Miles €)": string;
+  "% PIB I+D": string;
+  "Sector Nombre": string;
+  [key: string]: string;
+}
+
 interface CountryRankingChartProps {
   data: EuropeCSVData[];
   selectedYear: number;
   language: 'es' | 'en';
   selectedSector?: string;
   labels?: LabelData[];
+  autonomousCommunitiesData?: AutonomousCommunityData[]; // Usar el tipo específico
 }
 
 // Colores para la gráfica
@@ -98,7 +129,8 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   selectedYear, 
   language,
   selectedSector = 'total',
-  labels = []
+  labels = [],
+  autonomousCommunitiesData = [] // Añadir parámetro para datos de comunidades autónomas
 }) => {
   const chartRef = useRef(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -368,9 +400,6 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         // Calcular el ranking: posición + 1 porque los índices empiezan en 0
         const rank = index + 1;
         const totalCountries = chartLabels.length;
-        const rankText = language === 'es' 
-          ? `Rank ${rank} de ${totalCountries}` 
-          : `Rank ${rank} of ${totalCountries}`;
         
         // Mostrar el tooltip
         tooltipRef.current.style.display = 'block';
@@ -378,17 +407,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         tooltipRef.current.style.left = `${clientX + 5}px`;
         tooltipRef.current.style.top = `${clientY - 40}px`;
         
-        const countryNameElement = tooltipRef.current.querySelector('.country-name');
-        const tooltipDataElement = tooltipRef.current.querySelector('.tooltip-data');
+        const tooltipContentElement = tooltipRef.current.querySelector('.tooltip-content');
         
-        if (countryNameElement && tooltipDataElement) {
+        if (tooltipContentElement) {
           // Usar el nombre del país según el idioma seleccionado
           const displayName = countryNames[countryName] 
             ? (language === 'es' ? countryNames[countryName].es : countryNames[countryName].en) 
             : countryName;
             
-          countryNameElement.textContent = displayName;
-          
           // Buscar etiqueta para este país y año
           let labelValue = '';
           if (labels && labels.length > 0) {
@@ -415,16 +441,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               labelValue = matchingLabel.Label;
             }
           }
-          
-          // Formatear el HTML incluyendo el ranking y la etiqueta (label) si existe
-          const valueWithLabel = labelValue 
-            ? `<b>${formattedValue}%</b> (${labelValue})` 
-            : `<b>${formattedValue}%</b>`;
-          
-          const tooltipParts = language === 'es' 
-            ? [`Inversión I+D: ${valueWithLabel} del PIB`, rankText]
-            : [`R&D Investment: ${valueWithLabel} of GDP`, rankText];
-          
+
           // Verificar si el país es la UE
           const normalizedName = normalizeText(displayName);
           const isEU = normalizedName.includes('union europea') || 
@@ -434,8 +451,17 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           const isSpain = normalizedName.includes('espana') || 
                        normalizedName.includes('españa') ||
                        normalizedName.includes('spain');
+                       
+          // Verificar si el país es Canarias
+          const isCanarias = normalizedName.includes('canarias') || 
+                          normalizedName.includes('canary islands');
           
-          // Buscar y añadir el valor de la UE para comparación
+          // Preparar las comparaciones
+          let euComparisonHtml = '';
+          let spainComparisonHtml = '';
+          let canariasComparisonHtml = '';
+          
+          // Comparación con UE
           if (!isEU) {
             const euValue = getEUValue(data, selectedYear, selectedSector);
             
@@ -444,24 +470,25 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const percentDiff = (difference / euValue) * 100;
               const formattedDiff = percentDiff.toFixed(1);
               const isPositive = difference > 0;
-              const color = isPositive ? '#009900' : '#CC0000'; // Verde o rojo
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-              const comparisonText = language === 'es'
-                ? `vs UE: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`
-                : `vs EU: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`;
-                
-              tooltipParts.push(comparisonText);
+              euComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
             } else if (euValue !== null && euValue === 0) {
-              // Si el valor de la UE es 0, mostrar "--" en gris
-              const comparisonText = language === 'es'
-                ? `vs UE: <span style="color:#888888">--</span>`
-                : `vs EU: <span style="color:#888888">--</span>`;
-                
-              tooltipParts.push(comparisonText);
+              euComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
             }
           }
           
-          // Buscar y añadir el valor de España para comparación
+          // Comparación con España
           if (!isSpain) {
             const spainValue = getSpainValue(data, selectedYear, selectedSector);
             
@@ -470,36 +497,222 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const percentDiff = (difference / spainValue) * 100;
               const formattedDiff = percentDiff.toFixed(1);
               const isPositive = difference > 0;
-              const color = isPositive ? '#009900' : '#CC0000'; // Verde o rojo
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-              const comparisonText = language === 'es'
-                ? `vs España: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`
-                : `vs Spain: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`;
-                
-              tooltipParts.push(comparisonText);
+              spainComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
             } else if (spainValue !== null && spainValue === 0) {
-              // Si el valor de España es 0, mostrar "--" en gris
-              const comparisonText = language === 'es'
-                ? `vs España: <span style="color:#888888">--</span>`
-                : `vs Spain: <span style="color:#888888">--</span>`;
-                
-              tooltipParts.push(comparisonText);
+              spainComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
             }
           }
           
-          // Añadir descripción de la etiqueta si existe
-          if (labelValue) {
-            const labelDescription = labelDescriptions[labelValue] 
-              ? labelDescriptions[labelValue][language] 
-              : '';
+          // Comparación con Canarias
+          if (!isCanarias) {
+            const canariasValue = getCanariasValue(autonomousCommunitiesData, selectedYear, selectedSector);
+            
+            if (canariasValue !== null && canariasValue > 0) {
+              const difference = value - canariasValue;
+              const percentDiff = (difference / canariasValue) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-            if (labelDescription) {
-              const labelText = `<i>${labelValue} - ${labelDescription}</i>`;
-              tooltipParts.push(labelText);
+              canariasComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            } else if (canariasValue !== null && canariasValue === 0) {
+              canariasComparisonHtml = `
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
             }
           }
-            
-          tooltipDataElement.innerHTML = tooltipParts.join('<br>');
+          
+          // Renderizar el tooltip con el nuevo diseño
+          tooltipContentElement.innerHTML = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+              <!-- Header con el nombre del país -->
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                <!-- 
+                  Para usar las banderas SVG en React, importa los componentes de banderas desde '../logos/country-flags':
+                  
+                  import { CountryFlags } from '../logos/country-flags';
+                  
+                  Y luego utilízalos como componentes React:
+                  {normalizedName.includes('spain') && <CountryFlags.Spain className="w-8 h-6 mr-2" />}
+                  {normalizedName.includes('sweden') && <CountryFlags.Sweden className="w-8 h-6 mr-2" />}
+                  {normalizedName.includes('european union') && <CountryFlags.EU className="w-8 h-6 mr-2" />}
+                  
+                  Sin embargo, como estamos usando innerHTML, usaremos las URLs de flagcdn:
+                -->
+                <div class="flag-container w-8 h-6 mr-2 rounded overflow-hidden">
+                  ${(() => {
+                    const normalizedName = normalizeText(displayName);
+                    
+                    // Buscar código de país basado en el nombre normalizado
+                    const getCountryCode = (normalizedName: string): string => {
+                      // 1. Primero buscar en el dataset por ISO3
+                      const countryItem = data.find(item => {
+                        if (item.ISO3) {
+                          // Buscar ese ISO3 en countryFlags
+                          return countryFlags.some(flagItem => 
+                            flagItem.iso3 === item.ISO3 && 
+                            (normalizeText(item.Country).includes(normalizedName) || 
+                             normalizeText(item.País || "").includes(normalizedName))
+                          );
+                        }
+                        return false;
+                      });
+                      
+                      if (countryItem?.ISO3) {
+                        // Si encontramos un ISO3, buscar el código de 2 letras correspondiente
+                        const flagItem = countryFlags.find(flag => flag.iso3 === countryItem.ISO3);
+                        if (flagItem?.code) {
+                          return flagItem.code.toLowerCase();
+                        }
+                      }
+                      
+                      // 2. Si no encontramos por ISO3, usar los casos específicos
+                      // Casos especiales
+                      if (normalizedName.includes('union europea') || normalizedName.includes('european union')) {
+                        return 'eu'; // La UE tiene un código especial en flagcdn
+                      } else if (normalizedName.includes('zona euro') || normalizedName.includes('euro area')) {
+                        return 'eu'; // Usamos también la bandera de la UE para la zona euro
+                      } else if (normalizedName.includes('espana') || normalizedName.includes('españa') || normalizedName.includes('spain')) {
+                        return 'es';
+                      } else if (normalizedName.includes('alemania') || normalizedName.includes('germany')) {
+                        return 'de';
+                      } else if (normalizedName.includes('francia') || normalizedName.includes('france')) {
+                        return 'fr';
+                      } else if (normalizedName.includes('reino unido') || normalizedName.includes('united kingdom') || normalizedName.includes('uk')) {
+                        return 'gb';
+                      } else if (normalizedName.includes('italia') || normalizedName.includes('italy')) {
+                        return 'it';
+                      } else if (normalizedName.includes('suecia') || normalizedName.includes('sweden')) {
+                        return 'se';
+                      } else if (normalizedName.includes('finlandia') || normalizedName.includes('finland')) {
+                        return 'fi';
+                      } else if (normalizedName.includes('canarias') || normalizedName.includes('canary islands')) {
+                        return 'es-ct'; // Usamos un código regional para Canarias
+                      }
+                      // Nuevos casos específicos para países que no muestran correctamente su bandera
+                      else if (normalizedName.includes('belgica') || normalizedName.includes('belgium')) {
+                        return 'be';
+                      } else if (normalizedName.includes('dinamarca') || normalizedName.includes('denmark')) {
+                        return 'dk';
+                      } else if (normalizedName.includes('islandia') || normalizedName.includes('iceland')) {
+                        return 'is';
+                      } else if (normalizedName.includes('noruega') || normalizedName.includes('norway')) {
+                        return 'no';
+                      } else if (normalizedName.includes('eslovenia') || normalizedName.includes('slovenia')) {
+                        return 'si';
+                      } else if (normalizedName.includes('paises bajos') || normalizedName.includes('netherlands') || normalizedName.includes('holanda')) {
+                        return 'nl';
+                      } else if (normalizedName.includes('republica checa') || normalizedName.includes('czech') || normalizedName.includes('czechia')) {
+                        return 'cz';
+                      } else if (normalizedName.includes('polonia') || normalizedName.includes('poland')) {
+                        return 'pl';
+                      } else if (normalizedName.includes('grecia') || normalizedName.includes('greece')) {
+                        return 'gr';
+                      } else if (normalizedName.includes('croacia') || normalizedName.includes('croatia')) {
+                        return 'hr';
+                      } else if (normalizedName.includes('hungria') || normalizedName.includes('hungary')) {
+                        return 'hu';
+                      } else if (normalizedName.includes('lituania') || normalizedName.includes('lithuania')) {
+                        return 'lt';
+                      } else if (normalizedName.includes('eslovaquia') || normalizedName.includes('slovakia')) {
+                        return 'sk';
+                      } else if (normalizedName.includes('luxemburgo') || normalizedName.includes('luxembourg')) {
+                        return 'lu';
+                      } else if (normalizedName.includes('letonia') || normalizedName.includes('latvia')) {
+                        return 'lv';
+                      } else if (normalizedName.includes('chipre') || normalizedName.includes('cyprus')) {
+                        return 'cy';
+                      } else if (normalizedName.includes('rusia') || normalizedName.includes('russia')) {
+                        return 'ru';
+                      } else if (normalizedName.includes('corea del sur') || normalizedName.includes('south korea')) {
+                        return 'kr';
+                      } else if (normalizedName.includes('japon') || normalizedName.includes('japan')) {
+                        return 'jp';
+                      } else if (normalizedName.includes('suiza') || normalizedName.includes('switzerland')) {
+                        return 'ch';
+                      } else if (normalizedName.includes('macedonia del norte') || normalizedName.includes('north macedonia')) {
+                        return 'mk';
+                      } else if (normalizedName.includes('turquia') || normalizedName.includes('turkiye') || normalizedName.includes('turkey')) {
+                        return 'tr';
+                      }
+                      
+                      // 3. Si aún no encontramos, buscar en el JSON de banderas por nombre
+                      const countryData = countryFlags.find((country: CountryFlag) => {
+                        const normalizedCountry = normalizeText(country.country);
+                        return normalizedName.includes(normalizedCountry);
+                      });
+                      
+                      return countryData?.code?.toLowerCase() || 'un'; // Devolvemos un por defecto (Naciones Unidas)
+                    };
+                    
+                    const countryCode = getCountryCode(normalizedName);
+                    return `<img src="https://flagcdn.com/${countryCode}.svg" class="w-full h-full object-cover" alt="${displayName}" />`;
+                  })()}
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">${displayName}</h3>
+              </div>
+              
+              <!-- Contenido principal -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-4">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <span>${language === 'es' ? 'Inversión I+D:' : 'R&D Investment:'}</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="text-2xl font-bold text-blue-700">${formattedValue}%</span>
+                    <span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'del PIB' : 'of GDP'}</span>
+                    ${labelValue ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${labelValue}</span>` : ''}
+                  </div>
+                </div>
+                
+                <!-- Ranking -->
+                <div class="mb-4 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2"><path d="M12 17.98 4.91 21l1.43-6.15-4.72-4.13 6.22-.52L12 4.77l4.16 5.43 6.22.52-4.72 4.13L19.09 21z"></path></svg>
+                  <span class="font-medium">Rank </span>
+                  <span class="font-bold text-lg mx-1">${rank}</span>
+                  <span class="text-gray-600">${language === 'es' ? `de ${totalCountries}` : `of ${totalCountries}`}</span>
+                </div>
+                
+                <!-- Comparaciones -->
+                <div class="space-y-2 border-t border-gray-100 pt-3">
+                  <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+                  ${euComparisonHtml}
+                  ${spainComparisonHtml}
+                  ${canariasComparisonHtml}
+                </div>
+              </div>
+              
+              <!-- Footer -->
+              ${labelValue && labelDescriptions[labelValue] ? 
+                `<div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                  <span>${labelValue} - ${labelDescriptions[labelValue][language]}</span>
+                </div>` 
+                : ''}
+            </div>
+          `;
         }
       } else {
         // Usar la función de ocultar tooltip
@@ -616,6 +829,42 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     }
   };
 
+  // Función para obtener el valor de inversión de Canarias para el año y sector seleccionados
+  const getCanariasValue = (autonomousCommunitiesData: AutonomousCommunityData[], selectedYear: number, selectedSector: string): number | null => {
+    if (!autonomousCommunitiesData || autonomousCommunitiesData.length === 0) return null;
+    
+    // Mapeo del sector seleccionado al nombre que corresponde en el CSV de comunidades autónomas
+    const sectorMapping: Record<string, string> = {
+      'total': 'All Sectors',
+      'business': 'Business enterprise sector',
+      'government': 'Government sector',
+      'education': 'Higher education sector',
+      'nonprofit': 'Private non-profit sector'
+    };
+    
+    const sectorToFind = sectorMapping[selectedSector] || 'All Sectors';
+    
+    // Buscar Canarias en los datos de comunidades autónomas
+    const canariasData = autonomousCommunitiesData.filter(item => {
+      const isCommunity = normalizeText(item["Comunidad Limpio"]) === "canarias";
+      const yearMatch = parseInt(item["Año"]) === selectedYear;
+      const sectorMatch = item["Sector"] === sectorToFind;
+      return isCommunity && yearMatch && sectorMatch;
+    });
+    
+    if (canariasData.length === 0) return null;
+    
+    // Obtener el valor del % PIB
+    const valueStr = canariasData[0]["% PIB I+D"] || '';
+    if (!valueStr) return null;
+    
+    try {
+      return parseFloat(valueStr.replace(',', '.'));
+    } catch {
+      return null;
+    }
+  };
+
   // Estilos para el contenedor con scroll - altura específica para coincidir con el mapa
   const scrollContainerStyle: React.CSSProperties = {
     height: '400px',
@@ -674,26 +923,19 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         </div>
       )}
       
-      {/* Tooltip personalizado con el mismo estilo que el mapa */}
+      {/* Tooltip personalizado con nuevo diseño */}
       <div 
         ref={tooltipRef}
-        className="country-tooltip absolute z-50 bg-white border border-gray-200 rounded shadow-md pointer-events-none"
+        className="country-tooltip absolute z-50 pointer-events-none"
         style={{
           display: 'none',
-          position: 'fixed', // Usar posición fija para evitar problemas con contenedores anidados
+          position: 'fixed',
           opacity: 0,
           transition: 'opacity 0.1s ease-in-out',
-          padding: '10px',
-          maxWidth: '220px',
-          minWidth: '180px',
-          borderWidth: '1px',
-          borderRadius: '4px',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+          maxWidth: '300px'
         }}
       >
-        <p className="country-name font-bold text-black mb-1 text-sm"></p>
-        <p className="tooltip-data text-black text-sm"></p>
+        <div className="tooltip-content"></div>
       </div>
     </div>
   );

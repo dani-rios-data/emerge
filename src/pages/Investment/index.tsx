@@ -4,6 +4,21 @@ import CountryRankingChart from '../../components/CountryRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
+// Interfaz para los datos de comunidades autónomas
+interface AutonomousCommunityData {
+  "Comunidad (Original)": string;
+  "Comunidad Limpio": string;
+  "Comunidad en Inglés": string;
+  "Año": string;
+  "Sector Id": string;
+  "Sector": string;
+  "Gasto en I+D (Miles €)": string;
+  "PIB (Miles €)": string;
+  "% PIB I+D": string;
+  "Sector Nombre": string;
+  [key: string]: string;
+}
+
 // Interfaz para los datos CSV con tipado seguro para uso interno en este componente
 interface ExtendedEuropeCSVData {
   Country: string;
@@ -96,6 +111,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   const [selectedSector, setSelectedSector] = useState<string>("All Sectors"); // Usar el valor exacto del CSV
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [labelsData, setLabelsData] = useState<LabelData[]>([]);
+  const [autonomousCommunitiesData, setAutonomousCommunitiesData] = useState<AutonomousCommunityData[]>([]);
   
   // Función auxiliar para acceder a los textos según el idioma actual
   const t = texts[language];
@@ -153,6 +169,28 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           
           setLabelsData(labelsResult.data);
           console.log("Etiquetas cargadas:", labelsResult.data.length);
+        }
+        
+        // Cargar datos de comunidades autónomas
+        const communityResponse = await fetch('./data/GDP_data/gasto_ID_comunidades_porcentaje_pib.csv');
+        if (!communityResponse.ok) {
+          console.warn(`Advertencia: No se pudieron cargar los datos de comunidades autónomas: ${communityResponse.status} - ${communityResponse.statusText}`);
+        } else {
+          const communityCSV = await communityResponse.text();
+          
+          // Procesar CSV de comunidades autónomas
+          const communityResult = Papa.parse<AutonomousCommunityData>(communityCSV, {
+            header: true,
+            delimiter: ';', // El archivo usa punto y coma
+            skipEmptyLines: true
+          });
+          
+          if (communityResult.errors && communityResult.errors.length > 0) {
+            console.warn("Advertencias al procesar CSV de comunidades autónomas:", communityResult.errors);
+          }
+          
+          setAutonomousCommunitiesData(communityResult.data);
+          console.log("Datos de comunidades autónomas cargados:", communityResult.data.length);
         }
         
         // Procesamiento posterior: asegurar que Value tenga el valor de %GDP
@@ -380,6 +418,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 language={language} 
                 selectedSector={selectedSector}
                 labels={labelsData}
+                autonomousCommunitiesData={autonomousCommunitiesData}
               />
             </div>
             
@@ -392,6 +431,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 language={language}
                 selectedSector={getSectorId(selectedSector)}
                 labels={labelsData}
+                autonomousCommunitiesData={autonomousCommunitiesData}
               />
             </div>
           </div>
