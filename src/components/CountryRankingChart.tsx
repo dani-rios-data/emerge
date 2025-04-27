@@ -499,14 +499,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (euValue !== null && euValue === 0) {
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -526,14 +526,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (spainValue !== null && spainValue === 0) {
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -553,14 +553,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (canariasValue !== null && canariasValue === 0) {
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;

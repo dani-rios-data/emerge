@@ -288,19 +288,19 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   const SupranationalEntities = () => (
     <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
       <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
-        {t.supranational}
+        Entidades supranacionales
       </div>
       <div className="border border-blue-200 rounded-b-md border-t-0 p-3">
-        <div className="mb-3">
-          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.europeanUnion}</h3>
+        <div className="mb-3 flex">
+          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.europeanUnion}</h3>
           <p className="text-xs text-gray-600">{t.euFull}</p>
         </div>
-        <div className="mb-3">
-          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.euroArea20}</h3>
+        <div className="mb-3 flex">
+          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.euroArea20}</h3>
           <p className="text-xs text-gray-600">{t.euroArea20Full}</p>
         </div>
-        <div>
-          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.euroArea19}</h3>
+        <div className="flex">
+          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.euroArea19}</h3>
           <p className="text-xs text-gray-600">{t.euroArea19Full}</p>
         </div>
       </div>

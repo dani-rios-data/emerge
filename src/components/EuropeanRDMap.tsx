@@ -1082,14 +1082,14 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
               
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (!isEU) {
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1105,14 +1105,14 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
               
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (!isSpain) {
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1128,14 +1128,14 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
               
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (!isCanarias) {
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1293,13 +1293,13 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         .attr('transform', `translate(20, ${height - 170})`);
       
       const legend = [
+        { color: colorPalette.NULL, label: String(t.noData) },
+        { color: colorPalette.ZERO, label: `0.00%` },
         { color: colorPalette.MIN, label: `< ${formatValue(threshold1)}%` },
         { color: colorPalette.LOW, label: `${formatValue(threshold1)} - ${formatValue(threshold2)}%` },
         { color: colorPalette.MID, label: `${formatValue(threshold2)} - ${formatValue(threshold3)}%` },
         { color: colorPalette.HIGH, label: `${formatValue(threshold3)} - ${formatValue(threshold4)}%` },
-        { color: colorPalette.MAX, label: `> ${formatValue(threshold4)}%` },
-        { color: colorPalette.ZERO, label: `0.00%` },
-        { color: colorPalette.NULL, label: String(t.noData) }
+        { color: colorPalette.MAX, label: `> ${formatValue(threshold4)}%` }
       ];
       
       // Con tipos explícitos para corregir errores del linter
