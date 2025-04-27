@@ -68,7 +68,11 @@ const texts = {
     definitionDiffersProvisional: "Definición difiere, provisional",
     breakInTimeSeriesDefinitionDiffers: "Ruptura en series temporales, definición difiere",
     breakInTimeSeriesProvisional: "Ruptura en series temporales, provisional",
-    lowReliability: "Baja fiabilidad"
+    lowReliability: "Baja fiabilidad",
+    // Nuevos textos para las secciones
+    keyMetricsTitle: "Métricas clave",
+    euComparisonTitle: "Comparación entre la UE y países",
+    spanishRegionsTitle: "Comparación por comunidades autónomas de España"
   },
   en: {
     investmentTitle: "R&D Investment",
@@ -95,7 +99,11 @@ const texts = {
     definitionDiffersProvisional: "Definition differs, provisional",
     breakInTimeSeriesDefinitionDiffers: "Break in time series, definition differs",
     breakInTimeSeriesProvisional: "Break in time series, provisional",
-    lowReliability: "Low reliability"
+    lowReliability: "Low reliability",
+    // Nuevos textos para las secciones
+    keyMetricsTitle: "Key Metrics",
+    euComparisonTitle: "EU and Countries Comparison",
+    spanishRegionsTitle: "Spanish Autonomous Communities Comparison"
   }
 };
 
@@ -360,43 +368,15 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     </div>
   );
 
+  // Componente para título de sección
+  const SectionTitle = ({ title }: { title: string }) => (
+    <h2 className="text-lg font-bold mb-4 text-teal-800 border-b border-teal-200 pb-2">
+      {title}
+    </h2>
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      {/* Selectores de año y sector en la misma fila */}
-      <div className="flex flex-wrap items-center mb-6 gap-4">
-        <div className="flex items-center">
-          <label className="font-semibold text-gray-700 mr-2">
-            {t.year}
-          </label>
-          <select 
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="flex items-center">
-          <label className="font-semibold text-gray-700 mr-2">
-            {t.sector}
-          </label>
-          <select 
-            value={getSectorId(selectedSector)}
-            onChange={(e) => handleSectorChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {rdSectors.map(sector => (
-              <option key={sector.id} value={sector.id}>
-                {sector.name[language]}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <p className="text-gray-500">{t.loading}</p>
@@ -407,39 +387,95 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         </div>
       ) : (
         <>
-          {/* Primera fila: Mapa y Gráfica */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Mapa de Europa */}
-            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-              <EuropeanRDMap 
-                // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
-                data={europeData} 
-                selectedYear={selectedYear} 
-                language={language} 
-                selectedSector={selectedSector}
-                labels={labelsData}
-                autonomousCommunitiesData={autonomousCommunitiesData}
-              />
-            </div>
-            
-            {/* Gráfico de ranking de países */}
-            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-              <CountryRankingChart 
-                // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
-                data={europeData} 
-                selectedYear={selectedYear} 
-                language={language}
-                selectedSector={getSectorId(selectedSector)}
-                labels={labelsData}
-                autonomousCommunitiesData={autonomousCommunitiesData}
-              />
+          {/* Sección 1: Key Metrics */}
+          <div className="mb-10">
+            <SectionTitle title={t.keyMetricsTitle} />
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic">
+              {/* Contenido de Key Metrics se añadirá posteriormente */}
             </div>
           </div>
+          
+          {/* Sección 2: Comparación entre la UE y países */}
+          <div className="mb-10">
+            <SectionTitle title={t.euComparisonTitle} />
+            
+            {/* Selectores de año y sector */}
+            <div className="flex flex-wrap items-center mb-6 gap-4">
+              <div className="flex items-center">
+                <label className="font-semibold text-gray-700 mr-2">
+                  {t.year}
+                </label>
+                <select 
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-center">
+                <label className="font-semibold text-gray-700 mr-2">
+                  {t.sector}
+                </label>
+                <select 
+                  value={getSectorId(selectedSector)}
+                  onChange={(e) => handleSectorChange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {rdSectors.map(sector => (
+                    <option key={sector.id} value={sector.id}>
+                      {sector.name[language]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            {/* Primera fila: Mapa y Gráfica */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Mapa de Europa */}
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+                <EuropeanRDMap 
+                  // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                  data={europeData} 
+                  selectedYear={selectedYear} 
+                  language={language} 
+                  selectedSector={selectedSector}
+                  labels={labelsData}
+                  autonomousCommunitiesData={autonomousCommunitiesData}
+                />
+              </div>
+              
+              {/* Gráfico de ranking de países */}
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+                <CountryRankingChart 
+                  // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
+                  data={europeData} 
+                  selectedYear={selectedYear} 
+                  language={language}
+                  selectedSector={getSectorId(selectedSector)}
+                  labels={labelsData}
+                  autonomousCommunitiesData={autonomousCommunitiesData}
+                />
+              </div>
+            </div>
 
-          {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ObservationFlags />
-            <SupranationalEntities />
+            {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ObservationFlags />
+              <SupranationalEntities />
+            </div>
+          </div>
+          
+          {/* Sección 3: Comparación por comunidades autónomas de España */}
+          <div className="mb-6">
+            <SectionTitle title={t.spanishRegionsTitle} />
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic">
+              {/* Contenido de comparación por comunidades autónomas se añadirá posteriormente */}
+            </div>
           </div>
         </>
       )}
