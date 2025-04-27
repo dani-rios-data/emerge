@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
-import CountryRankingChart, { CHART_PALETTE } from '../../components/CountryRankingChart';
+import CountryRankingChart from '../../components/CountryRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
@@ -13,6 +13,16 @@ interface ExtendedEuropeCSVData {
   Value: string;
   '%GDP': string;
   ISO3?: string;
+  [key: string]: string | undefined;
+}
+
+// Interfaz para los datos de etiquetas
+export interface LabelData {
+  Country: string;
+  País: string;
+  Year: string;
+  Sector: string;
+  Label: string;
   [key: string]: string | undefined;
 }
 
@@ -85,6 +95,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   const [selectedYear, setSelectedYear] = useState<number>(2021); // Año inicial, se actualizará al más reciente
   const [selectedSector, setSelectedSector] = useState<string>("All Sectors"); // Usar el valor exacto del CSV
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [labelsData, setLabelsData] = useState<LabelData[]>([]);
   
   // Función auxiliar para acceder a los textos según el idioma actual
   const t = texts[language];
@@ -121,6 +132,28 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         }
         
         console.log("Muestra de datos procesados:", europeResult.data.slice(0, 3));
+        
+        // Cargar datos de etiquetas (labels)
+        const labelsResponse = await fetch('./data/GDP_data/labels_consolidado.csv');
+        if (!labelsResponse.ok) {
+          console.warn(`Advertencia: No se pudieron cargar las etiquetas: ${labelsResponse.status} - ${labelsResponse.statusText}`);
+        } else {
+          const labelsCSV = await labelsResponse.text();
+          
+          // Procesar CSV de etiquetas
+          const labelsResult = Papa.parse<LabelData>(labelsCSV, {
+            header: true,
+            delimiter: ';', // El archivo usa punto y coma
+            skipEmptyLines: true
+          });
+          
+          if (labelsResult.errors && labelsResult.errors.length > 0) {
+            console.warn("Advertencias al procesar CSV de etiquetas:", labelsResult.errors);
+          }
+          
+          setLabelsData(labelsResult.data);
+          console.log("Etiquetas cargadas:", labelsResult.data.length);
+        }
         
         // Procesamiento posterior: asegurar que Value tenga el valor de %GDP
         const processedData = europeResult.data.map(item => ({
@@ -213,27 +246,24 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     return sector?.id || 'total';
   };
 
-  // Componente para mostrar la leyenda de entidades supranacionales
+  // Componente para mostrar entidades supranacionales como la UE y Zona Euro
   const SupranationalEntities = () => (
     <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
       <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
-        <span className="text-xs">Supranational entities</span>
+        {t.supranational}
       </div>
-      <div className="border border-blue-200 rounded-b-md border-t-0">
-        <div className="flex border-b border-blue-100 py-1.5 px-2 items-center">
-          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.GREEN }}></div>
-          <div className="text-xs mr-2">{t.euroArea19}</div>
-          <div className="text-xs text-gray-600">{t.euroArea19Full}</div>
+      <div className="border border-blue-200 rounded-b-md border-t-0 p-3">
+        <div className="mb-3">
+          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.europeanUnion}</h3>
+          <p className="text-xs text-gray-600">{t.euFull}</p>
         </div>
-        <div className="flex border-b border-blue-100 py-1.5 px-2 items-center">
-          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.GREEN }}></div>
-          <div className="text-xs mr-2">{t.euroArea20}</div>
-          <div className="text-xs text-gray-600">{t.euroArea20Full}</div>
+        <div className="mb-3">
+          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.euroArea20}</h3>
+          <p className="text-xs text-gray-600">{t.euroArea20Full}</p>
         </div>
-        <div className="flex py-1.5 px-2 items-center">
-          <div className="w-4 h-4 rounded-sm mr-3" style={{ backgroundColor: CHART_PALETTE.YELLOW }}></div>
-          <div className="text-xs mr-2">{t.europeanUnion}</div>
-          <div className="text-xs text-gray-600">{t.euFull}</div>
+        <div>
+          <h3 className="text-xs font-semibold text-gray-800 mb-1">{t.euroArea19}</h3>
+          <p className="text-xs text-gray-600">{t.euroArea19Full}</p>
         </div>
       </div>
     </div>
@@ -349,6 +379,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 selectedYear={selectedYear} 
                 language={language} 
                 selectedSector={selectedSector}
+                labels={labelsData}
               />
             </div>
             
@@ -360,6 +391,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 selectedYear={selectedYear} 
                 language={language}
                 selectedSector={getSectorId(selectedSector)}
+                labels={labelsData}
               />
             </div>
           </div>

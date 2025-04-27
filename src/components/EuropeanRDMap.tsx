@@ -34,12 +34,22 @@ interface GeoJsonData {
   features: GeoJsonFeature[];
 }
 
+// Interfaz para los datos de etiquetas
+interface LabelData {
+  Country: string;
+  País: string;
+  Year: string;
+  Sector: string;
+  Label: string;
+}
+
 interface EuropeanRDMapProps {
   data: EuropeCSVData[];
   selectedYear: number;
   selectedSector: string;
   language: 'es' | 'en';
   onClick?: (country: string) => void;
+  labels?: LabelData[]; // Añadir la propiedad de etiquetas
 }
 
 // URL del archivo GeoJSON de Europa
@@ -75,7 +85,16 @@ const getSectorPalette = (sectorId: string) => {
 };
 
 // Textos localizados para el mapa
-const mapTexts = {
+type MapTexts = {
+  es: {
+    [key: string]: string;
+  };
+  en: {
+    [key: string]: string;
+  };
+};
+
+const mapTexts: MapTexts = {
   es: {
     title: "Inversión en I+D por país",
     loading: "Cargando mapa...",
@@ -148,6 +167,45 @@ function getCountryIso3(feature: GeoJsonFeature): string {
   const props = feature.properties || {};
   // Intentar obtener el código ISO3 de diferentes propiedades posibles
   return (props.ISO3 || props.iso_a3 || props.ADM0_A3 || '') as string;
+}
+
+// Función para obtener el valor de la UE
+function getEUValue(data: EuropeCSVData[], yearStr: string, sector: string): number | null {
+  const euData = data.filter(item => {
+    const isEU = (item.Country && normalizarTexto(String(item.Country)).includes('european union')) || 
+              (item.País && normalizarTexto(String(item.País)).includes('union europea'));
+    const yearMatch = item.Year === yearStr;
+    const sectorMatch = item.Sector === sector;
+    return isEU && yearMatch && sectorMatch;
+  });
+  
+  if (euData.length === 0) return null;
+  
+  try {
+    return parseFloat(String(euData[0]['%GDP']).replace(',', '.'));
+  } catch {
+    return null;
+  }
+}
+
+// Función para obtener el valor de España
+function getSpainValue(data: EuropeCSVData[], yearStr: string, sector: string): number | null {
+  const spainData = data.filter(item => {
+    const isSpain = (item.Country && normalizarTexto(String(item.Country)).includes('spain')) || 
+                  (item.País && normalizarTexto(String(item.País)).includes('espana') || 
+                   item.País && normalizarTexto(String(item.País)).includes('españa'));
+    const yearMatch = item.Year === yearStr;
+    const sectorMatch = item.Sector === sector;
+    return isSpain && yearMatch && sectorMatch;
+  });
+  
+  if (spainData.length === 0) return null;
+  
+  try {
+    return parseFloat(String(spainData[0]['%GDP']).replace(',', '.'));
+  } catch {
+    return null;
+  }
 }
 
 // Función para obtener el valor del país basado en los datos, año y sector seleccionados
@@ -318,7 +376,55 @@ const getColorForValue = (value: number | null, palette: Record<string, string>,
   return palette.MAX;
 };
 
-const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick }) => {
+// Función para obtener la descripción de una etiqueta
+function getLabelDescription(label: string, language: 'es' | 'en'): string {
+  const descriptions: Record<string, {es: string, en: string}> = {
+    'e': {
+      es: 'Estimado',
+      en: 'Estimated'
+    },
+    'p': {
+      es: 'Provisional',
+      en: 'Provisional'
+    },
+    'd': {
+      es: 'Definición difiere',
+      en: 'Definition differs'
+    },
+    'b': {
+      es: 'Ruptura en series temporales',
+      en: 'Break in time series'
+    },
+    'dp': {
+      es: 'Definición difiere, provisional',
+      en: 'Definition differs, provisional'
+    },
+    'ep': {
+      es: 'Estimado, provisional',
+      en: 'Estimated, provisional'
+    },
+    'bp': {
+      es: 'Ruptura en series temporales, provisional',
+      en: 'Break in time series, provisional'
+    },
+    'bd': {
+      es: 'Ruptura en series temporales, definición difiere',
+      en: 'Break in time series, definition differs'
+    },
+    'de': {
+      es: 'Definición difiere, estimado',
+      en: 'Definition differs, estimated'
+    },
+    'u': {
+      es: 'Baja fiabilidad',
+      en: 'Low reliability'
+    }
+  };
+  
+  return descriptions[label] ? descriptions[label][language] : '';
+}
+
+const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick, labels = [] }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
@@ -452,6 +558,38 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       const mapGroup = svg.append('g')
         .attr('transform', 'translate(0, 30)'); // Desplazar el mapa para dejar espacio al título
       
+      // Preparar datos para poder calcular el ranking
+      const countryValues: Array<{ feature: GeoJsonFeature; value: number | null }> = [];
+      
+      // Primero, recopilamos todos los valores de los países
+      geojsonData.features.forEach(feature => {
+        const value = getCountryValueOptimized(feature);
+        if (value !== null) {
+          countryValues.push({ feature, value });
+        }
+      });
+      
+      // Ordenar países por valor de mayor a menor (para calcular ranking)
+      const sortedCountries = countryValues
+        .sort((a, b) => (b.value || 0) - (a.value || 0));
+      
+      // Función para obtener el ranking de un país
+      const getCountryRank = (feature: GeoJsonFeature): { rank: number, total: number } | null => {
+        const value = getCountryValueOptimized(feature);
+        if (value === null) return null;
+        
+        const index = sortedCountries.findIndex(
+          item => item.feature === feature
+        );
+        
+        if (index === -1) return null;
+        
+        return {
+          rank: index + 1, // +1 porque los índices empiezan en 0
+          total: sortedCountries.length
+        };
+      };
+      
       // Renderizar países
       mapGroup.selectAll('path')
         .data(geojsonData.features)
@@ -471,8 +609,29 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
             .attr('stroke', '#333')
             .attr('stroke-width', 1);
             
-          const countryName = getCountryName(d);
+          // Obtener el nombre del país en el idioma correspondiente
+          let countryName;
+          const countryIso3 = getCountryIso3(d);
+          const feature = d.properties || {};
+          
+          // Buscar el país en los datos originales para obtener el nombre correcto
+          const countryData = data.find(item => 
+            (countryIso3 && item.ISO3 && normalizarTexto(item.ISO3) === normalizarTexto(countryIso3)) ||
+            normalizarTexto(item.Country) === normalizarTexto(getCountryName(d))
+          );
+          
+          if (language === 'es') {
+            // Para español, intentar usar el nombre en español de los datos
+            countryName = countryData?.País || feature.NAME_ES || getCountryName(d);
+          } else {
+            // Para inglés, usar el nombre en inglés de los datos
+            countryName = countryData?.Country || feature.NAME_EN || feature.NAME || getCountryName(d);
+          }
+          
           const value = getCountryValueOptimized(d);
+          
+          // Obtener el ranking del país
+          const rankInfo = getCountryRank(d);
           
           // Positioning directly with clientX/clientY for better accuracy
           const tooltip = d3.select('.country-tooltip');
@@ -481,9 +640,131 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           tooltip.select('.country-name').text(countryName || 'Desconocido');
           
           if (value !== null) {
-            tooltip.select('.tooltip-data').html(`${t.rdInvestment}: <b>${value.toFixed(2)}% ${t.ofGDP}</b>`);
+            // Cambiar el formato para que coincida con la imagen de ejemplo y el porcentaje se vea destacado
+            const valueStr = value.toFixed(2);
+            
+            // Buscar etiqueta para este país y año
+            let label = '';
+            if (labels && labels.length > 0) {
+              // Buscar etiqueta para este país y sector
+              const matchingLabel = labels.find(item => {
+                // Normalizar nombres para comparación
+                const itemCountryNormalized = normalizarTexto(String(item.Country || ''));
+                const itemPaisNormalized = normalizarTexto(String(item.País || ''));
+                const countryNameNormalized = normalizarTexto(String(countryName));
+                
+                // Verificar si coincide el país (en inglés o español)
+                const countryMatches = 
+                  itemCountryNormalized === countryNameNormalized ||
+                  itemPaisNormalized === countryNameNormalized;
+                
+                // Verificar si coincide el año y sector
+                const yearMatches = item.Year === selectedYear.toString();
+                const sectorMatches = item.Sector === selectedSector;
+                
+                return countryMatches && yearMatches && sectorMatches;
+              });
+              
+              if (matchingLabel && matchingLabel.Label) {
+                label = matchingLabel.Label;
+              }
+            }
+            
+            // Añadir información del ranking si está disponible
+            const rankText = rankInfo 
+              ? (language === 'es' 
+                 ? `Rank ${rankInfo.rank} de ${rankInfo.total}`
+                 : `Rank ${rankInfo.rank} of ${rankInfo.total}`)
+              : '';
+              
+            // Formatear el HTML incluyendo el ranking y la etiqueta (label) si existe
+            const valueWithLabel = label 
+              ? `<b>${valueStr}%</b> (${label})` 
+              : `<b>${valueStr}%</b>`;
+              
+            const tooltipParts = language === 'es' 
+              ? [`Inversión I+D: ${valueWithLabel} del PIB`]
+              : [`R&D Investment: ${valueWithLabel} of GDP`];
+              
+            // Añadir el ranking si existe
+            if (rankText) {
+              tooltipParts.push(rankText);
+            }
+            
+            // Añadir comparación con la UE si no es la propia UE
+            const isEU = (countryName && (
+              normalizarTexto(String(countryName)).includes('union europea') || 
+              normalizarTexto(String(countryName)).includes('european union')
+            ));
+            
+            // Verificar si es España
+            const isSpain = (countryName && (
+              normalizarTexto(String(countryName)).includes('spain') || 
+              normalizarTexto(String(countryName)).includes('espana') ||
+              normalizarTexto(String(countryName)).includes('españa')
+            ));
+            
+            if (!isEU) {
+              const euValue = getEUValue(data, selectedYear.toString(), selectedSector);
+              if (euValue !== null && euValue > 0) {
+                const difference = value - euValue;
+                const percentDiff = (difference / euValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
+                const color = isPositive ? '#009900' : '#CC0000';
+                
+                const comparisonText = language === 'es'
+                  ? `vs UE: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`
+                  : `vs EU: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`;
+                  
+                tooltipParts.push(comparisonText);
+              } else if (euValue !== null && euValue === 0) {
+                // Si el valor de la UE es 0, mostrar "--" en gris
+                const comparisonText = language === 'es'
+                  ? `vs UE: <span style="color:#888888">--</span>`
+                  : `vs EU: <span style="color:#888888">--</span>`;
+                  
+                tooltipParts.push(comparisonText);
+              }
+            }
+            
+            // Añadir comparación con España si no es España
+            if (!isSpain) {
+              const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
+              if (spainValue !== null && spainValue > 0) {
+                const difference = value - spainValue;
+                const percentDiff = (difference / spainValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
+                const color = isPositive ? '#009900' : '#CC0000';
+                
+                const comparisonText = language === 'es'
+                  ? `vs España: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`
+                  : `vs Spain: <span style="color:${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>`;
+                  
+                tooltipParts.push(comparisonText);
+              } else if (spainValue !== null && spainValue === 0) {
+                // Si el valor de España es 0, mostrar "--" en gris
+                const comparisonText = language === 'es'
+                  ? `vs España: <span style="color:#888888">--</span>`
+                  : `vs Spain: <span style="color:#888888">--</span>`;
+                
+                tooltipParts.push(comparisonText);
+              }
+            }
+            
+            // Añadir descripción de la etiqueta si existe
+            if (label) {
+              const labelDescription = getLabelDescription(label, language);
+              if (labelDescription) {
+                const labelText = `<i>${label} - ${labelDescription}</i>`;
+                tooltipParts.push(labelText);
+              }
+            }
+            
+            tooltip.select('.tooltip-data').html(tooltipParts.join('<br>'));
           } else {
-            tooltip.select('.tooltip-data').text(t.noData);
+            tooltip.select('.tooltip-data').html(String(t.noData));
           }
           
           // Posicionar y mostrar el tooltip con un pequeño desplazamiento
@@ -546,7 +827,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         { color: colorPalette.MID, label: `${formatValue(threshold2)} - ${formatValue(threshold3)}%` },
         { color: colorPalette.HIGH, label: `${formatValue(threshold3)} - ${formatValue(threshold4)}%` },
         { color: colorPalette.MAX, label: `> ${formatValue(threshold4)}%` },
-        { color: colorPalette.NULL, label: t.noData }
+        { color: colorPalette.NULL, label: String(t.noData) }
       ];
       
       // Con tipos explícitos para corregir errores del linter
@@ -569,7 +850,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
     };
 
     renderMap();
-  }, [geojsonData, getCountryValueOptimized, language, onClick, colorPalette, valueRange, t]);
+  }, [geojsonData, getCountryValueOptimized, language, onClick, colorPalette, valueRange, t, labels]);
   
   return (
     <div className="relative w-full h-full" ref={mapContainerRef}>
@@ -603,16 +884,23 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
       
       {/* Tooltip permanente en el DOM, controlado por D3 directamente */}
       <div 
-        className="country-tooltip absolute z-50 p-2 bg-white border border-gray-300 rounded shadow-md pointer-events-none"
+        className="country-tooltip absolute z-50 bg-white border border-gray-200 rounded shadow-md pointer-events-none"
         style={{
           display: 'none',
           position: 'fixed', // Usar posición fija para evitar problemas con contenedores anidados
           opacity: 0,
           transition: 'opacity 0.1s ease-in-out',
+          padding: '10px',
+          maxWidth: '220px',
+          minWidth: '180px',
+          borderWidth: '1px',
+          borderRadius: '4px',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
         }}
       >
-        <p className="country-name font-bold text-black"></p>
-        <p className="tooltip-data text-black"></p>
+        <p className="country-name font-bold text-black mb-1 text-sm"></p>
+        <p className="tooltip-data text-black text-sm"></p>
       </div>
     </div>
   );
