@@ -107,6 +107,7 @@ const getSectorPalette = (sectorId: string) => {
   // Crear gradiente basado en el color del sector
   return {
     NULL: '#f5f5f5',           // Gris claro para valores nulos
+    ZERO: '#666666',           // Gris fuerte para países con 0.00%
     MIN: d3.color(baseColor)?.brighter(1.5)?.toString() || '#f5f5f5',  // Muy claro
     LOW: d3.color(baseColor)?.brighter(1)?.toString() || '#d0d0d0',    // Claro
     MID: baseColor,                                                    // Color base del sector
@@ -295,10 +296,10 @@ function getCountryValue(
   let countryData: EuropeCSVData[] = [];
   if (countryIso3) {
     countryData = data.filter(d => {
-      const iso3Match = d.ISO3 && countryIso3 && 
-                      normalizarTexto(d.ISO3) === normalizarTexto(countryIso3);
-      return iso3Match;
-    });
+    const iso3Match = d.ISO3 && countryIso3 && 
+                    normalizarTexto(d.ISO3) === normalizarTexto(countryIso3);
+    return iso3Match;
+  });
   }
 
   // 2. Si no hay coincidencia por ISO3, intentar por nombre
@@ -312,23 +313,34 @@ function getCountryValue(
   }
 
   if (countryData.length === 0) {
+    // Si no se encuentra ningún dato para este país, devolver null
     return null;
   }
 
   // Filtrar por año y sector
-  const filteredData = countryData.filter(d => {
-    const yearMatch = d.Year && selectedYear && 
-                     d.Year.toString().trim() === selectedYear.toString().trim();
-    
-    // Comprobar si el sector coincide exactamente o si estamos buscando 'All Sectors'
+  const filteredByYear = countryData.filter(d => {
+    return d.Year && selectedYear && 
+      d.Year.toString().trim() === selectedYear.toString().trim();
+  });
+
+  if (filteredByYear.length === 0) {
+    // Si no se encuentra ningún dato para este año, devolver null
+    return null;
+  }
+
+  // Filtrar por sector específico
+  const filteredData = filteredByYear.filter(d => {
     const sectorMatch = d.Sector && 
-                      (sectorNameEn === 'All Sectors' || 
-                       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
-    
-    return yearMatch && sectorMatch;
+      (sectorNameEn === 'All Sectors' || 
+       normalizarTexto(d.Sector) === normalizarTexto(sectorNameEn));
+    console.log(`Comprobando sector: ${d.Sector} con ${sectorNameEn}, coincide: ${sectorMatch}`);
+    return sectorMatch;
   });
 
   if (filteredData.length === 0) {
+    console.log(`No se encontraron datos para el sector ${sectorNameEn} del país ${countryName}`);
+    // Si no se encuentra ningún dato para este sector específico, devolver null
+    // Esto es importante para distinguir entre "sin datos" y "valor cero"
     return null;
   }
 
@@ -336,15 +348,27 @@ function getCountryValue(
   const dataPoint = filteredData[0];
   const valueStr = dataPoint['%GDP'] || dataPoint.Value || '';
   
+  console.log(`Valor encontrado para ${countryName}, sector ${sectorNameEn}: "${valueStr}"`);
+  
   if (valueStr === undefined || valueStr === '') {
+    console.log(`Valor vacío para ${countryName}, se devuelve null`);
     return null;
   }
 
   try {
     // Convertir a número y manejar decimales con coma o punto
     const valueNum = parseFloat(String(valueStr).replace(',', '.'));
+    
+    // Si el valor no es un número válido, considerarlo como "sin datos" (null)
+    if (isNaN(valueNum)) {
+      console.log(`Valor no numérico para ${countryName}: ${valueStr}, se devuelve null`);
+      return null;
+    }
+    
+    console.log(`Valor numérico para ${countryName}: ${valueNum}`);
     return valueNum;
-  } catch {
+  } catch (error) {
+    console.log(`Error al procesar valor para ${countryName}: ${error}`);
     return null;
   }
 }
@@ -408,27 +432,103 @@ function getSectorValueRange(data: EuropeCSVData[], selectedYear: string, select
   };
 }
 
-// Función para obtener el color basado en el valor y el sector seleccionado
-const getColorForValue = (value: number | null, palette: Record<string, string>, valueRange: {min: number, max: number}): string => {
-  if (value === null) return palette.NULL;
+// Obtiene el color para un valor dado basado en la paleta de colores
+function getColorForValue(
+  value: number | null, 
+  selectedSector: string, 
+  data: EuropeCSVData[] = [], 
+  selectedYear: string = ''
+): string {
+  // Log inicial para depuración
+  console.log(`getColorForValue llamado con: valor=${value}, sector=${selectedSector}, año=${selectedYear}, datos=${data.length}`);
   
-  // Ajustar los umbrales basados en el rango de valores del sector
-  const min = valueRange.min;
-  const max = valueRange.max;
-  const range = max - min;
+  // Si no hay datos, usar el color NULL
+  if (value === null || value === undefined) {
+    console.log(`getColorForValue: valor null o undefined, usando color NULL para ${selectedSector}`);
+    return getSectorPalette(selectedSector).NULL;
+  }
   
-  // Definir umbrtales dinámicos basados en el rango de valores
-  const threshold1 = min + (range * 0.2);
-  const threshold2 = min + (range * 0.4);
-  const threshold3 = min + (range * 0.6);
-  const threshold4 = min + (range * 0.8);
+  // Si el valor es exactamente 0, usar el color ZERO
+  if (value === 0 || value === 0.0 || value.toString() === '0' || value.toString() === '0.0') {
+    console.log(`getColorForValue: valor exactamente 0, usando color ZERO para ${selectedSector}`);
+    return getSectorPalette(selectedSector).ZERO;
+  }
+
+  // Para valores positivos, asignar color según su valor
+  const palette = getSectorPalette(selectedSector);
   
-  if (value < threshold1) return palette.MIN;
-  if (value < threshold2) return palette.LOW;
-  if (value < threshold3) return palette.MID;
-  if (value < threshold4) return palette.HIGH;
-  return palette.MAX;
-};
+  // Si no tenemos datos para calcular rangos, usar valores por defecto
+  if (!data || !data.length || !selectedYear) {
+    console.log(`getColorForValue: usando rangos por defecto para valor=${value}`);
+    if (value < 1.0) {
+      return palette.MIN;
+    } else if (value < 1.8) {
+      return palette.LOW;
+    } else if (value < 2.5) {
+      return palette.MID;
+    } else {
+      return palette.HIGH;
+    }
+  }
+  
+  try {
+    // Calcular rangos basados en los datos disponibles
+    const range = getSectorValueRange(data, selectedYear, selectedSector);
+    console.log(`getColorForValue: calculando rangos - min=${range.min}, max=${range.max}`);
+    
+    // Si no hay suficiente rango, usar valores predeterminados
+    if (range.max <= range.min || range.max - range.min < 0.001) {
+      console.log(`getColorForValue: rango insuficiente, usando valores por defecto`);
+      if (value < 1.0) {
+        return palette.MIN;
+      } else if (value < 1.8) {
+        return palette.LOW;
+      } else if (value < 2.5) {
+        return palette.MID;
+      } else {
+        return palette.HIGH;
+      }
+    }
+    
+    // Calcular rangos basados en min y max
+    const step = (range.max - range.min) / 4;
+    const threshold1 = range.min + step;
+    const threshold2 = range.min + 2 * step;
+    const threshold3 = range.min + 3 * step;
+    
+    console.log(`getColorForValue: umbrales - t1=${threshold1}, t2=${threshold2}, t3=${threshold3}`);
+    
+    // Asignar color según el rango
+    let colorUsed;
+    if (value <= threshold1) {
+      colorUsed = palette.MIN;
+      console.log(`getColorForValue: valor ${value} <= ${threshold1}, usando color MIN`);
+    } else if (value <= threshold2) {
+      colorUsed = palette.LOW;
+      console.log(`getColorForValue: valor ${value} <= ${threshold2}, usando color LOW`);
+    } else if (value <= threshold3) {
+      colorUsed = palette.MID;
+      console.log(`getColorForValue: valor ${value} <= ${threshold3}, usando color MID`);
+    } else {
+      colorUsed = palette.HIGH;
+      console.log(`getColorForValue: valor ${value} > ${threshold3}, usando color HIGH`);
+    }
+    
+    return colorUsed;
+  } catch (error) {
+    console.error(`Error en getColorForValue: ${error}`);
+    // En caso de error, usar valores por defecto
+    if (value < 1.0) {
+      return palette.MIN;
+    } else if (value < 1.8) {
+      return palette.LOW;
+    } else if (value < 2.5) {
+      return palette.MID;
+    } else {
+      return palette.HIGH;
+    }
+  }
+}
 
 // Función para obtener la descripción de una etiqueta
 function getLabelDescription(label: string, language: 'es' | 'en'): string {
@@ -575,6 +675,101 @@ function getCountryFlagUrl(countryName: string, feature?: GeoJsonFeature): strin
   });
   
   return countryData?.flag || "https://flagcdn.com/un.svg"; // Devolvemos un por defecto (Naciones Unidas)
+}
+
+// Añadir función para obtener el valor del año anterior
+function getPreviousYearValue(data: EuropeCSVData[], countryIso3: string | undefined, countryName: string, yearStr: string, sector: string): number | null {
+  if (!data || data.length === 0 || !yearStr || parseInt(yearStr) <= 1) return null;
+  
+  const previousYear = (parseInt(yearStr) - 1).toString();
+  
+  // Buscar por ISO3 si está disponible
+  if (countryIso3) {
+    const countryPrevYearData = data.filter(item => 
+      item.ISO3 === countryIso3 && 
+      item.Year === previousYear && 
+      (item.Sector === sector || (item.Sector === 'All Sectors' && sector === 'All Sectors'))
+    );
+    
+    if (countryPrevYearData.length > 0) {
+      try {
+        return parseFloat(countryPrevYearData[0]['%GDP'].replace(',', '.'));
+      } catch {
+        return null;
+      }
+    }
+  }
+  
+  // Si no encontramos por ISO3, buscar por nombre
+  const normalizedName = normalizarTexto(countryName);
+  const countryPrevYearData = data.filter(item => {
+    const nameMatch = 
+      normalizarTexto(item.Country).includes(normalizedName) || 
+      (item.País && normalizarTexto(item.País).includes(normalizedName));
+    const yearMatch = item.Year === previousYear;
+    const sectorMatch = item.Sector === sector || 
+                       (item.Sector === 'All Sectors' && sector === 'All Sectors');
+    return nameMatch && yearMatch && sectorMatch;
+  });
+  
+  if (countryPrevYearData.length === 0) return null;
+  
+  try {
+    return parseFloat(countryPrevYearData[0]['%GDP'].replace(',', '.'));
+  } catch {
+    return null;
+  }
+}
+
+// Añadir una función para posicionar el tooltip inteligentemente
+function positionTooltip(
+  tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>, 
+  event: MouseEvent, 
+  tooltipNode: HTMLElement
+): void {
+  // Obtener las dimensiones del tooltip
+  const tooltipRect = tooltipNode.getBoundingClientRect();
+  const tooltipWidth = tooltipRect.width || 300; // Usar un valor por defecto si aún no se ha renderizado
+  const tooltipHeight = tooltipRect.height || 200;
+  
+  // Obtener dimensiones de la ventana
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+  
+  // Calcular la posición óptima
+  let left = event.clientX + 15;
+  let top = event.clientY - 15;
+  
+  // Ajustar horizontalmente si se sale por la derecha
+  if (left + tooltipWidth > windowWidth - 10) {
+    left = event.clientX - tooltipWidth - 15; // Mover a la izquierda del cursor
+  }
+  
+  // Ajustar verticalmente si se sale por abajo
+  if (top + tooltipHeight > windowHeight - 10) {
+    if (tooltipHeight < windowHeight - 20) {
+      // Si cabe en la pantalla, ajustar hacia arriba
+      top = windowHeight - tooltipHeight - 10;
+    } else {
+      // Si es demasiado grande, colocarlo en la parte superior con scroll
+      top = 10;
+    }
+  }
+  
+  // Asegurar que no se salga por arriba
+  if (top < 10) {
+    top = 10;
+  }
+  
+  // Asegurar que no se salga por la izquierda
+  if (left < 10) {
+    left = 10;
+  }
+  
+  // Aplicar la posición
+  tooltip
+    .style('left', `${left}px`)
+    .style('top', `${top}px`);
 }
 
 const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selectedSector, language, onClick, labels = [], autonomousCommunitiesData = [] }) => {
@@ -751,7 +946,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         .attr('d', (d: GeoJsonFeature) => path(d) || '')
         .attr('fill', (d: GeoJsonFeature) => {
           const value = getCountryValueOptimized(d);
-          return getColorForValue(value, colorPalette, valueRange);
+          return getColorForValue(value, selectedSector, data, selectedYear.toString());
         })
         .attr('stroke', '#fff')
         .attr('stroke-width', 0.5)
@@ -797,11 +992,11 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           ));
           
           // Verificar si es la UE
-          const isEU = (countryName && (
-            normalizarTexto(String(countryName)).includes('union europea') || 
-            normalizarTexto(String(countryName)).includes('european union')
-          ));
-          
+            const isEU = (countryName && (
+              normalizarTexto(String(countryName)).includes('union europea') || 
+              normalizarTexto(String(countryName)).includes('european union')
+            ));
+            
           // Verificar si es Canarias
           const isCanarias = (countryName && (
             normalizarTexto(String(countryName)).includes('canarias') || 
@@ -810,9 +1005,141 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
           
           let tooltipContent = '';
           
-          if (value !== null) {
-            // Formatear el valor a dos decimales
-            const valueStr = value.toFixed(2);
+          // Si no hay datos, mostrar un mensaje simple
+          if (value === null) {
+            tooltipContent = `
+              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                  <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                    <img src="${getCountryFlagUrl(String(countryName), d)}" class="w-full h-full object-cover" alt="${countryName}" />
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
+                </div>
+                <div class="p-4">
+                  <p class="text-gray-500">${t.noData}</p>
+                </div>
+              </div>
+            `;
+          } else if (value === 0) {
+            // Caso especial para valores exactamente cero
+            tooltipContent = `
+              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                  <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                    <img src="${getCountryFlagUrl(String(countryName), d)}" class="w-full h-full object-cover" alt="${countryName}" />
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
+                </div>
+                <div class="p-4">
+                  <div class="mb-3">
+                    <div class="flex items-center text-gray-500 text-sm mb-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                      <span>
+                        ${language === 'es' ? 'Inversión I+D' : 'R&D Investment'}
+                      </span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="text-xl font-bold text-blue-700">0.00%</span>
+                      <span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'del PIB' : 'of GDP'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            // Obtener valores para comparativas
+            const euValue = !isEU ? getEUValue(data, selectedYear.toString(), selectedSector) : null;
+            const spainValue = !isSpain ? getSpainValue(data, selectedYear.toString(), selectedSector) : null;
+            const canariasValue = !isCanarias ? getCanariasValue(autonomousCommunitiesData, selectedYear.toString(), selectedSector) : null;
+            const previousYearValue = getPreviousYearValue(data, d.properties?.iso_a3, String(countryName), selectedYear.toString(), selectedSector);
+            
+            // Preparar HTML para la comparación YoY
+            let yoyComparisonHtml = '';
+            if (previousYearValue !== null && previousYearValue > 0) {
+              const difference = value - previousYearValue;
+              const percentDiff = (difference / previousYearValue) * 100;
+              const formattedDiff = percentDiff.toFixed(2);
+              const isPositive = difference > 0;
+              
+              yoyComparisonHtml = `
+                <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                    <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                  </svg>
+                  <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
+                </div>
+              `;
+            }
+            
+            // Preparar comparaciones
+            let euComparisonHtml = '';
+            if (!isEU && euValue !== null && euValue > 0) {
+              const difference = value - euValue;
+              const percentDiff = (difference / euValue) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
+              
+              euComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            } else if (!isEU) {
+              euComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
+            }
+            
+            let spainComparisonHtml = '';
+            if (!isSpain && spainValue !== null && spainValue > 0) {
+              const difference = value - spainValue;
+              const percentDiff = (difference / spainValue) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
+              
+              spainComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            } else if (!isSpain) {
+              spainComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
+            }
+            
+            let canariasComparisonHtml = '';
+            if (!isCanarias && canariasValue !== null && canariasValue > 0) {
+              const difference = value - canariasValue;
+              const percentDiff = (difference / canariasValue) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              const color = isPositive ? 'text-green-600' : 'text-red-600';
+              
+              canariasComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
+                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            } else if (!isCanarias) {
+              canariasComparisonHtml = `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="font-medium text-gray-400">--</span>
+                </div>
+              `;
+            }
             
             // Buscar etiqueta para este país y año
             let label = '';
@@ -841,109 +1168,13 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
               }
             }
             
-            // Preparar las comparaciones
-            let euComparisonHtml = '';
-            let spainComparisonHtml = '';
-            let canariasComparisonHtml = '';
-            
-            // Comparación con UE
-            if (!isEU) {
-              const euValue = getEUValue(data, selectedYear.toString(), selectedSector);
-              if (euValue !== null && euValue > 0) {
-                const difference = value - euValue;
-                const percentDiff = (difference / euValue) * 100;
-                const formattedDiff = percentDiff.toFixed(1);
-                const isPositive = difference > 0;
-                const color = isPositive ? 'text-green-600' : 'text-red-600';
-                
-                euComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
-                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                  </div>
-                `;
-              } else if (euValue !== null && euValue === 0) {
-                euComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
-                    <span class="font-medium text-gray-400">--</span>
-                  </div>
-                `;
-              }
-            }
-            
-            // Comparación con España
-            if (!isSpain) {
-              const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
-              if (spainValue !== null && spainValue > 0) {
-                const difference = value - spainValue;
-                const percentDiff = (difference / spainValue) * 100;
-                const formattedDiff = percentDiff.toFixed(1);
-                const isPositive = difference > 0;
-                const color = isPositive ? 'text-green-600' : 'text-red-600';
-                
-                spainComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
-                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                  </div>
-                `;
-              } else if (spainValue !== null && spainValue === 0) {
-                spainComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
-                    <span class="font-medium text-gray-400">--</span>
-                  </div>
-                `;
-              }
-            }
-            
-            // Comparación con Canarias
-            if (!isCanarias) {
-              const canariasValue = getCanariasValue(autonomousCommunitiesData, selectedYear.toString(), selectedSector);
-              if (canariasValue !== null && canariasValue > 0) {
-                const difference = value - canariasValue;
-                const percentDiff = (difference / canariasValue) * 100;
-                const formattedDiff = percentDiff.toFixed(1);
-                const isPositive = difference > 0;
-                const color = isPositive ? 'text-green-600' : 'text-red-600';
-                
-                canariasComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
-                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                  </div>
-                `;
-              } else if (canariasValue !== null && canariasValue === 0) {
-                canariasComparisonHtml = `
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
-                    <span class="font-medium text-gray-400">--</span>
-                  </div>
-                `;
-              }
-            }
-            
-            // Obtener la URL de la bandera del país
-            const flagUrl = getCountryFlagUrl(String(countryName), d);
-            
             // Renderizar el tooltip con el nuevo diseño
             tooltipContent = `
               <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                 <!-- Header con el nombre del país -->
                 <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                  <!-- 
-                    Para usar las banderas SVG en React, importa los componentes de banderas:
-                    import { FlagSpain, FlagEU, FlagCanaryIslands, FlagSweden, FlagFinland } from '../logos/country-flags';
-                    
-                    Y luego utilízalos como componentes React:
-                    {countryName.toLowerCase().includes('spain') && <FlagSpain className="w-8 h-6 mr-2" />}
-                    {countryName.toLowerCase().includes('sweden') && <FlagSweden className="w-8 h-6 mr-2" />}
-                    
-                    Sin embargo, como estamos usando innerHTML, tenemos que insertar el SVG directamente:
-                  -->
                   <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                    <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
+                    <img src="${getCountryFlagUrl(String(countryName), d)}" class="w-full h-full object-cover" alt="${countryName}" />
                   </div>
                   <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
                 </div>
@@ -951,29 +1182,37 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
                 <!-- Contenido principal -->
                 <div class="p-4">
                   <!-- Métrica principal -->
-                  <div class="mb-4">
+                  <div class="mb-3">
                     <div class="flex items-center text-gray-500 text-sm mb-1">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                      <span>${language === 'es' ? 'Inversión I+D:' : 'R&D Investment:'}</span>
+                      <span>
+                        ${language === 'es' ? 'Inversión I+D' : 'R&D Investment'}
+                      </span>
                     </div>
                     <div class="flex items-center">
-                      <span class="text-2xl font-bold text-blue-700">${valueStr}%</span>
+                      <span class="text-xl font-bold text-blue-700">${value.toFixed(2)}%</span>
                       <span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'del PIB' : 'of GDP'}</span>
                       ${label ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${label}</span>` : ''}
                     </div>
+                    ${yoyComparisonHtml}
                   </div>
                   
-                  <!-- Ranking -->
+                  <!-- Ranking (si está disponible) -->
                   ${rankInfo ? `
-                  <div class="mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2"><path d="M12 17.98 4.91 21l1.43-6.15-4.72-4.13 6.22-.52L12 4.77l4.16 5.43 6.22.52-4.72 4.13L19.09 21z"></path></svg>
-                    <span class="font-medium">Rank </span>
-                    <span class="font-bold text-lg mx-1">${rankInfo.rank}</span>
-                    <span class="text-gray-600">${language === 'es' ? `de ${rankInfo.total}` : `of ${rankInfo.total}`}</span>
+                  <div class="mb-4">
+                    <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                        <circle cx="12" cy="8" r="6" />
+                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                      </svg>
+                      <span class="font-medium">Rank </span>
+                      <span class="font-bold text-base mx-1">${rankInfo.rank}</span>
+                      <span class="text-gray-600">${language === 'es' ? `de ${rankInfo.total}` : `of ${rankInfo.total}`}</span>
+                    </div>
                   </div>
                   ` : ''}
                   
-                  <!-- Comparaciones -->
+                  <!-- Comparativas -->
                   <div class="space-y-2 border-t border-gray-100 pt-3">
                     <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
                     ${euComparisonHtml}
@@ -991,33 +1230,26 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
                 ` : ''}
               </div>
             `;
-          } else {
-            // Si no hay datos, mostrar un mensaje simple
-            tooltipContent = `
-              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                  <div class="bg-gray-200 w-8 h-6 mr-2 rounded overflow-hidden"></div>
-                  <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
-                </div>
-                <div class="p-4">
-                  <p class="text-gray-500">${t.noData}</p>
-                </div>
-              </div>
-            `;
           }
           
           // Actualizar el contenido del tooltip y mostrarlo
           tooltip.html(tooltipContent)
-            .style('left', `${event.clientX + 10}px`)
-            .style('top', `${event.clientY - 10}px`)
             .style('display', 'block')
             .style('opacity', 1);
+          
+          // Posicionar el tooltip de manera inteligente
+          const tooltipNode = document.querySelector('.country-tooltip') as HTMLElement;
+          if (tooltipNode) {
+            positionTooltip(tooltip, event, tooltipNode);
+          }
         })
         .on('mousemove', function(event: MouseEvent) {
           // Actualizar posición del tooltip con suavidad usando clientX/clientY
-          d3.select('.country-tooltip')
-            .style('left', `${event.clientX + 10}px`)
-            .style('top', `${event.clientY - 10}px`);
+          const tooltip = d3.select('.country-tooltip');
+          const tooltipNode = document.querySelector('.country-tooltip') as HTMLElement;
+          if (tooltipNode) {
+            positionTooltip(tooltip, event, tooltipNode);
+          }
         })
         .on('mouseout', function() {
           // Restaurar el estilo al quitar el mouse
@@ -1058,7 +1290,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
 
       // Añadir leyenda
       const legendGroup = svg.append('g')
-        .attr('transform', `translate(20, ${height - 150})`);
+        .attr('transform', `translate(20, ${height - 170})`);
       
       const legend = [
         { color: colorPalette.MIN, label: `< ${formatValue(threshold1)}%` },
@@ -1066,6 +1298,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({ data, selectedYear, selec
         { color: colorPalette.MID, label: `${formatValue(threshold2)} - ${formatValue(threshold3)}%` },
         { color: colorPalette.HIGH, label: `${formatValue(threshold3)} - ${formatValue(threshold4)}%` },
         { color: colorPalette.MAX, label: `> ${formatValue(threshold4)}%` },
+        { color: colorPalette.ZERO, label: `0.00%` },
         { color: colorPalette.NULL, label: String(t.noData) }
       ];
       

@@ -388,9 +388,6 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     onHover: (event: ChartEvent & { native?: { clientX?: number; clientY?: number } }, chartElements) => {
       if (!event || !tooltipRef.current || !chartRef.current) return;
       
-      const clientX = event.native?.clientX ?? 0;
-      const clientY = event.native?.clientY ?? 0;
-      
       if (chartElements && chartElements.length > 0) {
         const index = chartElements[0].index;
         const countryName = chartLabels[index] as string || '';
@@ -404,8 +401,15 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         // Mostrar el tooltip
         tooltipRef.current.style.display = 'block';
         tooltipRef.current.style.opacity = '1';
-        tooltipRef.current.style.left = `${clientX + 5}px`;
-        tooltipRef.current.style.top = `${clientY - 40}px`;
+        
+        // Necesitamos extraer clientX y clientY del evento nativo para pasar a handleMouseMove
+        const mouseEvent = {
+          clientX: event.native?.clientX || 0,
+          clientY: event.native?.clientY || 0
+        } as MouseEvent;
+        
+        // Manejar la posición del tooltip
+        handleMouseMove(mouseEvent);
         
         const tooltipContentElement = tooltipRef.current.querySelector('.tooltip-content');
         
@@ -456,6 +460,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           const isCanarias = normalizedName.includes('canarias') || 
                           normalizedName.includes('canary islands');
           
+          // Obtener el valor del año anterior para comparación YoY
+          const previousYearValue = getPreviousYearValue(data, displayName, selectedYear, selectedSector);
+          
+          // Preparar HTML para la comparación YoY
+          let yoyComparisonHtml = '';
+          if (previousYearValue !== null && previousYearValue > 0) {
+            const difference = value - previousYearValue;
+            const percentDiff = (difference / previousYearValue) * 100;
+            const formattedDiff = percentDiff.toFixed(2);
+            const isPositive = difference > 0;
+            
+            yoyComparisonHtml = `
+              <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                </svg>
+                <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
+              </div>
+            `;
+          }
+          
           // Preparar las comparaciones
           let euComparisonHtml = '';
           let spainComparisonHtml = '';
@@ -473,14 +498,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const color = isPositive ? 'text-green-600' : 'text-red-600';
               
               euComparisonHtml = `
-                <div class="flex justify-between items-center">
-                  <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (euValue !== null && euValue === 0) {
               euComparisonHtml = `
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center text-xs">
                   <span class="text-gray-600">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
@@ -500,14 +525,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const color = isPositive ? 'text-green-600' : 'text-red-600';
               
               spainComparisonHtml = `
-                <div class="flex justify-between items-center">
-                  <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (spainValue !== null && spainValue === 0) {
               spainComparisonHtml = `
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center text-xs">
                   <span class="text-gray-600">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
@@ -527,14 +552,14 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const color = isPositive ? 'text-green-600' : 'text-red-600';
               
               canariasComparisonHtml = `
-                <div class="flex justify-between items-center">
-                  <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
                   <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                 </div>
               `;
             } else if (canariasValue !== null && canariasValue === 0) {
               canariasComparisonHtml = `
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center text-xs">
                   <span class="text-gray-600">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
@@ -547,18 +572,6 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
             <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con el nombre del país -->
               <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                <!-- 
-                  Para usar las banderas SVG en React, importa los componentes de banderas desde '../logos/country-flags':
-                  
-                  import { CountryFlags } from '../logos/country-flags';
-                  
-                  Y luego utilízalos como componentes React:
-                  {normalizedName.includes('spain') && <CountryFlags.Spain className="w-8 h-6 mr-2" />}
-                  {normalizedName.includes('sweden') && <CountryFlags.Sweden className="w-8 h-6 mr-2" />}
-                  {normalizedName.includes('european union') && <CountryFlags.EU className="w-8 h-6 mr-2" />}
-                  
-                  Sin embargo, como estamos usando innerHTML, usaremos las URLs de flagcdn:
-                -->
                 <div class="flag-container w-8 h-6 mr-2 rounded overflow-hidden">
                   ${(() => {
                     const normalizedName = normalizeText(displayName);
@@ -675,24 +688,30 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               <!-- Contenido principal -->
               <div class="p-4">
                 <!-- Métrica principal -->
-                <div class="mb-4">
+                <div class="mb-3">
                   <div class="flex items-center text-gray-500 text-sm mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
                     <span>${language === 'es' ? 'Inversión I+D:' : 'R&D Investment:'}</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-2xl font-bold text-blue-700">${formattedValue}%</span>
+                    <span class="text-xl font-bold text-blue-700">${formattedValue}%</span>
                     <span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'del PIB' : 'of GDP'}</span>
                     ${labelValue ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${labelValue}</span>` : ''}
                   </div>
+                  ${yoyComparisonHtml}
                 </div>
                 
                 <!-- Ranking -->
-                <div class="mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2"><path d="M12 17.98 4.91 21l1.43-6.15-4.72-4.13 6.22-.52L12 4.77l4.16 5.43 6.22.52-4.72 4.13L19.09 21z"></path></svg>
-                  <span class="font-medium">Rank </span>
-                  <span class="font-bold text-lg mx-1">${rank}</span>
-                  <span class="text-gray-600">${language === 'es' ? `de ${totalCountries}` : `of ${totalCountries}`}</span>
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
+                    <span class="font-bold text-lg mx-1">${rank}</span>
+                    <span class="text-gray-600">${language === 'es' ? `de ${totalCountries}` : `of ${totalCountries}`}</span>
+                  </div>
                 </div>
                 
                 <!-- Comparaciones -->
@@ -725,8 +744,43 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   const handleMouseMove = (event: MouseEvent) => {
     if (!tooltipRef.current || tooltipRef.current.style.display === 'none') return;
     
-    tooltipRef.current.style.left = `${event.clientX + 5}px`;
-    tooltipRef.current.style.top = `${event.clientY - 40}px`;
+    const tooltip = tooltipRef.current;
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width;
+    const tooltipHeight = tooltipRect.height;
+    
+    // Obtener tamaño de la ventana
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    // Posiciones base (offset predeterminado desde el cursor)
+    let left = event.clientX + 15;
+    let top = event.clientY - 15;
+    
+    // Ajustar horizontal si se sale por la derecha
+    if (left + tooltipWidth > windowWidth - 10) {
+      left = event.clientX - tooltipWidth - 15; // Colocar a la izquierda del cursor
+    }
+    
+    // Ajustar vertical si se sale por abajo o arriba
+    if (top + tooltipHeight > windowHeight - 10) {
+      if (tooltipHeight < windowHeight - 20) {
+        // Si cabe en la pantalla, ajustar hacia arriba
+        top = windowHeight - tooltipHeight - 10;
+      } else {
+        // Si es demasiado grande, colocarlo en la parte superior con scroll
+        top = 10;
+      }
+    }
+    
+    // Asegurar que no se salga por arriba
+    if (top < 10) {
+      top = 10;
+    }
+    
+    // Aplicar las posiciones calculadas
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
   };
 
   // Función para ocultar el tooltip
@@ -856,6 +910,37 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     
     // Obtener el valor del % PIB
     const valueStr = canariasData[0]["% PIB I+D"] || '';
+    if (!valueStr) return null;
+    
+    try {
+      return parseFloat(valueStr.replace(',', '.'));
+    } catch {
+      return null;
+    }
+  };
+
+  // Añadir función para obtener el valor del año anterior
+  const getPreviousYearValue = (data: EuropeCSVData[], country: string, selectedYear: number, selectedSector: string): number | null => {
+    if (!data || data.length === 0 || selectedYear <= 1) return null;
+    
+    // Mapeo del sector seleccionado al nombre en inglés
+    const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
+    const previousYear = selectedYear - 1;
+    
+    // Buscar datos del país para el año anterior
+    const countryPrevYearData = data.filter(item => {
+      const isCountry = normalizeText(country).includes(normalizeText(item.Country)) || 
+                     (item.País && normalizeText(country).includes(normalizeText(item.País)));
+      const yearMatch = parseInt(item.Year) === previousYear;
+      const sectorMatch = item.Sector === sectorNameEn || 
+                        (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
+      return isCountry && yearMatch && sectorMatch;
+    });
+    
+    if (countryPrevYearData.length === 0) return null;
+    
+    // Obtener el valor
+    const valueStr = countryPrevYearData[0]['%GDP'] || '';
     if (!valueStr) return null;
     
     try {
