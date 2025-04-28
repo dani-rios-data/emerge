@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
 import CountryRankingChart from '../../components/CountryRankingChart';
+import SectorDistribution from '../../components/SectorDistribution';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
@@ -46,8 +47,8 @@ const texts = {
   es: {
     investmentTitle: "Inversión en I+D",
     investmentDescription: "Datos sobre la inversión en I+D en las Islas Canarias, tanto pública como privada",
-    year: "Año:",
-    sector: "Sector:",
+    year: "Año",
+    sector: "Sector",
     loading: "Cargando datos...",
     errorPrefix: "Error al cargar datos:",
     noDataAvailable: "No hay datos disponibles para esta selección",
@@ -77,8 +78,8 @@ const texts = {
   en: {
     investmentTitle: "R&D Investment",
     investmentDescription: "Data on R&D investment in the Canary Islands, both public and private",
-    year: "Year:",
-    sector: "Sector:",
+    year: "Year",
+    sector: "Sector",
     loading: "Loading data...",
     errorPrefix: "Error loading data:",
     noDataAvailable: "No data available for this selection",
@@ -407,42 +408,54 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <div className="mb-10">
             <SectionTitle title={t.euComparisonTitle} />
             
-            {/* Subsección 2.1: Mapa y ranking de países */}
+            {/* Subsección 2.1: Distribución del I+D por País o territorio */}
             <div className="mb-8">
-              <SubsectionTitle title={language === 'es' ? "Mapa y ranking de países" : "Map and country ranking"} />
+              <SubsectionTitle title={language === 'es' ? "Distribución del I+D por País o territorio" : "R&D Distribution by Country or Territory"} />
               
-              {/* Selectores de año y sector */}
-              <div className="flex flex-wrap items-center mb-6 gap-4">
-                <div className="flex items-center">
-                  <label className="font-semibold text-gray-700 mr-2">
-                    {t.year}
-                  </label>
-                  <select 
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {availableYears.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="flex items-center">
-                  <label className="font-semibold text-gray-700 mr-2">
-                    {t.sector}
-                  </label>
-                  <select 
-                    value={getSectorId(selectedSector)}
-                    onChange={(e) => handleSectorChange(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {rdSectors.map(sector => (
-                      <option key={sector.id} value={sector.id}>
-                        {sector.name[language]}
-                      </option>
-                    ))}
-                  </select>
+              {/* Filtros en diseño sencillo */}
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-blue-500 mr-2"
+                    >
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                    <select 
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    >
+                      {availableYears.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                    <select 
+                      value={getSectorId(selectedSector)}
+                      onChange={(e) => handleSectorChange(e.target.value)}
+                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                    >
+                      {rdSectors.map(sector => (
+                        <option key={sector.id} value={sector.id}>
+                          {sector.name[language]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
               
@@ -482,6 +495,14 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
             </div>
             
+            {/* Subsección 2.2: Distribución sectorial de la inversión en I+D */}
+            <div className="mb-8">
+              <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión en I+D" : "R&D Investment Distribution by Sectors"} />
+              
+              {/* Nuevo componente SectorDistribution */}
+              <SectorDistribution language={language} />
+            </div>
+            
             {/* Espacio para futuras subsecciones */}
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
               <p>{language === 'es' ? "Más subsecciones se añadirán próximamente" : "More subsections coming soon"}</p>
@@ -491,9 +512,10 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           {/* Sección 3: Comparación por comunidades autónomas de España */}
           <div className="mb-6">
             <SectionTitle title={t.spanishRegionsTitle} />
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic mb-6">
-              {/* Contenido de subsecciones de comunidades autónomas se añadirá posteriormente */}
-              <p>{language === 'es' ? "Las subsecciones de comunidades autónomas se añadirán próximamente" : "Autonomous communities subsections coming soon"}</p>
+            
+            {/* Espacio para futuras subsecciones de comunidades autónomas */}
+            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
+              <p>{language === 'es' ? "Más subsecciones de comunidades autónomas se añadirán próximamente" : "More autonomous communities subsections coming soon"}</p>
             </div>
           </div>
         </>
