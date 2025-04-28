@@ -120,7 +120,11 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
   const [regionsData, setRegionsData] = useState<RegionData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [countries, setCountries] = useState<CountryOption[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<CountryOption | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<CountryOption>({
+    name: 'Spain',
+    localName: 'España',
+    iso3: 'ESP'
+  });
   
   // Textos localizados
   const texts = {
@@ -234,11 +238,10 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
           console.log(`Seleccionando país por defecto: ${defaultCountry?.name}`);
         }
         
-        // Procesar los datos con el país seleccionado actualizado
-        const countryToUse = currentCountryAvailable ? selectedCountry?.iso3 : 
-                            (availableCountries.find(c => c.iso3 === 'ESP')?.iso3 || availableCountries[0]?.iso3);
-        
-        processData(gdpData, ccaaData, yearToUse, countryToUse);
+        // Procesar datos con el nuevo país seleccionado
+        if (selectedCountry) {
+          processData(gdpData, ccaaData, selectedYear, selectedCountry.iso3);
+        }
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -251,7 +254,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
 
   // Efecto adicional para procesar datos cuando cambia el país seleccionado
   useEffect(() => {
-    if (selectedCountry && !loading) {
+    if (selectedCountry) {
       async function updateCountryData() {
         setLoading(true);
         try {
@@ -631,7 +634,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
   };
 
   // Obtener el valor de color sin el prefijo bg-
-  const getHeaderColorValue = (code: FlagCode, iso3: string = ''): string => {
+  const getHeaderColorValue = (code: FlagCode): string => {
     switch(code) {
       case 'eu':
         return '#4338ca'; // indigo-700
@@ -712,14 +715,13 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
           {regionsData.map((region, index) => (
             <div key={index} className="bg-white border border-gray-200 rounded overflow-hidden">
               {/* Region header - Con selector para el país */}
-              <div className="bg-white p-3 flex items-center justify-between border-t-4" style={{ borderColor: getHeaderColorValue(region.flagCode, region.iso3) }}>
+              <div className="bg-white p-3 flex items-center justify-between border-t-4" style={{ borderColor: getHeaderColorValue(region.flagCode) }}>
                 <div className="flex items-center">
                   <div className="mr-3">
                     <Flag 
                       code={region.flagCode} 
                       width={24} 
                       height={18} 
-                      iso3={region.iso3} 
                     />
                   </div>
                   
@@ -757,7 +759,6 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                                   code="country" 
                                   width={20} 
                                   height={15} 
-                                  iso3={country.iso3} 
                                 />
                               </div>
                               {language === 'es' ? country.localName : country.name}
