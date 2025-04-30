@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
 import CountryRankingChart from '../../components/CountryRankingChart';
 import SectorDistribution from '../../components/SectorDistribution';
+import DataTypeSelector, { DataDisplayType } from '../../components/DataTypeSelector';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
@@ -46,65 +47,67 @@ export interface LabelData {
 const texts = {
   es: {
     investmentTitle: "Inversión en I+D",
-    investmentDescription: "Datos sobre la inversión en I+D en las Islas Canarias, tanto pública como privada",
-    year: "Año",
-    sector: "Sector",
+    investmentDescription: "Análisis comparativo de la inversión en I+D como porcentaje del PIB.",
+    year: "Año:",
+    sector: "Sector:",
     loading: "Cargando datos...",
-    errorPrefix: "Error al cargar datos:",
-    noDataAvailable: "No hay datos disponibles para esta selección",
-    supranational: "ENTIDADES SUPRANACIONALES",
-    euroArea19: "Zona Euro (2015-2022)",
-    euroArea20: "Zona Euro (desde 2023)",
-    europeanUnion: "Unión Europea",
-    euroArea19Full: "Zona Euro - 19 países (2015-2022)",
-    euroArea20Full: "Zona Euro - 20 países (desde 2023)",
-    euFull: "27 países (desde 2020)",
-    observationFlags: "Observation flags",
+    errorPrefix: "Error al cargar los datos:",
+    noDataAvailable: "No hay datos disponibles para el año y sector seleccionados.",
+    supranational: "Entidades supranacionales",
+    euroArea19: "Zona Euro (19)",
+    euroArea19Full: "(2015-2022)",
+    euroArea20: "Zona Euro (20)",
+    euroArea20Full: "(desde 2023)",
+    europeanUnion: "Unión Europea (27)",
+    euFull: "(desde 2020)",
+    observationFlags: "Banderas de observación",
     estimated: "Estimado",
     provisional: "Provisional",
     definitionDiffers: "Definición difiere",
-    breakInTimeSeries: "Ruptura en series temporales",
-    definitionDiffersEstimated: "Definición difiere, estimado",
-    estimatedProvisional: "Estimado, provisional",
-    definitionDiffersProvisional: "Definición difiere, provisional",
-    breakInTimeSeriesDefinitionDiffers: "Ruptura en series temporales, definición difiere",
-    breakInTimeSeriesProvisional: "Ruptura en series temporales, provisional",
+    breakInTimeSeries: "Ruptura en la serie temporal",
+    breakInTimeSeriesDefinitionDiffers: "Ruptura en la serie y definición difiere",
+    definitionDiffersEstimated: "Definición difiere y estimado",
+    definitionDiffersProvisional: "Definición difiere y provisional",
+    estimatedProvisional: "Estimado y provisional",
+    breakInTimeSeriesProvisional: "Ruptura en la serie y provisional",
     lowReliability: "Baja fiabilidad",
-    // Nuevos textos para las secciones
     keyMetricsTitle: "Métricas clave",
     euComparisonTitle: "Comparación entre la UE y países",
-    spanishRegionsTitle: "Comparación por comunidades autónomas de España"
+    spanishRegionsTitle: "Comparación por comunidades autónomas de España",
+    countryRanking: "Ranking de países",
+    noData: "No hay datos disponibles para este año"
   },
   en: {
     investmentTitle: "R&D Investment",
-    investmentDescription: "Data on R&D investment in the Canary Islands, both public and private",
-    year: "Year",
-    sector: "Sector",
+    investmentDescription: "Comparative analysis of R&D investment as a percentage of GDP.",
+    year: "Year:",
+    sector: "Sector:",
     loading: "Loading data...",
     errorPrefix: "Error loading data:",
-    noDataAvailable: "No data available for this selection",
-    supranational: "SUPRANATIONAL ENTITIES",
-    euroArea19: "Euro area (2015-2022)",
-    euroArea20: "Euro area (from 2023)",
-    europeanUnion: "European Union",
-    euroArea19Full: "Euro area - 19 countries (2015-2022)",
-    euroArea20Full: "Euro area - 20 countries (from 2023)",
-    euFull: "27 countries (from 2020)",
+    noDataAvailable: "No data available for the selected year and sector.",
+    supranational: "Supranational entities",
+    euroArea19: "Euro Area (19)",
+    euroArea19Full: "(2015-2022)",
+    euroArea20: "Euro Area (20)",
+    euroArea20Full: "(from 2023)",
+    europeanUnion: "European Union (27)",
+    euFull: "(from 2020)",
     observationFlags: "Observation flags",
     estimated: "Estimated",
     provisional: "Provisional",
     definitionDiffers: "Definition differs",
     breakInTimeSeries: "Break in time series",
-    definitionDiffersEstimated: "Definition differs, estimated",
-    estimatedProvisional: "Estimated, provisional",
-    definitionDiffersProvisional: "Definition differs, provisional",
-    breakInTimeSeriesDefinitionDiffers: "Break in time series, definition differs",
-    breakInTimeSeriesProvisional: "Break in time series, provisional",
+    breakInTimeSeriesDefinitionDiffers: "Break in time series and definition differs",
+    definitionDiffersEstimated: "Definition differs and estimated",
+    definitionDiffersProvisional: "Definition differs and provisional",
+    estimatedProvisional: "Estimated and provisional",
+    breakInTimeSeriesProvisional: "Break in time series and provisional",
     lowReliability: "Low reliability",
-    // Nuevos textos para las secciones
     keyMetricsTitle: "Key Metrics",
     euComparisonTitle: "EU and Countries Comparison",
-    spanishRegionsTitle: "Spanish Autonomous Communities Comparison"
+    spanishRegionsTitle: "Spanish Autonomous Communities Comparison",
+    countryRanking: "Country Ranking",
+    noData: "No data available for this year"
   }
 };
 
@@ -113,17 +116,58 @@ interface InvestmentProps {
 }
 
 const Investment: React.FC<InvestmentProps> = ({ language }) => {
-  const [europeData, setEuropeData] = useState<ExtendedEuropeCSVData[]>([]); 
+  const [europeData, setEuropeData] = useState<ExtendedEuropeCSVData[]>([]);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(2023);
+  const [selectedSector, setSelectedSector] = useState<string>("All Sectors");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(2021); // Año inicial, se actualizará al más reciente
-  const [selectedSector, setSelectedSector] = useState<string>("All Sectors"); // Usar el valor exacto del CSV
-  const [availableYears, setAvailableYears] = useState<number[]>([]);
-  const [labelsData, setLabelsData] = useState<LabelData[]>([]);
   const [autonomousCommunitiesData, setAutonomousCommunitiesData] = useState<AutonomousCommunityData[]>([]);
+  const [dataDisplayType, setDataDisplayType] = useState<DataDisplayType>('percent_gdp');
   
   // Función auxiliar para acceder a los textos según el idioma actual
   const t = texts[language];
+
+  // Función para obtener el nombre del sector seleccionado
+  const getSectorName = (sectorValue: string): string => {
+    if (sectorValue === 'All Sectors') {
+      return language === 'es' ? 'Todos los sectores' : 'All sectors';
+    }
+    
+    // Mapeo de nombres completos a nombres localizados
+    const sectorNames: Record<string, { es: string, en: string }> = {
+      'Business enterprise sector': {
+        es: 'Sector empresarial',
+        en: 'Business enterprise sector'
+      },
+      'Government sector': {
+        es: 'Administración Pública',
+        en: 'Government sector'
+      },
+      'Higher education sector': {
+        es: 'Enseñanza Superior',
+        en: 'Higher education sector'
+      },
+      'Private non-profit sector': {
+        es: 'Instituciones Privadas sin Fines de Lucro',
+        en: 'Private non-profit sector'
+      }
+    };
+    
+    // Si está en el mapeo, usar el nombre localizado
+    if (sectorValue in sectorNames) {
+      return sectorNames[sectorValue][language];
+    }
+    
+    // Buscar por ID en rdSectors si no coincide con el mapeo
+    const sector = rdSectors.find(s => s.id === sectorValue);
+    if (sector) {
+      return sector.name[language];
+    }
+    
+    // Fallback: retornar el valor original
+    return sectorValue;
+  };
 
   // Efecto para cargar los datos desde los archivos CSV
   useEffect(() => {
@@ -135,7 +179,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         console.log("Intentando cargar datos desde:", DATA_PATHS.GDP_EUROPE);
         
         // Cargar datos de Europa
-        const europeResponse = await fetch(DATA_PATHS.GDP_EUROPE);
+        const europeResponse = await fetch('./data/GDP_data/gdp_consolidado.csv');
         if (!europeResponse.ok) {
           throw new Error(`${t.errorPrefix} ${europeResponse.status} - ${europeResponse.statusText}`);
         }
@@ -157,28 +201,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
         }
         
         console.log("Muestra de datos procesados:", europeResult.data.slice(0, 3));
-        
-        // Cargar datos de etiquetas (labels)
-        const labelsResponse = await fetch('./data/GDP_data/labels_consolidado.csv');
-        if (!labelsResponse.ok) {
-          console.warn(`Advertencia: No se pudieron cargar las etiquetas: ${labelsResponse.status} - ${labelsResponse.statusText}`);
-        } else {
-          const labelsCSV = await labelsResponse.text();
-          
-          // Procesar CSV de etiquetas
-          const labelsResult = Papa.parse<LabelData>(labelsCSV, {
-            header: true,
-            delimiter: ';', // El archivo usa punto y coma
-            skipEmptyLines: true
-          });
-          
-          if (labelsResult.errors && labelsResult.errors.length > 0) {
-            console.warn("Advertencias al procesar CSV de etiquetas:", labelsResult.errors);
-          }
-          
-          setLabelsData(labelsResult.data);
-          console.log("Etiquetas cargadas:", labelsResult.data.length);
-        }
         
         // Cargar datos de comunidades autónomas
         const communityResponse = await fetch('./data/GDP_data/gasto_ID_comunidades_porcentaje_pib.csv');
@@ -293,28 +315,43 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     return sector?.id || 'total';
   };
 
+  // Agregar nuevo handler para cambio de tipo de visualización
+  const handleDataTypeChange = (newType: DataDisplayType) => {
+    setDataDisplayType(newType);
+  };
+
   // Componente para mostrar entidades supranacionales como la UE y Zona Euro
-  const SupranationalEntities = () => (
-    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
-      <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
-        Entidades supranacionales
+  const SupranationalEntities = () => {
+    // Texto dinámico para países/countries
+    const countriesText = language === 'es' ? 'países' : 'countries';
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
+        <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
+          {t.supranational}
+        </div>
+        <div className="border border-blue-200 rounded-b-md border-t-0 p-3">
+          <div className="mb-3 flex">
+            <h3 className="text-xs font-semibold text-gray-800 mr-1">
+              {language === 'es' ? `Unión Europea (27 ${countriesText})` : `European Union (27 ${countriesText})`}
+            </h3>
+            <p className="text-xs text-gray-600">{t.euFull}</p>
+          </div>
+          <div className="mb-3 flex">
+            <h3 className="text-xs font-semibold text-gray-800 mr-1">
+              {language === 'es' ? `Zona Euro (20 ${countriesText})` : `Euro Area (20 ${countriesText})`}
+            </h3>
+            <p className="text-xs text-gray-600">{t.euroArea20Full}</p>
+          </div>
+          <div className="flex">
+            <h3 className="text-xs font-semibold text-gray-800 mr-1">
+              {language === 'es' ? `Zona Euro (19 ${countriesText})` : `Euro Area (19 ${countriesText})`}
+            </h3>
+            <p className="text-xs text-gray-600">{t.euroArea19Full}</p>
+          </div>
+        </div>
       </div>
-      <div className="border border-blue-200 rounded-b-md border-t-0 p-3">
-        <div className="mb-3 flex">
-          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.europeanUnion}</h3>
-          <p className="text-xs text-gray-600">{t.euFull}</p>
-        </div>
-        <div className="mb-3 flex">
-          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.euroArea20}</h3>
-          <p className="text-xs text-gray-600">{t.euroArea20Full}</p>
-        </div>
-        <div className="flex">
-          <h3 className="text-xs font-semibold text-gray-800 mr-1">{t.euroArea19}</h3>
-          <p className="text-xs text-gray-600">{t.euroArea19Full}</p>
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Componente para mostrar la leyenda de banderas de observación
   const ObservationFlags = () => (
@@ -408,53 +445,67 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <div className="mb-10">
             <SectionTitle title={t.euComparisonTitle} />
             
-            {/* Subsección 2.1: Distribución del I+D por País o territorio */}
+            {/* Subsección 2.1: Mapa y ranking de inversión en I+D */}
             <div className="mb-8">
-              <SubsectionTitle title={language === 'es' ? "Distribución del I+D por País o territorio" : "R&D Distribution by Country or Territory"} />
+              <SubsectionTitle title={language === 'es' ? 
+                `Inversión en I+D por país - ${getSectorName(selectedSector)} (${selectedYear})` : 
+                `R&D Investment by Country - ${getSectorName(selectedSector)} (${selectedYear})`} 
+              />
               
-              {/* Filtros en diseño sencillo */}
+              {/* Filtros - DEJAR SOLO UN CONJUNTO DE FILTROS */}
               <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      className="text-blue-500 mr-2"
-                    >
-                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    <label className="text-gray-700 font-medium mr-2">{t.year}</label>
-                    <select 
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    >
-                      {availableYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-blue-500 mr-2"
+                      >
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                      <select 
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      >
+                        {availableYears.map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                      <select 
+                        value={getSectorId(selectedSector)}
+                        onChange={(e) => handleSectorChange(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                      >
+                        {rdSectors.map(sector => (
+                          <option key={sector.id} value={sector.id}>
+                            {sector.name[language]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center">
-                    <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                    <select 
-                      value={getSectorId(selectedSector)}
-                      onChange={(e) => handleSectorChange(e.target.value)}
-                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                    >
-                      {rdSectors.map(sector => (
-                        <option key={sector.id} value={sector.id}>
-                          {sector.name[language]}
-                        </option>
-                      ))}
-                    </select>
+                  {/* Selector de tipo de datos visible */}
+                  <div>
+                    <DataTypeSelector 
+                      dataType={dataDisplayType} 
+                      onChange={handleDataTypeChange} 
+                      language={language} 
+                    />
                   </div>
                 </div>
               </div>
@@ -464,27 +515,44 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 {/* Mapa de Europa */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
                   <EuropeanRDMap 
-                    // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
                     data={europeData} 
                     selectedYear={selectedYear} 
                     language={language} 
                     selectedSector={selectedSector}
-                    labels={labelsData}
                     autonomousCommunitiesData={autonomousCommunitiesData}
+                    dataDisplayType={dataDisplayType}
                   />
                 </div>
                 
-                {/* Gráfico de ranking de países */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                  <CountryRankingChart 
-                    // @ts-expect-error - Los datos son compatibles en tiempo de ejecución aunque sus tipos no coincidan exactamente
-                    data={europeData} 
-                    selectedYear={selectedYear} 
-                    language={language}
-                    selectedSector={getSectorId(selectedSector)}
-                    labels={labelsData}
-                    autonomousCommunitiesData={autonomousCommunitiesData}
-                  />
+                {/* Ranking de países - Eliminar título duplicado y usar directamente el componente */}
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-[500px]">
+                  {europeData.length > 0 ? (
+                    <div className="h-full overflow-hidden" data-testid="country-ranking-chart">
+                      <CountryRankingChart 
+                        data={europeData}
+                        selectedYear={selectedYear}
+                        language={language}
+                        selectedSector={getSectorId(selectedSector)}
+                        autonomousCommunitiesData={autonomousCommunitiesData}
+                        dataDisplayType={dataDisplayType}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex justify-center items-center h-full">
+                      {isLoading ? (
+                        <div className="flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                          <p className="mt-4 text-gray-500">{t.loading}</p>
+                        </div>
+                      ) : error ? (
+                        <div className="text-red-500">
+                          <p>{error}</p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">{t.noData}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

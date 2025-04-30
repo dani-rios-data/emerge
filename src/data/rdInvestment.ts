@@ -48,7 +48,13 @@ export interface CommunitiesCSVData {
 // Interfaz simplificada con indexación dinámica para manejar caracteres especiales
 export interface EuropeCSVData {
   'Country': string;
-  [key: string]: string; // Permitirá acceder a cualquier columna
+  'País'?: string;
+  'Year': string;
+  'Sector': string;
+  '%GDP': string;
+  'ISO3'?: string;
+  'label_percent_gdp_id'?: string;
+  [key: string]: string | undefined; // Permitirá acceder a cualquier columna
 }
 
 // Rutas a los archivos CSV

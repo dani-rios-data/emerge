@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calendar, ChevronDown } from 'lucide-react';
 import Papa from 'papaparse';
@@ -54,8 +54,16 @@ interface CountryOption {
   iso3: string;
 }
 
+interface FlagProps {
+  code: FlagCode;
+  width?: number;
+  height?: number;
+  className?: string;
+  iso3?: string;
+}
+
 // Componente selector de banderas usando country_flags.json y el ISO3 del país
-const Flag = ({ code, width = 24, height = 18, className = "", iso3 = "" }: { code: FlagCode; width?: number; height?: number; className?: string; iso3?: string }) => {
+const Flag: React.FC<FlagProps> = ({ code, width = 24, height = 18, className = "", iso3 }) => {
   // Encontrar la bandera correcta basándose en el código
   let flagUrl = '';
   let extraStyles = '';
@@ -64,7 +72,7 @@ const Flag = ({ code, width = 24, height = 18, className = "", iso3 = "" }: { co
   const euFlag = country_flags.find(flag => flag.iso3 === 'EUU');
   const esFlag = country_flags.find(flag => flag.iso3 === 'ESP');
   const canaryFlag = autonomous_communities_flags.find(community => community.code === 'CAN');
-  const countryFlag = iso3 ? country_flags.find(flag => flag.iso3 === iso3) : null;
+  const countryFlag = code === 'country' && iso3 ? country_flags.find(flag => flag.iso3 === iso3) : null;
   
   switch(code) {
     case 'eu':
@@ -125,6 +133,8 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     localName: 'España',
     iso3: 'ESP'
   });
+  const [gdpData, setGdpData] = useState<GDPConsolidadoData[]>([]);
+  const [ccaaData, setCcaaData] = useState<GastoIDComunidadesData[]>([]);
   
   // Textos localizados
   const texts = {
@@ -242,6 +252,9 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         if (selectedCountry) {
           processData(gdpData, ccaaData, selectedYear, selectedCountry.iso3);
         }
+        
+        setGdpData(gdpData);
+        setCcaaData(ccaaData);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -280,6 +293,9 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
           
           // Procesar datos con el nuevo país seleccionado
           processData(gdpData, ccaaData, selectedYear, selectedCountry.iso3);
+          
+          setGdpData(gdpData);
+          setCcaaData(ccaaData);
         } catch (error) {
           console.error("Error updating country data:", error);
         } finally {
@@ -603,7 +619,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
   }
   
   // Componente personalizado para el tooltip
-  const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
+  const CustomTooltip: React.FC<TooltipContentProps & { gdpData: GDPConsolidadoData[], ccaaData: GastoIDComunidadesData[], region: RegionData, selectedYear: string }> = ({ active, payload, gdpData, ccaaData, region, selectedYear }) => {
     if (active && payload && payload.length) {
       // Obtenemos el color del sector para usarlo en el tooltip
       const sectorColor = payload[0].payload.color;
@@ -625,6 +641,17 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
             <p className="text-sm text-gray-700 flex justify-between items-center mt-1">
               <span>% {t.total}:</span>
               <span className="font-semibold">{payload[0].payload.sharePercentage?.toFixed(2)}%</span>
+            </p>
+            <p className="text-sm text-gray-700 flex justify-between items-center mt-1">
+              <span>YoY:</span>
+              {(() => {
+                const prevValue = getPreviousYearSectorValue(gdpData, ccaaData, region, payload[0].name, selectedYear);
+                if (prevValue !== null && prevValue !== 0) {
+                  const yoy = ((payload[0].value - prevValue) / prevValue) * 100;
+                  return <span className={yoy > 0 ? 'text-green-600' : 'text-red-600'}>{yoy > 0 ? '+' : ''}{yoy.toFixed(2)}%</span>;
+                }
+                return <span className="text-gray-400">--</span>;
+              })()}
             </p>
           </div>
         </div>
@@ -648,37 +675,79 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     }
   };
 
+  // Función auxiliar para obtener el valor del sector en el año anterior
+  function getPreviousYearSectorValue(
+    gdpData: GDPConsolidadoData[],
+    ccaaData: GastoIDComunidadesData[],
+    region: RegionData,
+    sectorName: string,
+    year: string
+  ): number | null {
+    const prevYear = (parseInt(year) - 1).toString();
+    if (region.flagCode === 'eu') {
+      // Buscar en gdpData para la UE
+      const row = gdpData.find(r => r.Year === prevYear && r.Country.includes('European Union') && r.Sector === sectorName);
+      if (row && row['%GDP']) return parseFloat(row['%GDP']);
+    } else if (region.flagCode === 'canary_islands') {
+      // Buscar en ccaaData para Canarias
+      const row = ccaaData.find(r => r['Año'] === prevYear && r['Comunidad Limpio'] === 'Canarias' && r['Sector Nombre'] === sectorName);
+      if (row && row['% PIB I+D']) return parseFloat(row['% PIB I+D']);
+    } else {
+      // País
+      const row = gdpData.find(r => r.Year === prevYear && r.ISO3 === region.iso3 && r.Sector === sectorName);
+      if (row && row['%GDP']) return parseFloat(row['%GDP']);
+    }
+    return null;
+  }
+
   const SectorList: React.FC<{
     data: RegionData;
-  }> = ({ data }) => {
+    gdpData: GDPConsolidadoData[];
+    ccaaData: GastoIDComunidadesData[];
+    selectedYear: string;
+  }> = ({ data, gdpData, ccaaData, selectedYear }): ReactElement => {
     return (
       <div className="mt-1">
         {/* Encabezados de la tabla */}
-        <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-1">
+        <div className="grid grid-cols-4 gap-2 text-xs text-gray-500 mb-1">
           <div>{t.sector}</div>
           <div className="text-right">{t.pibPercentage}</div>
           <div className="text-right">%{t.total}</div>
+          <div className="text-right">YoY</div>
         </div>
         
         {/* Filas de datos */}
-        {data.data.map((sector, i) => (
-          <div key={i} className="grid grid-cols-3 gap-2 text-xs py-1 border-b border-gray-100">
-            <div className="flex items-center">
-              <div 
-                className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-                style={{ backgroundColor: sector.color }}
-              ></div>
-              <div className="leading-tight">{sector.name}</div>
+        {data.data.map((sector: SectorDataItem, i: number) => {
+          // Calcular YoY
+          const prevValue = getPreviousYearSectorValue(gdpData, ccaaData, data, sector.name, selectedYear);
+          let yoy = null;
+          if (prevValue !== null && prevValue !== 0) {
+            yoy = ((sector.value - prevValue) / prevValue) * 100;
+          }
+          return (
+            <div key={i} className="grid grid-cols-4 gap-2 text-xs py-1 border-b border-gray-100">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: sector.color }}></div>
+                <div className="leading-tight">{sector.name}</div>
+              </div>
+              <div className="font-medium text-right">{sector.value.toFixed(2)}%</div>
+              <div className="text-right text-gray-600">{sector.sharePercentage?.toFixed(2)}%</div>
+              <div className="text-right">
+                {yoy === null ? <span className="text-gray-400">--</span> : (
+                  <span className={yoy > 0 ? 'text-green-600' : 'text-red-600'}>
+                    {yoy > 0 ? '+' : ''}{yoy.toFixed(2)}%
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="font-medium text-right">{sector.value.toFixed(2)}%</div>
-            <div className="text-right text-gray-600">{sector.sharePercentage?.toFixed(2)}%</div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* Fila de totales */}
-        <div className="grid grid-cols-3 gap-2 text-xs py-1 border-t border-gray-200 font-medium mt-1">
+        <div className="grid grid-cols-4 gap-2 text-xs py-1 border-t border-gray-200 font-medium mt-1">
           <div>{t.total}:</div>
           <div className="text-right">{parseFloat(data.totalPercentage).toFixed(2)}%</div>
+          <div className="text-right">100%</div>
           <div className="text-right">100%</div>
         </div>
       </div>
@@ -722,6 +791,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                       code={region.flagCode} 
                       width={24} 
                       height={18} 
+                      iso3={region.flagCode === 'country' ? region.iso3 : undefined} 
                     />
                   </div>
                   
@@ -759,6 +829,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                                   code="country" 
                                   width={20} 
                                   height={15} 
+                                  iso3={country.iso3} 
                                 />
                               </div>
                               {language === 'es' ? country.localName : country.name}
@@ -802,7 +873,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                         ))}
                       </Pie>
                       <Tooltip 
-                        content={<CustomTooltip />} 
+                        content={<CustomTooltip gdpData={gdpData} ccaaData={ccaaData} region={region} selectedYear={selectedYear} />} 
                         wrapperStyle={{ zIndex: 100 }}
                         cursor={{ fill: 'transparent' }}
                       />
@@ -817,7 +888,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
               
               {/* Data table - Usando SectorList */}
               <div className="px-4 pb-4">
-                <SectorList data={region} />
+                <SectorList data={region} gdpData={gdpData} ccaaData={ccaaData} selectedYear={selectedYear} />
               </div>
             </div>
           ))}

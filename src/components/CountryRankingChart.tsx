@@ -11,10 +11,11 @@ import {
   ChartOptions,
   ChartEvent
 } from 'chart.js';
-import { EuropeCSVData, rdSectors } from '../data/rdInvestment';
+import { EuropeCSVData } from '../data/rdInvestment';
 import { EU_COLORS, SECTOR_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json en lugar del archivo eliminado country-flags.tsx
 import countryFlagsData from '../logos/country_flags.json';
+import { DataDisplayType } from './DataTypeSelector';
 // Para usar las banderas SVG, debes importarlas del archivo logos/country-flags.tsx
 // import { FlagSpain, FlagEU, FlagCanaryIslands, FlagSweden, FlagFinland } from '../logos/country-flags';
 
@@ -39,15 +40,6 @@ ChartJS.register(
   Legend
 );
 
-// Interfaz para los datos de etiquetas
-interface LabelData {
-  Country: string;
-  País: string;
-  Year: string;
-  Sector: string;
-  Label: string;
-}
-
 // Interfaz para los datos de comunidades autónomas
 interface AutonomousCommunityData {
   "Comunidad (Original)": string;
@@ -63,13 +55,14 @@ interface AutonomousCommunityData {
   [key: string]: string;
 }
 
+// Modificar la prop interface para utilizar el tipo original
 interface CountryRankingChartProps {
   data: EuropeCSVData[];
   selectedYear: number;
   language: 'es' | 'en';
   selectedSector?: string;
-  labels?: LabelData[];
-  autonomousCommunitiesData?: AutonomousCommunityData[]; // Usar el tipo específico
+  autonomousCommunitiesData?: AutonomousCommunityData[];
+  dataDisplayType?: DataDisplayType;
 }
 
 // Colores para la gráfica
@@ -129,34 +122,40 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   selectedYear, 
   language,
   selectedSector = 'total',
-  labels = [],
-  autonomousCommunitiesData = [] // Añadir parámetro para datos de comunidades autónomas
+  autonomousCommunitiesData = [],
+  dataDisplayType = 'percent_gdp'
 }) => {
   const chartRef = useRef(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Obtener el nombre del sector según el idioma - versión mejorada
-  const getSectorName = () => {
-    // Conversión directa de ID a objeto sector
-    const sector = rdSectors.find(s => s.id === selectedSector);
-    if (!sector) return language === 'es' ? 'Todos los sectores' : 'All Sectors';
-    return sector.name[language];
-  };
-
   // Textos traducidos
   const texts = {
     es: {
-      title: `Ranking de países por inversión en I+D - ${getSectorName()} (${selectedYear})`,
-      axisLabel: "% del PIB",
+      title: "Ranking de países por inversión en I+D",
+      axisLabel: dataDisplayType === 'percent_gdp' ? "% del PIB" : "Millones de €",
       noData: "No hay datos disponibles para este año",
-      rdInvestment: "Inversión I+D"
+      rdInvestment: "Inversión I+D",
+      countryRanking: "Ranking de países",
+      allSectors: "Todos los sectores",
+      sector_total: "Todos los sectores",
+      sector_business: "Sector empresarial",
+      sector_government: "Sector gubernamental", 
+      sector_education: "Sector educativo superior",
+      sector_nonprofit: "Sector privado sin ánimo de lucro"
     },
     en: {
-      title: `Country Ranking by R&D Investment - ${getSectorName()} (${selectedYear})`,
-      axisLabel: "% of GDP",
+      title: "Country Ranking by R&D Investment",
+      axisLabel: dataDisplayType === 'percent_gdp' ? "% of GDP" : "Million €", 
       noData: "No data available for this year",
-      rdInvestment: "R&D Investment"
+      rdInvestment: "R&D Investment",
+      countryRanking: "Country Ranking",
+      allSectors: "All Sectors",
+      sector_total: "All Sectors",
+      sector_business: "Business enterprise sector",
+      sector_government: "Government sector",
+      sector_education: "Higher education sector",
+      sector_nonprofit: "Private non-profit sector"
     }
   };
 
@@ -183,38 +182,53 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   console.log(`Datos para año ${selectedYear} y sector ${sectorNameEn}:`, countryDataForYear.length, "registros");
 
   // Función para normalizar texto (eliminar acentos)
-  const normalizeText = (text: string): string => {
+  const normalizeText = (text: string | undefined): string => {
     if (!text) return '';
     return text
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
   };
-  
-  // Depurar nombres de países para identificar problemas de codificación
-  if (countryDataForYear.length > 0 && countryDataForYear.length < 50) {
-    console.log("Nombres de países originales vs. normalizados:");
-    countryDataForYear.forEach(item => {
-      const original = language === 'es' ? item['País'] : item['Country'];
-      const normalized = normalizeText(original);
-      console.log(`  ${original} => ${normalized}`);
-    });
-  }
 
   // Agrupar por país (para evitar duplicados)
-  const countryMap = new Map<string, {value: number, nameEs: string, nameEn: string}>();
+  const countryMap = new Map<string, {value: number, nameEs: string, nameEn: string, isAvg?: boolean}>();
 
   // MODIFICADO: Usar directamente las columnas 'Country' o 'País' según el idioma
   countryDataForYear.forEach(item => {
     // Guardamos ambos nombres para poder cambiar de idioma en el tooltip
-    const countryNameEs = item['País'];
+    const countryNameEs = item['País'] || '';
     const countryNameEn = item['Country'];
-    const rdValue = parseFloat(item['%GDP'].replace(',', '.'));
+    
+    // Determinar qué valor usar según el tipo de visualización
+    let rdValue: number;
+    let isAvgValue = false;  // Indicador para saber si es un valor promedio
+    
+    if (dataDisplayType === 'percent_gdp') {
+      rdValue = parseFloat(item['%GDP'].replace(',', '.'));
+    } else {
+      rdValue = parseFloat(item['Approx_RD_Investment_million_euro'] || '0');
+      
+      // Aplicar promedios para UE y zonas euro en modo millones de euros
+      if (countryNameEn === 'European Union - 27 countries (from 2020)') {
+        // Dividir entre 27 países para la UE
+        rdValue = rdValue / 27;
+        isAvgValue = true;
+      } else if (countryNameEn === 'Euro area – 20 countries (from 2023)') {
+        // Dividir entre 20 países para la Zona Euro 2023
+        rdValue = rdValue / 20;
+        isAvgValue = true;
+      } else if (countryNameEn === 'Euro area - 19 countries (2015-2022)' || 
+                countryNameEn === 'Euro area - 19 countries  (2015-2022)') {
+        // Dividir entre 19 países para la Zona Euro 2015-2022
+        rdValue = rdValue / 19;
+        isAvgValue = true;
+      }
+    }
     
     if (!isNaN(rdValue) && (countryNameEs || countryNameEn)) {
       // Aplicar alias para simplificar nombres de entidades
       let displayNameEs = countryNameEs;
-      let displayNameEn = countryNameEn;
+      let displayNameEn = countryNameEn || '';
       
       // Mapeo de nombres largos a alias más cortos según el idioma
       const aliases: { [key: string]: { es: string, en: string } } = {
@@ -238,18 +252,19 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
       };
       
       // Aplicar el alias si existe para este país/entidad
-      if (countryNameEn in aliases) {
+      if (countryNameEn && countryNameEn in aliases) {
         displayNameEs = aliases[countryNameEn].es;
         displayNameEn = aliases[countryNameEn].en;
       }
       
-      // En el mapa guardamos ambos nombres y el valor
+      // En el mapa guardamos ambos nombres y el valor, más el indicador de promedio
       const displayKey = language === 'es' ? displayNameEs : displayNameEn;
       if (displayKey) {
         countryMap.set(displayKey, {
           value: rdValue,
           nameEs: displayNameEs || displayNameEn, // Fallback al nombre en inglés si no hay español
-          nameEn: displayNameEn || displayNameEs  // Fallback al nombre en español si no hay inglés
+          nameEn: displayNameEn || displayNameEs,  // Fallback al nombre en español si no hay inglés
+          isAvg: isAvgValue
         });
       }
     }
@@ -267,9 +282,13 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   
   // Almacenamos los pares de nombres para usar en tooltips
   const countryNames = sortedCountries.reduce((acc, [key, data]) => {
-    acc[key] = { es: data.nameEs, en: data.nameEn };
+    acc[key] = { 
+      es: data.nameEs, 
+      en: data.nameEn,
+      isAvg: data.isAvg || false
+    };
     return acc;
-  }, {} as Record<string, {es: string, en: string}>);
+  }, {} as Record<string, {es: string, en: string, isAvg?: boolean}>);
   
   // Obtener el color del sector seleccionado
   const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
@@ -392,7 +411,6 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         const index = chartElements[0].index;
         const countryName = chartLabels[index] as string || '';
         const value = values[index] as number;
-        const formattedValue = value.toFixed(2);
         
         // Calcular el ranking: posición + 1 porque los índices empiezan en 0
         const rank = index + 1;
@@ -419,33 +437,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
             ? (language === 'es' ? countryNames[countryName].es : countryNames[countryName].en) 
             : countryName;
             
-          // Buscar etiqueta para este país y año
-          let labelValue = '';
-          if (labels && labels.length > 0) {
-            // Buscar etiqueta para este país y sector
-            const matchingLabel = labels.find(item => {
-              // Normalizar nombres para comparación
-              const itemCountryNormalized = normalizeText(String(item.Country || ''));
-              const itemPaisNormalized = normalizeText(String(item.País || ''));
-              const displayNameNormalized = normalizeText(displayName);
-              
-              // Verificar si coincide el país (en inglés o español)
-              const countryMatches = 
-                itemCountryNormalized === displayNameNormalized ||
-                itemPaisNormalized === displayNameNormalized;
-              
-              // Verificar si coincide el año y sector
-              const yearMatches = item.Year === selectedYear.toString();
-              const sectorMatches = item.Sector === sectorNameEn;
-              
-              return countryMatches && yearMatches && sectorMatches;
-            });
-            
-            if (matchingLabel && matchingLabel.Label) {
-              labelValue = matchingLabel.Label;
-            }
-          }
-                     
+          // Usar la nueva función en lugar de buscar en el array de etiquetas
+          const labelValue = getDataLabelForCountry(displayName, selectedYear);
+          
           // Verificar si el país es la UE
           const normalizedName = normalizeText(displayName);
           const isEU = normalizedName.includes('union europea') || 
@@ -486,27 +480,51 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           let spainComparisonHtml = '';
           let canariasComparisonHtml = '';
           
-          // Comparación con UE
+          // Comparación con UE - Solo mostrar si estamos en modo porcentaje PIB
           if (!isEU) {
             const euValue = getEUValue(data, selectedYear, selectedSector);
             
             if (euValue !== null && euValue > 0) {
               const difference = value - euValue;
-              const percentDiff = (difference / euValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-              euComparisonHtml = `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs UE (${euValue.toFixed(2)}%):` : `vs EU (${euValue.toFixed(2)}%):`}</span>
-                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
+              if (dataDisplayType === 'percent_gdp') {
+                const percentDiff = (difference / euValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                euComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${language === 'es' ? 
+                      `vs Media UE (${euValue.toFixed(2)}%):` : 
+                      `vs Avg EU (${euValue.toFixed(2)}%):`}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+              } else {
+                // Formato para modo millones de euros (valores absolutos)
+                const difference = value - euValue;
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                // Variables intermedias para evitar problemas de tipado
+                const isEs = language === 'es';
+                const euLocale = isEs ? 'es-ES' : 'en-US';
+                const labelText = isEs
+                  ? `vs Media UE (${euValue.toLocaleString(euLocale, {maximumFractionDigits: 0})} M€):`
+                  : `vs Avg EU (${euValue.toLocaleString(euLocale, {maximumFractionDigits: 0})} M€):`;
+                
+                euComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(euLocale, {maximumFractionDigits: 0})} M€</span>
+                  </div>
+                `;
+              }
             } else if (euValue !== null && euValue === 0) {
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs UE:' : 'vs EU:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Media UE:' : 'vs Avg EU:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -519,21 +537,50 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
             
             if (spainValue !== null && spainValue > 0) {
               const difference = value - spainValue;
-              const percentDiff = (difference / spainValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-              spainComparisonHtml = `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs España (${spainValue.toFixed(2)}%):` : `vs Spain (${spainValue.toFixed(2)}%):`}</span>
-                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
+              if (dataDisplayType === 'percent_gdp') {
+                // Formato para modo porcentaje PIB (como estaba antes)
+                const percentDiff = (difference / spainValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                // Usar variables intermedias para evitar problemas de tipado
+                const labelText = language === 'es' 
+                  ? `vs España (${spainValue.toFixed(2)}%):` 
+                  : `vs Spain (${spainValue.toFixed(2)}%):`;
+                
+                spainComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+              } else {
+                // Formato para modo millones de euros (valores absolutos)
+                const difference = value - spainValue;
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                // Variables intermedias para evitar problemas de tipado
+                const isEs = language === 'es';
+                const spainLocale = isEs ? 'es-ES' : 'en-US';
+                const labelText = isEs
+                  ? `vs España (${spainValue.toLocaleString(spainLocale, {maximumFractionDigits: 0})} M€):`
+                  : `vs Spain (${spainValue.toLocaleString(spainLocale, {maximumFractionDigits: 0})} M€):`;
+                
+                spainComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(spainLocale, {maximumFractionDigits: 0})} M€</span>
+                  </div>
+                `;
+              }
             } else if (spainValue !== null && spainValue === 0) {
+              const noDataText = language === 'es' ? 'vs España:' : 'vs Spain:';
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${noDataText}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -546,28 +593,57 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
             
             if (canariasValue !== null && canariasValue > 0) {
               const difference = value - canariasValue;
-              const percentDiff = (difference / canariasValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              const color = isPositive ? 'text-green-600' : 'text-red-600';
               
-              canariasComparisonHtml = `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? `vs Canarias (${canariasValue.toFixed(2)}%):` : `vs Canary Islands (${canariasValue.toFixed(2)}%):`}</span>
-                  <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
+              if (dataDisplayType === 'percent_gdp') {
+                // Formato para modo porcentaje PIB (como estaba antes)
+                const percentDiff = (difference / canariasValue) * 100;
+                const formattedDiff = percentDiff.toFixed(1);
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                // Usar variables intermedias para evitar problemas de tipado
+                const labelText = language === 'es' 
+                  ? `vs Canarias (${canariasValue.toFixed(2)}%):` 
+                  : `vs Canary Islands (${canariasValue.toFixed(2)}%):`;
+                
+                canariasComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+              } else {
+                // Formato para modo millones de euros (valores absolutos)
+                const difference = value - canariasValue;
+                const isPositive = difference > 0;
+                const color = isPositive ? 'text-green-600' : 'text-red-600';
+                
+                // Variables intermedias para evitar problemas de tipado
+                const isEs = language === 'es';
+                const canariasLocale = isEs ? 'es-ES' : 'en-US';
+                const labelText = isEs
+                  ? `vs Canarias (${canariasValue.toLocaleString(canariasLocale, {maximumFractionDigits: 0})} M€):`
+                  : `vs Canary Islands (${canariasValue.toLocaleString(canariasLocale, {maximumFractionDigits: 0})} M€):`;
+                
+                canariasComparisonHtml = `
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(canariasLocale, {maximumFractionDigits: 0})} M€</span>
+                  </div>
+                `;
+              }
             } else if (canariasValue !== null && canariasValue === 0) {
+              const noDataText = language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:';
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="text-gray-600 inline-block w-36">${noDataText}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
             }
           }
           
-          // Renderizar el tooltip con el nuevo diseño
+          // Renderizar el tooltip con el nuevo diseño y formateando correctamente según el tipo de datos
           tooltipContentElement.innerHTML = `
             <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con el nombre del país -->
@@ -694,12 +770,46 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                     <span>${language === 'es' ? 'Inversión I+D:' : 'R&D Investment:'}</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-blue-700">${formattedValue}%</span>
-                    <span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'del PIB' : 'of GDP'}</span>
+                    <span class="text-xl font-bold text-blue-700">
+                      ${dataDisplayType === 'percent_gdp' 
+                        ? value.toFixed(2) 
+                        : value.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {maximumFractionDigits: 0})}
+                    </span>
+                    <span class="ml-1 text-gray-600 text-sm">
+                      ${dataDisplayType === 'percent_gdp' ? '%' : 'M€'}
+                      ${dataDisplayType !== 'percent_gdp' && countryNames[displayName]?.isAvg 
+                        ? (language === 'es' ? ' Media' : ' Avg') : ''}
+                    </span>
                     ${labelValue ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${labelValue}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
                 </div>
+                
+                ${dataDisplayType !== 'percent_gdp' && 
+                  (normalizedName.includes('union europea') || 
+                   normalizedName.includes('european union') || 
+                   normalizedName.includes('zona euro') || 
+                   normalizedName.includes('euro area')) 
+                   ? `<div class="mt-1 mb-3 text-xs text-gray-500 bg-blue-50 p-2 rounded">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                       ${(() => {
+                         if (normalizedName.includes('union europea') || normalizedName.includes('european union')) {
+                           return language === 'es' 
+                             ? 'Valor promedio calculado dividiendo el total por 27 países'
+                             : 'Average value calculated by dividing the total by 27 countries';
+                         } else if ((normalizedName.includes('zona euro') || normalizedName.includes('euro area')) && normalizedName.includes('2023')) {
+                           return language === 'es'
+                             ? 'Valor promedio calculado dividiendo el total por 20 países'
+                             : 'Average value calculated by dividing the total by 20 countries';
+                         } else if ((normalizedName.includes('zona euro') || normalizedName.includes('euro area')) && (normalizedName.includes('2015') || normalizedName.includes('2015-2022'))) {
+                           return language === 'es'
+                             ? 'Valor promedio calculado dividiendo el total por 19 países'
+                             : 'Average value calculated by dividing the total by 19 countries';
+                         }
+                         return '';
+                       })()}
+                     </div>`
+                   : ''}
                 
                 <!-- Ranking -->
                 <div class="mb-4">
@@ -840,14 +950,26 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     
     if (spainData.length === 0) return null;
     
-    // Obtener el valor
-    const valueStr = spainData[0]['%GDP'] || '';
-    if (!valueStr) return null;
-    
-    try {
-      return parseFloat(valueStr.replace(',', '.'));
-    } catch {
-      return null;
+    // Obtener el valor según el tipo de visualización
+    if (dataDisplayType === 'percent_gdp') {
+      const valueStr = spainData[0]['%GDP'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
+    } else {
+      // Modo millones de euros
+      const valueStr = spainData[0]['Approx_RD_Investment_million_euro'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
     }
   };
 
@@ -872,14 +994,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     
     if (euData.length === 0) return null;
     
-    // Obtener el valor
-    const valueStr = euData[0]['%GDP'] || '';
-    if (!valueStr) return null;
-    
-    try {
-      return parseFloat(valueStr.replace(',', '.'));
-    } catch {
-      return null;
+    // Obtener el valor según el tipo de visualización
+    if (dataDisplayType === 'percent_gdp') {
+      const valueStr = euData[0]['%GDP'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
+    } else {
+      // Modo millones de euros
+      const valueStr = euData[0]['Approx_RD_Investment_million_euro'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        // Aplicar promedio para la UE
+        return parseFloat(valueStr.replace(',', '.')) / 27;
+      } catch {
+        return null;
+      }
     }
   };
 
@@ -908,14 +1043,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     
     if (canariasData.length === 0) return null;
     
-    // Obtener el valor del % PIB
-    const valueStr = canariasData[0]["% PIB I+D"] || '';
-    if (!valueStr) return null;
-    
-    try {
-      return parseFloat(valueStr.replace(',', '.'));
-    } catch {
-      return null;
+    if (dataDisplayType === 'percent_gdp') {
+      // Obtener el valor del % PIB
+      const valueStr = canariasData[0]["% PIB I+D"] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
+    } else {
+      // Modo millones de euros - convertir de miles a millones
+      const valueStr = canariasData[0]["Gasto en I+D (Miles €)"] || '';
+      if (!valueStr) return null;
+      
+      try {
+        // Convertir de miles a millones dividiendo por 1000
+        return parseFloat(valueStr.replace('.', '').replace(',', '.')) / 1000;
+      } catch {
+        return null;
+      }
     }
   };
 
@@ -939,14 +1087,26 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     
     if (countryPrevYearData.length === 0) return null;
     
-    // Obtener el valor
-    const valueStr = countryPrevYearData[0]['%GDP'] || '';
-    if (!valueStr) return null;
-    
-    try {
-      return parseFloat(valueStr.replace(',', '.'));
-    } catch {
-      return null;
+    // Obtener el valor según el tipo de visualización
+    if (dataDisplayType === 'percent_gdp') {
+      const valueStr = countryPrevYearData[0]['%GDP'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
+    } else {
+      // Modo millones de euros
+      const valueStr = countryPrevYearData[0]['Approx_RD_Investment_million_euro'] || '';
+      if (!valueStr) return null;
+      
+      try {
+        return parseFloat(valueStr.replace(',', '.'));
+      } catch {
+        return null;
+      }
     }
   };
 
@@ -962,12 +1122,58 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   // Altura dinámica para el gráfico en función del número de países
   const chartHeight = Math.max(400, sortedCountries.length * 25);
 
+  // Modificar la lógica para obtener la etiqueta directamente del CSV principal
+  const getDataLabelForCountry = (country: string, year: number): string => {
+    // Normalizar el nombre del país para comparación
+    const normalizedCountry = normalizeText(country);
+    
+    // Buscar el registro correspondiente en los datos
+    const countryData = data.find(item => {
+      const countryMatch = 
+        normalizeText(item.Country).includes(normalizedCountry) || 
+        (item.País && normalizeText(item.País).includes(normalizedCountry));
+      const yearMatch = parseInt(item.Year) === year;
+      const sectorMatch = item.Sector === sectorNameEn || 
+                      (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
+      
+      return countryMatch && yearMatch && sectorMatch;
+    });
+    
+    // Retornar la etiqueta si existe, o cadena vacía si no hay etiqueta
+    return countryData?.label_percent_gdp_id || '';
+  };
+
+  // Función para obtener el título del gráfico basado en sector y año seleccionados
+  const getChartTitle = () => {
+    let sectorText = texts[language].allSectors;
+    
+    switch (selectedSector) {
+      case "total":
+        sectorText = texts[language].sector_total;
+        break;
+      case "business":
+        sectorText = texts[language].sector_business;
+        break;
+      case "government":
+        sectorText = texts[language].sector_government;
+        break;
+      case "education":
+        sectorText = texts[language].sector_education;
+        break;
+      case "nonprofit":
+        sectorText = texts[language].sector_nonprofit;
+        break;
+    }
+    
+    return `${texts[language].countryRanking} - ${sectorText} (${selectedYear})`;
+  };
+
   return (
-    <div className="flex flex-col h-full relative">
-      {/* Gráfica principal */}
+    <div className="w-full h-full flex flex-col" ref={containerRef}>
+      {/* Título del gráfico */}
       <div className="mb-2 text-center">
         <h3 className="text-sm font-semibold text-gray-800">
-          {t.title}
+          {getChartTitle()}
         </h3>
       </div>
       
