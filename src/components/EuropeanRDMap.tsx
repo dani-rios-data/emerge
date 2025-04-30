@@ -1584,25 +1584,32 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
       const legendGroup = svg.append('g')
         .attr('transform', `translate(20, ${height - 170})`);
       
-      // Nueva leyenda con degradado real
+      // Añadir primero 'Sin datos' y luego '0' a la leyenda
+      const legendLabels = [
+        { color: colorPalette.NULL, label: language === 'es' ? 'Sin datos' : 'No data' },
+        { color: colorPalette.ZERO, label: '0' + (dataDisplayType === 'percent_gdp' ? '%' : ' M€') },
+      ];
+      // Luego los rangos normales
       const legendValues = [min, threshold1, threshold2, threshold3, threshold4, max];
       legendValues.forEach((val, i) => {
+        let label = '';
+        if (i === 0) label = `< ${formatLegendValue(threshold1)}`;
+        else if (i === legendValues.length - 1) label = `> ${formatLegendValue(threshold4)}`;
+        else label = `${formatLegendValue(legendValues[i])}`;
+        legendLabels.push({ color: getGradientColor(val), label });
+      });
+      // Renderizar la leyenda sin solapamientos
+      legendLabels.forEach((item, i) => {
         legendGroup.append('rect')
           .attr('x', 0)
           .attr('y', i * 20)
           .attr('width', 15)
           .attr('height', 15)
-          .attr('fill', getGradientColor(val));
-        
-        let label = '';
-        if (i === 0) label = `< ${formatLegendValue(threshold1)}`;
-        else if (i === legendValues.length - 1) label = `> ${formatLegendValue(threshold4)}`;
-        else label = `${formatLegendValue(legendValues[i])}`;
-        
+          .attr('fill', item.color);
         legendGroup.append('text')
           .attr('x', 20)
           .attr('y', i * 20 + 12)
-          .text(label)
+          .text(item.label)
           .attr('font-size', '12px')
           .attr('fill', '#000000');
       });
