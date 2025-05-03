@@ -1202,7 +1202,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                     </div>
                     <div class="flex items-center">
                       <span class="text-xl font-bold text-blue-700">${formatValue(0, dataDisplayType)}</span>
-                      <span class="ml-1 text-gray-600 text-sm">${dataDisplayType === 'percent_gdp' ? (language === 'es' ? 'del PIB' : 'of GDP') : ''}</span>
+                      <span class="ml-1 text-gray-600 text-sm">${dataDisplayType === 'percent_gdp' ? '%' : 'M€'}</span>
                     </div>
                   </div>
                 </div>
@@ -1440,7 +1440,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                       <span class="text-xl font-bold text-blue-700">
                         ${formatValue(value, dataDisplayType)}
                       </span>
-                      <span class="ml-1 text-gray-600 text-sm">${dataDisplayType === 'percent_gdp' ? '' : 'M€'}</span>
+                      <span class="ml-1 text-gray-600 text-sm">${dataDisplayType === 'percent_gdp' ? '%' : 'M€'}</span>
                       ${(isEU || isEuroArea) && dataDisplayType !== 'percent_gdp' ? 
                         `<span class="ml-1 text-gray-600 text-sm">${language === 'es' ? 'Media' : 'Avg'}</span>` : ''}
                       ${label ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${label}</span>` : ''}

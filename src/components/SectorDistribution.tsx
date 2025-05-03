@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calendar, ChevronDown } from 'lucide-react';
 import Papa from 'papaparse';
@@ -35,6 +35,8 @@ interface SectorDataItem {
   value: number;
   color: string;
   sharePercentage?: number;
+  regionName?: string;
+  totalPib?: string;
 }
 
 type FlagCode = 'eu' | 'es' | 'canary_islands' | string;
@@ -122,6 +124,15 @@ type SectorColorMap = {
   [key in 'business' | 'government' | 'education' | 'nonprofit']: string;
 };
 
+// Definimos un tipo para los datos del tooltip
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: SectorDataItem;
+  }>;
+  region: string;
+}
+
 const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => {
   const [selectedYear, setSelectedYear] = useState<string>('2023');
   const [years, setYears] = useState<string[]>([]);
@@ -133,8 +144,6 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     localName: 'España',
     iso3: 'ESP'
   });
-  const [gdpData, setGdpData] = useState<GDPConsolidadoData[]>([]);
-  const [ccaaData, setCcaaData] = useState<GastoIDComunidadesData[]>([]);
   
   // Textos localizados
   const texts = {
@@ -171,6 +180,10 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     'education': '#78716c',     // Enseñanza Superior
     'nonprofit': '#84cc16'      // Instituciones Privadas sin Fines de Lucro
   };
+
+  // Dentro del componente SectorDistribution
+  // 1. Añadir una referencia al contenedor del gráfico
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
   // Cargar datos desde archivos CSV
   useEffect(() => {
@@ -252,9 +265,6 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         if (selectedCountry) {
           processData(gdpData, ccaaData, selectedYear, selectedCountry.iso3);
         }
-        
-        setGdpData(gdpData);
-        setCcaaData(ccaaData);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -293,9 +303,6 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
           
           // Procesar datos con el nuevo país seleccionado
           processData(gdpData, ccaaData, selectedYear, selectedCountry.iso3);
-          
-          setGdpData(gdpData);
-          setCcaaData(ccaaData);
         } catch (error) {
           console.error("Error updating country data:", error);
         } finally {
@@ -607,58 +614,6 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     const sector = rdSectors.find(s => s.code === sectorCode);
     return sector?.id || 'unknown';
   };
-  
-  // Definimos el tipo para los datos del tooltip
-  interface TooltipContentProps {
-    active?: boolean;
-    payload?: Array<{
-      name: string;
-      value: number;
-      payload: SectorDataItem;
-    }>;
-  }
-  
-  // Componente personalizado para el tooltip
-  const CustomTooltip: React.FC<TooltipContentProps & { gdpData: GDPConsolidadoData[], ccaaData: GastoIDComunidadesData[], region: RegionData, selectedYear: string }> = ({ active, payload, gdpData, ccaaData, region, selectedYear }) => {
-    if (active && payload && payload.length) {
-      // Obtenemos el color del sector para usarlo en el tooltip
-      const sectorColor = payload[0].payload.color;
-      
-      return (
-        <div className="bg-white p-4 rounded-md shadow-lg border border-gray-200 min-w-[180px]">
-          <div className="flex items-center mb-2">
-            <div 
-              className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
-              style={{ backgroundColor: sectorColor }}
-            ></div>
-            <p className="font-medium text-gray-800">{payload[0].name}</p>
-          </div>
-          <div className="border-t border-gray-100 pt-2">
-            <p className="text-sm text-gray-700 flex justify-between items-center">
-              <span>{t.pibPercentage}:</span>
-              <span className="font-semibold">{payload[0].value.toFixed(2)}%</span>
-            </p>
-            <p className="text-sm text-gray-700 flex justify-between items-center mt-1">
-              <span>% {t.total}:</span>
-              <span className="font-semibold">{payload[0].payload.sharePercentage?.toFixed(2)}%</span>
-            </p>
-            <p className="text-sm text-gray-700 flex justify-between items-center mt-1">
-              <span>YoY:</span>
-              {(() => {
-                const prevValue = getPreviousYearSectorValue(gdpData, ccaaData, region, payload[0].name, selectedYear);
-                if (prevValue !== null && prevValue !== 0) {
-                  const yoy = ((payload[0].value - prevValue) / prevValue) * 100;
-                  return <span className={yoy > 0 ? 'text-green-600' : 'text-red-600'}>{yoy > 0 ? '+' : ''}{yoy.toFixed(2)}%</span>;
-                }
-                return <span className="text-gray-400">--</span>;
-              })()}
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   // Obtener el valor de color sin el prefijo bg-
   const getHeaderColorValue = (code: FlagCode): string => {
@@ -675,83 +630,66 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     }
   };
 
-  // Función auxiliar para obtener el valor del sector en el año anterior
-  function getPreviousYearSectorValue(
-    gdpData: GDPConsolidadoData[],
-    ccaaData: GastoIDComunidadesData[],
-    region: RegionData,
-    sectorName: string,
-    year: string
-  ): number | null {
-    const prevYear = (parseInt(year) - 1).toString();
-    if (region.flagCode === 'eu') {
-      // Buscar en gdpData para la UE
-      const row = gdpData.find(r => r.Year === prevYear && r.Country.includes('European Union') && r.Sector === sectorName);
-      if (row && row['%GDP']) return parseFloat(row['%GDP']);
-    } else if (region.flagCode === 'canary_islands') {
-      // Buscar en ccaaData para Canarias
-      const row = ccaaData.find(r => r['Año'] === prevYear && r['Comunidad Limpio'] === 'Canarias' && r['Sector Nombre'] === sectorName);
-      if (row && row['% PIB I+D']) return parseFloat(row['% PIB I+D']);
-    } else {
-      // País
-      const row = gdpData.find(r => r.Year === prevYear && r.ISO3 === region.iso3 && r.Sector === sectorName);
-      if (row && row['%GDP']) return parseFloat(row['%GDP']);
-    }
-    return null;
-  }
-
   const SectorList: React.FC<{
     data: RegionData;
-    gdpData: GDPConsolidadoData[];
-    ccaaData: GastoIDComunidadesData[];
-    selectedYear: string;
-  }> = ({ data, gdpData, ccaaData, selectedYear }): ReactElement => {
+  }> = ({ data }) => {
     return (
       <div className="mt-1">
         {/* Encabezados de la tabla */}
-        <div className="grid grid-cols-4 gap-2 text-xs text-gray-500 mb-1">
+        <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-1">
           <div>{t.sector}</div>
           <div className="text-right">{t.pibPercentage}</div>
           <div className="text-right">%{t.total}</div>
-          <div className="text-right">YoY</div>
         </div>
         
         {/* Filas de datos */}
-        {data.data.map((sector: SectorDataItem, i: number) => {
-          // Calcular YoY
-          const prevValue = getPreviousYearSectorValue(gdpData, ccaaData, data, sector.name, selectedYear);
-          let yoy = null;
-          if (prevValue !== null && prevValue !== 0) {
-            yoy = ((sector.value - prevValue) / prevValue) * 100;
-          }
-          return (
-            <div key={i} className="grid grid-cols-4 gap-2 text-xs py-1 border-b border-gray-100">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: sector.color }}></div>
-                <div className="leading-tight">{sector.name}</div>
-              </div>
-              <div className="font-medium text-right">{sector.value.toFixed(2)}%</div>
-              <div className="text-right text-gray-600">{sector.sharePercentage?.toFixed(2)}%</div>
-              <div className="text-right">
-                {yoy === null ? <span className="text-gray-400">--</span> : (
-                  <span className={yoy > 0 ? 'text-green-600' : 'text-red-600'}>
-                    {yoy > 0 ? '+' : ''}{yoy.toFixed(2)}%
-                  </span>
-                )}
-              </div>
+        {data.data.map((sector: SectorDataItem, i: number) => (
+          <div key={i} className="grid grid-cols-3 gap-2 text-xs py-1 border-b border-gray-100">
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: sector.color }}></div>
+              <div className="leading-tight">{sector.name}</div>
             </div>
-          );
-        })}
+            <div className="font-medium text-right">{sector.value.toFixed(2)}%</div>
+            <div className="text-right text-gray-600">{sector.sharePercentage?.toFixed(2)}%</div>
+          </div>
+        ))}
         
         {/* Fila de totales */}
-        <div className="grid grid-cols-4 gap-2 text-xs py-1 border-t border-gray-200 font-medium mt-1">
+        <div className="grid grid-cols-3 gap-2 text-xs py-1 border-t border-gray-200 font-medium mt-1">
           <div>{t.total}:</div>
           <div className="text-right">{parseFloat(data.totalPercentage).toFixed(2)}%</div>
-          <div className="text-right">100%</div>
           <div className="text-right">100%</div>
         </div>
       </div>
     );
+  };
+
+  // Función personalizada para el contenido del tooltip
+  const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, region }) => {
+    if (active && payload && payload.length > 0) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center mb-2">
+            <div 
+              className="w-4 h-4 rounded-full mr-2" 
+              style={{ backgroundColor: data.color }}
+            ></div>
+            <span className="font-semibold">{data.name}</span>
+          </div>
+          <div className="text-gray-700 font-medium">
+            {data.value.toFixed(2)}% {t.pibPercentage}
+          </div>
+          <div className="text-gray-600">
+            {data.sharePercentage?.toFixed(2)}% {t.total}
+          </div>
+          <div className="text-gray-500 text-sm mt-1">
+            {region}
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -846,7 +784,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
               
               {/* Chart */}
               <div className="py-5 px-2 flex justify-center">
-                <div className="relative w-48 h-48">
+                <div className="relative w-48 h-48" ref={chartContainerRef}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -857,10 +795,8 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                         outerRadius={80}
                         paddingAngle={2}
                         dataKey="value"
-                        isAnimationActive={true}
-                        animationBegin={200}
-                        animationDuration={800}
-                        animationEasing="ease-out"
+                        nameKey="name"
+                        isAnimationActive={false}
                       >
                         {region.data.map((entry, i) => (
                           <Cell 
@@ -868,18 +804,17 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                             fill={entry.color} 
                             stroke="white"
                             strokeWidth={1}
-                            className="hover:opacity-80 cursor-pointer transition-opacity"
                           />
                         ))}
                       </Pie>
                       <Tooltip 
-                        content={<CustomTooltip gdpData={gdpData} ccaaData={ccaaData} region={region} selectedYear={selectedYear} />} 
-                        wrapperStyle={{ zIndex: 100 }}
-                        cursor={{ fill: 'transparent' }}
+                        content={<CustomTooltip region={region.name} />}
+                        wrapperStyle={{ zIndex: 9999, pointerEvents: 'none' }}
+                        cursor={false}
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                     <span className="text-2xl font-bold text-gray-800">{parseFloat(region.totalPercentage).toFixed(2)}%</span>
                     <span className="text-sm text-gray-500">{t.ofGDP}</span>
                   </div>
@@ -888,7 +823,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
               
               {/* Data table - Usando SectorList */}
               <div className="px-4 pb-4">
-                <SectorList data={region} gdpData={gdpData} ccaaData={ccaaData} selectedYear={selectedYear} />
+                <SectorList data={region} />
               </div>
             </div>
           ))}
