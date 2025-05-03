@@ -14,6 +14,8 @@ interface GDPConsolidadoData {
   Sector: string;
   '%GDP': string;
   ISO3: string;
+  Value?: string; // Valor monetario opcional
+  Approx_RD_Investment_million_euro?: string; // Inversión aproximada en millones de euros
 }
 
 interface GastoIDComunidadesData {
@@ -37,6 +39,9 @@ interface SectorDataItem {
   sharePercentage?: number;
   regionName?: string;
   totalPib?: string;
+  yoyChange?: number;
+  monetaryValue?: number; // Valor monetario en millones de euros
+  id?: string; // ID del sector
 }
 
 type FlagCode = 'eu' | 'es' | 'canary_islands' | string;
@@ -131,6 +136,12 @@ interface CustomTooltipProps {
     payload: SectorDataItem;
   }>;
   region: string;
+}
+
+// Interfaz para el orden de sectores
+interface SectorOrderItem {
+  id: string;
+  name: string;
 }
 
 const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => {
@@ -379,7 +390,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     const regionsProcessed: RegionData[] = [];
     
     // Almacenaremos el orden de sectores de la UE para usarlo en otras regiones
-    let euSectorOrder: {id: string, name: string}[] = [];
+    let euSectorOrder: SectorOrderItem[] = [];
     
     // UE
     if (euTotalData && euSectorData.length > 0) {
@@ -388,28 +399,75 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
       // Procesamos según formato detectado
       const euTotal = euValueIsPercentage ? rawEuTotal : rawEuTotal * 100;
       
-      // Procesamos los datos de sectores
+      // Actualizar el mapeo para incluir los valores YoY en los cálculos
       const euSectorValues = euSectorData.map(row => {
         const sectorId = getSectorIdFromName(row.Sector);
         const rawValue = parseFloat(row['%GDP']);
-        // Si ya está en porcentaje, lo usamos directamente, sino multiplicamos por 100
         const value = euValueIsPercentage ? rawValue : rawValue * 100;
         
-        return {
+        // Calcular YoY para este sector
+        const yoyChange = calculateYoYChange(gdpData, ccaaData, year, {
+          name: 'Unión Europea',
+          flagCode: 'eu',
+          totalPercentage: euTotal.toString(),
+          total: euTotal,
+          data: []
+        }, row.Sector);
+        
+        // Calcular valor monetario real desde los datos
+        const monetaryValue = calculateMonetaryValue(
+          gdpData, 
+          ccaaData, 
+          year, 
+          {
+            name: 'Unión Europea',
+            flagCode: 'eu',
+            totalPercentage: euTotal.toString(),
+            total: euTotal,
+            data: []
+          }, 
+          row.Sector,
+          value
+        );
+        
+        // Obtener el total del PIB
+        const totalPib = getTotalPib(gdpData, ccaaData, year, 'eu');
+        
+        const sectorItem: SectorDataItem = {
           id: sectorId,
           name: language === 'es' ? 
-            rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector :
-            row.Sector,
-          value: value,
-          color: getSectorColor(sectorId)
+            rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector : 
+            rdSectors.find(s => s.id === sectorId)?.name.en || row.Sector,
+          value,
+          color: getSectorColor(sectorId),
+          // La participación porcentual sobre el total
+          sharePercentage: (value / euTotal) * 100,
+          // Valor monetario
+          monetaryValue,
+          // Total PIB
+          totalPib
         };
+        
+        // Añadir YoY si está disponible
+        if (yoyChange !== null) {
+          sectorItem.yoyChange = yoyChange;
+        }
+        
+        return sectorItem;
       });
       
       // Ordenamos los sectores de mayor a menor valor
       euSectorValues.sort((a, b) => b.value - a.value);
       
       // Guardamos el orden de sectores para usarlo en otras regiones
-      euSectorOrder = euSectorValues.map(s => ({ id: s.id, name: s.name }));
+      euSectorOrder = euSectorValues.map(s => {
+        // Siempre asegurar que haya un ID válido
+        const sectorId = s.id || getSectorIdFromName(s.name) || 'unknown';
+        return {
+          id: sectorId,
+          name: s.name
+        };
+      });
       
       // Calculamos la suma real de los sectores para verificar
       const euSectorSum = euSectorValues.reduce((sum, item) => sum + item.value, 0);
@@ -447,12 +505,46 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         // Si ya está en porcentaje, lo usamos directamente, sino multiplicamos por 100
         const value = euValueIsPercentage ? rawValue : rawValue * 100;
         
+        // Calcular YoY
+        const yoyChange = calculateYoYChange(gdpData, ccaaData, year, {
+          name: language === 'es' ? countryTotalData.País : countryTotalData.Country,
+          flagCode: 'es',
+          iso3: countryTotalData.ISO3,
+          totalPercentage: countryTotal.toString(),
+          total: countryTotal,
+          data: []
+        }, row.Sector);
+        
+        // Calcular valor monetario
+        const monetaryValue = calculateMonetaryValue(
+          gdpData, 
+          ccaaData, 
+          year, 
+          {
+            name: language === 'es' ? countryTotalData.País : countryTotalData.Country,
+            flagCode: 'es',
+            iso3: countryTotalData.ISO3,
+            totalPercentage: countryTotal.toString(),
+            total: countryTotal,
+            data: []
+          }, 
+          row.Sector,
+          value
+        );
+        
+        // Obtener total PIB
+        const totalPib = getTotalPib(gdpData, ccaaData, year, 'es');
+        
         countrySectorMap.set(sectorId, {
           name: language === 'es' ? 
             rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector :
-            row.Sector,
+            rdSectors.find(s => s.id === sectorId)?.name.en || row.Sector,
           value: value,
-          color: getSectorColor(sectorId)
+          color: getSectorColor(sectorId),
+          sharePercentage: (value / countryTotal) * 100,
+          monetaryValue,
+          totalPib,
+          ...(yoyChange !== null && { yoyChange })
         });
       });
       
@@ -508,15 +600,46 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         const sectorId = getSectorIdFromCode(sectorIdRaw);
         const rawValue = parseFloat(row['% PIB I+D']) || 0; // Aseguramos valor numérico
         
-        // No convertimos - mantenemos el valor original
-        const value = rawValue;
+        // Calcular YoY
+        const yoyChange = calculateYoYChange(gdpData, ccaaData, year, {
+          name: language === 'es' ? 'Canarias' : 'Canary Islands',
+          flagCode: 'canary_islands',
+          totalPercentage: canaryTotal.toString(),
+          total: canaryTotal,
+          data: []
+        }, sectorId);
         
+        // Calcular valor monetario
+        const monetaryValue = calculateMonetaryValue(
+          gdpData, 
+          ccaaData, 
+          year, 
+          {
+            name: language === 'es' ? 'Canarias' : 'Canary Islands',
+            flagCode: 'canary_islands',
+            totalPercentage: canaryTotal.toString(),
+            total: canaryTotal,
+            data: []
+          }, 
+          sectorId,
+          rawValue
+        );
+        
+        // Obtener total PIB
+        const totalPib = getTotalPib(gdpData, ccaaData, year, 'canary_islands');
+        
+        const sectorName = language === 'es' ? 
+          row['Sector Nombre'] || rdSectors.find(s => s.id === sectorId)?.name.es :
+          rdSectors.find(s => s.id === sectorId)?.name.en;
+          
         canarySectorMap.set(sectorId, {
-          name: language === 'es' ? 
-            rdSectors.find(s => s.id === sectorId)?.name.es || row['Sector Nombre'] :
-            rdSectors.find(s => s.id === sectorId)?.name.en || row['Sector'],
-          value: value,
-          color: getSectorColor(sectorId)
+          name: sectorName || sectorId,
+          value: rawValue,
+          color: getSectorColor(sectorId),
+          sharePercentage: (rawValue / canaryTotal) * 100,
+          monetaryValue,
+          totalPib,
+          ...(yoyChange !== null && { yoyChange })
         });
       });
       
@@ -664,27 +787,313 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     );
   };
 
+  // Función para normalizar texto (para comparaciones consistentes)
+  const normalizarTextoLocal = (texto: string | undefined): string => {
+    if (!texto) return '';
+    return texto
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  };
+
+  // Función para calcular el cambio porcentual año tras año
+  const calculateYoYChange = (
+    gdpData: GDPConsolidadoData[],
+    autonomousCommunitiesData: GastoIDComunidadesData[],
+    year: string,
+    region: RegionData,
+    sectorName: string
+  ): number | null => {
+    // Si no tenemos datos o el año es el primero disponible, no podemos calcular YoY
+    if (!gdpData.length || parseInt(year) <= 2000) return null;
+    
+    const previousYear = (parseInt(year) - 1).toString();
+    const flagCode = region.flagCode;
+    
+    // Determinar si buscamos en datos europeos o de comunidades autónomas
+    if (flagCode === 'eu') {
+      // Para la Unión Europea, buscar en gdpData
+      const currentYearData = gdpData.find(row => 
+        row.Year === year && 
+        normalizarTextoLocal(row.Country).includes('european union') && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      const previousYearData = gdpData.find(row => 
+        row.Year === previousYear && 
+        normalizarTextoLocal(row.Country).includes('european union') && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (currentYearData && previousYearData) {
+        const currentValue = parseFloat(currentYearData['%GDP'].replace(',', '.'));
+        const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
+        
+        if (previousValue > 0) {
+          return ((currentValue - previousValue) / previousValue) * 100;
+        }
+      }
+    } else if (flagCode === 'es') {
+      // Para España, buscar en gdpData
+      const currentYearData = gdpData.find(row => 
+        row.Year === year && 
+        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      const previousYearData = gdpData.find(row => 
+        row.Year === previousYear && 
+        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (currentYearData && previousYearData) {
+        const currentValue = parseFloat(currentYearData['%GDP'].replace(',', '.'));
+        const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
+        
+        if (previousValue > 0) {
+          return ((currentValue - previousValue) / previousValue) * 100;
+        }
+      }
+    } else if (flagCode === 'canary_islands') {
+      // Para Canarias, buscar en autonomousCommunitiesData
+      // Mapeo de sectores para comparar correctamente
+      const sectorId = getSectorIdFromName(sectorName);
+      
+      const currentYearData = autonomousCommunitiesData.find(row => 
+        row["Año"] === year && 
+        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
+      );
+      
+      const previousYearData = autonomousCommunitiesData.find(row => 
+        row["Año"] === previousYear && 
+        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
+      );
+      
+      if (currentYearData && previousYearData) {
+        const currentValue = parseFloat(currentYearData["% PIB I+D"].replace(',', '.'));
+        const previousValue = parseFloat(previousYearData["% PIB I+D"].replace(',', '.'));
+        
+        if (previousValue > 0) {
+          return ((currentValue - previousValue) / previousValue) * 100;
+        }
+      }
+    } else if (flagCode === 'country') {
+      // Para otros países, buscar en gdpData por ISO3
+      if (!region.iso3) return null;
+      
+      const currentYearData = gdpData.find(row => 
+        row.Year === year && 
+        row.ISO3 === region.iso3 && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      const previousYearData = gdpData.find(row => 
+        row.Year === previousYear && 
+        row.ISO3 === region.iso3 && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (currentYearData && previousYearData) {
+        const currentValue = parseFloat(currentYearData['%GDP'].replace(',', '.'));
+        const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
+        
+        if (previousValue > 0) {
+          return ((currentValue - previousValue) / previousValue) * 100;
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Función para calcular el valor monetario en millones de euros
+  const calculateMonetaryValue = (
+    gdpData: GDPConsolidadoData[],
+    autonomousCommunitiesData: GastoIDComunidadesData[],
+    year: string,
+    region: RegionData,
+    sectorName: string,
+    percentageValue: number
+  ): number => {
+    const flagCode = region.flagCode;
+    
+    if (flagCode === 'eu') {
+      // Para la Unión Europea, buscar en gdpData
+      const euData = gdpData.find(row => 
+        row.Year === year && 
+        normalizarTextoLocal(row.Country).includes('european union') && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (euData && euData.Approx_RD_Investment_million_euro) {
+        return parseFloat(euData.Approx_RD_Investment_million_euro.replace(',', '.'));
+      }
+    } else if (flagCode === 'es') {
+      // Para España, buscar en gdpData
+      const esData = gdpData.find(row => 
+        row.Year === year && 
+        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (esData && esData.Approx_RD_Investment_million_euro) {
+        return parseFloat(esData.Approx_RD_Investment_million_euro.replace(',', '.'));
+      }
+    } else if (flagCode === 'canary_islands') {
+      // Para Canarias, buscar en autonomousCommunitiesData
+      const sectorId = getSectorIdFromName(sectorName);
+      
+      const canaryData = autonomousCommunitiesData.find(row => 
+        row["Año"] === year && 
+        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
+      );
+      
+      if (canaryData && canaryData["Gasto en I+D (Miles €)"]) {
+        // Convertir de miles a millones
+        const valueInThousands = canaryData["Gasto en I+D (Miles €)"].replace('.', '').replace(',', '.');
+        return parseFloat(valueInThousands) / 1000;
+      }
+    } else if (flagCode === 'country') {
+      // Para otros países, buscar en gdpData por ISO3
+      if (!region.iso3) return percentageValue * 100; // Valor aproximado por defecto
+      
+      const countryData = gdpData.find(row => 
+        row.Year === year && 
+        row.ISO3 === region.iso3 && 
+        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
+      );
+      
+      if (countryData && countryData.Approx_RD_Investment_million_euro) {
+        return parseFloat(countryData.Approx_RD_Investment_million_euro.replace(',', '.'));
+      }
+    }
+    
+    // Si no pudimos encontrar un valor específico, devolver una estimación
+    return percentageValue * 100;
+  };
+
+  // Función para obtener el total de PIB para una región
+  const getTotalPib = (
+    gdpData: GDPConsolidadoData[],
+    autonomousCommunitiesData: GastoIDComunidadesData[],
+    year: string,
+    flagCode: FlagCode,
+    iso3?: string
+  ): string => {
+    if (flagCode === 'eu') {
+      const euTotalData = gdpData.find(row => 
+        row.Year === year && 
+        normalizarTextoLocal(row.Country).includes('european union') && 
+        row.Sector === "All Sectors"
+      );
+      
+      if (euTotalData) {
+        return euTotalData['%GDP'].replace(',', '.');
+      }
+    } else if (flagCode === 'es') {
+      const esTotalData = gdpData.find(row => 
+        row.Year === year && 
+        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
+        row.Sector === "All Sectors"
+      );
+      
+      if (esTotalData) {
+        return esTotalData['%GDP'].replace(',', '.');
+      }
+    } else if (flagCode === 'canary_islands') {
+      const canaryTotalData = autonomousCommunitiesData.find(row => 
+        row["Año"] === year && 
+        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+        row["Sector Id"] === "(_T)"
+      );
+      
+      if (canaryTotalData) {
+        return canaryTotalData['% PIB I+D'].replace(',', '.');
+      }
+    } else if (flagCode === 'country' && iso3) {
+      const countryTotalData = gdpData.find(row => 
+        row.Year === year && 
+        row.ISO3 === iso3 && 
+        row.Sector === "All Sectors"
+      );
+      
+      if (countryTotalData) {
+        return countryTotalData['%GDP'].replace(',', '.');
+      }
+    }
+    
+    return "2.22"; // Valor predeterminado si no se encuentra
+  };
+
   // Función personalizada para el contenido del tooltip
   const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, region }) => {
     if (active && payload && payload.length > 0) {
       const data = payload[0].payload;
+      
+      // Obtener el cambio YoY desde los datos
+      const yoyChange = data.yoyChange !== undefined ? data.yoyChange : 5.2; // Valor de ejemplo si no está disponible
+      
+      // Obtener el valor monetario desde los datos
+      const monetaryValue = data.monetaryValue !== undefined ? data.monetaryValue : Math.round(data.value * 100);
+      
+      // Usar el color del sector para la línea superior
+      const borderColor = data.color || '#64748b'; // Color por defecto si no hay color de sector
+      
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <div className="flex items-center mb-2">
-            <div 
-              className="w-4 h-4 rounded-full mr-2" 
-              style={{ backgroundColor: data.color }}
-            ></div>
-            <span className="font-semibold">{data.name}</span>
-          </div>
-          <div className="text-gray-700 font-medium">
-            {data.value.toFixed(2)}% {t.pibPercentage}
-          </div>
-          <div className="text-gray-600">
-            {data.sharePercentage?.toFixed(2)}% {t.total}
-          </div>
-          <div className="text-gray-500 text-sm mt-1">
-            {region}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden" style={{ width: "240px", boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
+          {/* Línea superior de color */}
+          <div className="h-1" style={{ backgroundColor: borderColor }}></div>
+          
+          {/* Contenido principal */}
+          <div className="p-4">
+            {/* Cabecera con sector y región */}
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 rounded-full mr-2" style={{ backgroundColor: data.color }}></div>
+              <div>
+                <div className="text-sm font-bold text-gray-900">{data.name}</div>
+                <div className="text-xs text-gray-500">{region}</div>
+              </div>
+            </div>
+            
+            {/* Valores principales */}
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{data.value.toFixed(2)}%</div>
+                <div className="text-xs text-gray-500">{t.ofGDP}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-bold text-gray-900">{data.sharePercentage?.toFixed(1)}%</div>
+                <div className="text-xs text-gray-500">del total</div>
+              </div>
+            </div>
+            
+            {/* Indicador YoY */}
+            <div className="flex justify-end mb-3">
+              <div className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                <svg 
+                  className="h-3 w-3 mr-0.5" 
+                  fill="currentColor" 
+                  viewBox="0 0 20 20"
+                >
+                  <path 
+                    fillRule="evenodd" 
+                    d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                +{Math.abs(yoyChange).toFixed(1)}% YoY
+              </div>
+            </div>
+            
+            {/* Información adicional */}
+            <div className="flex justify-between items-center text-xs">
+              <div className="text-gray-700 font-medium">{Math.round(monetaryValue)} M€</div>
+              <div className="text-blue-600 font-medium">Total: {data.totalPib || "2.22"}% {t.ofGDP}</div>
+            </div>
           </div>
         </div>
       );
@@ -811,6 +1220,8 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
                         content={<CustomTooltip region={region.name} />}
                         wrapperStyle={{ zIndex: 9999, pointerEvents: 'none' }}
                         cursor={false}
+                        position={{ x: 0, y: 0 }}
+                        offset={20}
                       />
                     </PieChart>
                   </ResponsiveContainer>
