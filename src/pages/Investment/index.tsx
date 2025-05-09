@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import EuropeanRDMap from '../../components/EuropeanRDMap';
 import CountryRankingChart from '../../components/CountryRankingChart';
 import SectorDistribution from '../../components/SectorDistribution';
+import RDComparisonChart from '../../components/RDComparisonChart';
 import DataTypeSelector, { DataDisplayType } from '../../components/DataTypeSelector';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
@@ -30,7 +31,20 @@ interface ExtendedEuropeCSVData {
   Value: string;
   '%GDP': string;
   ISO3?: string;
+  Approx_RD_Investment_million_euro?: string;
   [key: string]: string | undefined;
+}
+
+// Interfaz compatible con GDPConsolidadoData para el componente RDComparisonChart
+interface GDPConsolidadoData {
+  Country: string;
+  País: string;
+  Year: string;
+  Sector: string;
+  '%GDP': string;
+  ISO3: string;
+  Value?: string;
+  Approx_RD_Investment_million_euro?: string;
 }
 
 // Interfaz para los datos de etiquetas
@@ -320,6 +334,22 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     setDataDisplayType(newType);
   };
 
+  // Función para mapear los datos al formato necesario para RDComparisonChart
+  const mapToGDPConsolidadoData = (data: ExtendedEuropeCSVData[]): GDPConsolidadoData[] => {
+    return data
+      .filter(item => item.ISO3) // Filtrar solo los elementos que tienen ISO3
+      .map(item => ({
+        Country: item.Country,
+        País: item.País || item.Country, // Asegurarse de que siempre hay un valor
+        Year: item.Year,
+        Sector: item.Sector,
+        '%GDP': item['%GDP'],
+        ISO3: item.ISO3!, // El signo ! indica que sabemos que existe por el filtro anterior
+        Value: item.Value,
+        Approx_RD_Investment_million_euro: item.Approx_RD_Investment_million_euro
+      }));
+  };
+
   // Componente para mostrar entidades supranacionales como la UE y Zona Euro
   const SupranationalEntities = () => {
     // Texto dinámico para países/countries
@@ -567,8 +597,18 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             <div className="mb-8">
               <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión en I+D" : "R&D Investment Distribution by Sectors"} />
               
-              {/* Nuevo componente SectorDistribution */}
+              {/* Componente SectorDistribution */}
               <SectorDistribution language={language} />
+              
+              {/* Nuevo componente RDComparisonChart */}
+              {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
+                <RDComparisonChart 
+                  language={language}
+                  gdpData={mapToGDPConsolidadoData(europeData)}
+                  autonomousCommunitiesData={autonomousCommunitiesData}
+                  years={availableYears.map(year => year.toString())}
+                />
+              )}
             </div>
             
             {/* Espacio para futuras subsecciones */}

@@ -414,37 +414,36 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
           data: []
         }, row.Sector);
         
-        // Calcular valor monetario real desde los datos
-        const monetaryValue = calculateMonetaryValue(
-          gdpData, 
-          ccaaData, 
-          year, 
-          {
-            name: 'Unión Europea',
-            flagCode: 'eu',
-            totalPercentage: euTotal.toString(),
-            total: euTotal,
-            data: []
-          }, 
-          row.Sector,
-          value
-        );
+        // Obtener el valor monetario real desde el archivo CSV
+        let monetaryValue: number | undefined;
         
-        // Obtener el total del PIB
-        const totalPib = getTotalPib(gdpData, ccaaData, year, 'eu');
+        // Primero intentamos obtener el valor directo en millones de euros
+        if (row.Approx_RD_Investment_million_euro && row.Approx_RD_Investment_million_euro !== '') {
+          monetaryValue = parseFloat(row.Approx_RD_Investment_million_euro.replace(',', '.'));
+        }
+        
+        // Si no hay valor directo, intentamos calcular basado en el PIB
+        if (!monetaryValue && value > 0) {
+          // Buscar información del PIB de la UE - esto podría requerir datos adicionales
+          // Por ahora usamos una estimación
+          monetaryValue = value * 1000; // Asumimos PIB aprox. 10 billones de euros
+        }
+        
+        // Asignar el valor total del PIB para referencia
+        const totalPib = euTotal.toString();
         
         const sectorItem: SectorDataItem = {
           id: sectorId,
           name: language === 'es' ? 
-            rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector : 
+            rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector :
             rdSectors.find(s => s.id === sectorId)?.name.en || row.Sector,
           value,
           color: getSectorColor(sectorId),
           // La participación porcentual sobre el total
           sharePercentage: (value / euTotal) * 100,
-          // Valor monetario
+          // Añadir valor monetario
           monetaryValue,
-          // Total PIB
+          // Asignar el total del PIB
           totalPib
         };
         
@@ -505,46 +504,40 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         // Si ya está en porcentaje, lo usamos directamente, sino multiplicamos por 100
         const value = euValueIsPercentage ? rawValue : rawValue * 100;
         
-        // Calcular YoY
+        // Calcular YoY para este sector
         const yoyChange = calculateYoYChange(gdpData, ccaaData, year, {
-          name: language === 'es' ? countryTotalData.País : countryTotalData.Country,
-          flagCode: 'es',
-          iso3: countryTotalData.ISO3,
+          name: countryTotalData?.Country || 'Country',
+          flagCode: 'country',
+          iso3: selectedCountryISO3,
           totalPercentage: countryTotal.toString(),
           total: countryTotal,
           data: []
         }, row.Sector);
         
-        // Calcular valor monetario
-        const monetaryValue = calculateMonetaryValue(
-          gdpData, 
-          ccaaData, 
-          year, 
-          {
-            name: language === 'es' ? countryTotalData.País : countryTotalData.Country,
-            flagCode: 'es',
-            iso3: countryTotalData.ISO3,
-            totalPercentage: countryTotal.toString(),
-            total: countryTotal,
-            data: []
-          }, 
-          row.Sector,
-          value
-        );
+        // Obtener el valor monetario desde el CSV
+        let monetaryValue: number | undefined;
         
-        // Obtener total PIB
-        const totalPib = getTotalPib(gdpData, ccaaData, year, 'es');
+        // Primero intentamos obtener el valor directo en millones de euros
+        if (row.Approx_RD_Investment_million_euro && row.Approx_RD_Investment_million_euro !== '') {
+          monetaryValue = parseFloat(row.Approx_RD_Investment_million_euro.replace(',', '.'));
+        }
         
+        // Si no hay valor directo, intentamos calcular basado en el PIB
+        if (!monetaryValue && value > 0) {
+          // Valor aproximado
+          monetaryValue = value * 500; // Asumimos PIB más pequeño que la UE
+        }
+        
+        // Asignamos el objeto con todos los datos
         countrySectorMap.set(sectorId, {
           name: language === 'es' ? 
             rdSectors.find(s => s.id === sectorId)?.name.es || row.Sector :
-            rdSectors.find(s => s.id === sectorId)?.name.en || row.Sector,
+            row.Sector,
           value: value,
           color: getSectorColor(sectorId),
-          sharePercentage: (value / countryTotal) * 100,
+          yoyChange: yoyChange !== null ? yoyChange : undefined,
           monetaryValue,
-          totalPib,
-          ...(yoyChange !== null && { yoyChange })
+          totalPib: countryTotal.toString()
         });
       });
       
@@ -600,46 +593,37 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         const sectorId = getSectorIdFromCode(sectorIdRaw);
         const rawValue = parseFloat(row['% PIB I+D']) || 0; // Aseguramos valor numérico
         
-        // Calcular YoY
+        // No convertimos - mantenemos el valor original
+        const value = rawValue;
+        
+        // Calcular YoY para este sector
         const yoyChange = calculateYoYChange(gdpData, ccaaData, year, {
-          name: language === 'es' ? 'Canarias' : 'Canary Islands',
+          name: language === 'es' ? 'Islas Canarias' : 'Canary Islands',
           flagCode: 'canary_islands',
           totalPercentage: canaryTotal.toString(),
           total: canaryTotal,
           data: []
-        }, sectorId);
+        }, row['Sector Nombre']);
         
-        // Calcular valor monetario
-        const monetaryValue = calculateMonetaryValue(
-          gdpData, 
-          ccaaData, 
-          year, 
-          {
-            name: language === 'es' ? 'Canarias' : 'Canary Islands',
-            flagCode: 'canary_islands',
-            totalPercentage: canaryTotal.toString(),
-            total: canaryTotal,
-            data: []
-          }, 
-          sectorId,
-          rawValue
-        );
+        // Calcular el valor monetario real desde los datos
+        let monetaryValue: number | undefined;
         
-        // Obtener total PIB
-        const totalPib = getTotalPib(gdpData, ccaaData, year, 'canary_islands');
+        // Obtener el valor en miles de euros del archivo CSV
+        if (row['Gasto en I+D (Miles €)']) {
+          const gastosEnMiles = parseFloat(row['Gasto en I+D (Miles €)'].replace('.', '').replace(',', '.'));
+          // Convertir de miles a millones
+          monetaryValue = gastosEnMiles / 1000;
+        }
         
-        const sectorName = language === 'es' ? 
-          row['Sector Nombre'] || rdSectors.find(s => s.id === sectorId)?.name.es :
-          rdSectors.find(s => s.id === sectorId)?.name.en;
-          
         canarySectorMap.set(sectorId, {
-          name: sectorName || sectorId,
-          value: rawValue,
+          name: language === 'es' ? 
+            rdSectors.find(s => s.id === sectorId)?.name.es || row['Sector Nombre'] :
+            rdSectors.find(s => s.id === sectorId)?.name.en || row['Sector'],
+          value: value,
           color: getSectorColor(sectorId),
-          sharePercentage: (rawValue / canaryTotal) * 100,
+          yoyChange: yoyChange !== null ? yoyChange : undefined,
           monetaryValue,
-          totalPib,
-          ...(yoyChange !== null && { yoyChange })
+          totalPib: canaryTotal.toString()
         });
       });
       
@@ -810,28 +794,106 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     const previousYear = (parseInt(year) - 1).toString();
     const flagCode = region.flagCode;
     
+    // Para depuración - imprimir los valores YoY
+    console.log(`Calculando YoY para ${region.name}, sector: ${sectorName}, año: ${year}, año anterior: ${previousYear}`);
+    
     // Determinar si buscamos en datos europeos o de comunidades autónomas
     if (flagCode === 'eu') {
-      // Para la Unión Europea, buscar en gdpData
-      const currentYearData = gdpData.find(row => 
-        row.Year === year && 
-        normalizarTextoLocal(row.Country).includes('european union') && 
-        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
-      );
+      // Para la Unión Europea, probar con varias posibilidades de nombres
       
-      const previousYearData = gdpData.find(row => 
-        row.Year === previousYear && 
-        normalizarTextoLocal(row.Country).includes('european union') && 
-        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
-      );
+      // Lista de posibles nombres para la UE
+      const euNames = [
+        "European Union - 27 countries (from 2020)",
+        "European Union",
+        "EU27_2020"
+      ];
+      
+      // Buscar por cada nombre posible
+      let currentYearData = null;
+      let previousYearData = null;
+      
+      // Intentar con cada nombre posible
+      for (const euName of euNames) {
+        // Intentar búsqueda exacta primero
+        const currentExact = gdpData.find(row => 
+          row.Year === year && 
+          row.Country === euName && 
+          row.Sector === sectorName
+        );
+        
+        const previousExact = gdpData.find(row => 
+          row.Year === previousYear && 
+          row.Country === euName && 
+          row.Sector === sectorName
+        );
+        
+        if (currentExact && previousExact) {
+          currentYearData = currentExact;
+          previousYearData = previousExact;
+          console.log(`Encontrados datos de UE con nombre exacto: ${euName}`);
+          break;
+        }
+        
+        // Si no se encuentra con búsqueda exacta, intentar búsqueda flexible
+        const currentFlexible = gdpData.find(row => 
+          row.Year === year && 
+          row.Country.includes(euName) && 
+          row.Sector === sectorName
+        );
+        
+        const previousFlexible = gdpData.find(row => 
+          row.Year === previousYear && 
+          row.Country.includes(euName) && 
+          row.Sector === sectorName
+        );
+        
+        if (currentFlexible && previousFlexible) {
+          currentYearData = currentFlexible;
+          previousYearData = previousFlexible;
+          console.log(`Encontrados datos de UE con nombre flexible: ${euName}`);
+          break;
+        }
+      }
+      
+      // Si no encontramos con ningún método, intentar búsqueda muy flexible
+      if (!currentYearData || !previousYearData) {
+        currentYearData = gdpData.find(row => 
+          row.Year === year && 
+          normalizarTextoLocal(row.Country).includes('europe') && 
+          normalizarTextoLocal(row.Country).includes('union') && 
+          row.Sector === sectorName
+        );
+        
+        previousYearData = gdpData.find(row => 
+          row.Year === previousYear && 
+          normalizarTextoLocal(row.Country).includes('europe') && 
+          normalizarTextoLocal(row.Country).includes('union') && 
+          row.Sector === sectorName
+        );
+        
+        if (currentYearData && previousYearData) {
+          console.log('Encontrados datos de UE con búsqueda flexible');
+        }
+      }
+      
+      console.log('Datos UE actual:', currentYearData);
+      console.log('Datos UE anterior:', previousYearData);
       
       if (currentYearData && previousYearData) {
         const currentValue = parseFloat(currentYearData['%GDP'].replace(',', '.'));
         const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
         
+        console.log(`UE - Valor actual: ${currentValue}, Valor anterior: ${previousValue}`);
+        
         if (previousValue > 0) {
-          return ((currentValue - previousValue) / previousValue) * 100;
+          const yoyValue = ((currentValue - previousValue) / previousValue) * 100;
+          console.log(`UE - YoY calculado exacto: ${yoyValue}`);
+          
+          // Devolver el valor sin redondeo a cero
+          return yoyValue;
         }
+      } else {
+        console.log('No se encontraron datos para calcular YoY de la UE');
       }
     } else if (flagCode === 'es') {
       // Para España, buscar en gdpData
@@ -852,33 +914,74 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
         
         if (previousValue > 0) {
-          return ((currentValue - previousValue) / previousValue) * 100;
+          const yoyValue = ((currentValue - previousValue) / previousValue) * 100;
+          // Devolver el valor sin redondeo a cero
+          return yoyValue;
         }
       }
     } else if (flagCode === 'canary_islands') {
       // Para Canarias, buscar en autonomousCommunitiesData
-      // Mapeo de sectores para comparar correctamente
-      const sectorId = getSectorIdFromName(sectorName);
+      // Probar diferentes enfoques para encontrar los datos
       
-      const currentYearData = autonomousCommunitiesData.find(row => 
-        row["Año"] === year && 
-        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
-        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
-      );
-      
-      const previousYearData = autonomousCommunitiesData.find(row => 
-        row["Año"] === previousYear && 
-        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
-        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
-      );
-      
-      if (currentYearData && previousYearData) {
-        const currentValue = parseFloat(currentYearData["% PIB I+D"].replace(',', '.'));
-        const previousValue = parseFloat(previousYearData["% PIB I+D"].replace(',', '.'));
+      // Primero intentar por el nombre del sector
+      try {
+        // Buscar primero por el nombre exacto del sector
+        let currentYearData = autonomousCommunitiesData.find(row => 
+          row["Año"] === year && 
+          normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+          normalizarTextoLocal(row["Sector Nombre"] || '') === normalizarTextoLocal(sectorName)
+        );
         
-        if (previousValue > 0) {
-          return ((currentValue - previousValue) / previousValue) * 100;
+        let previousYearData = autonomousCommunitiesData.find(row => 
+          row["Año"] === previousYear && 
+          normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+          normalizarTextoLocal(row["Sector Nombre"] || '') === normalizarTextoLocal(sectorName)
+        );
+        
+        // Si no se encuentra, intentar con código de sector
+        if (!currentYearData || !previousYearData) {
+          // Mapear el nombre del sector a un ID
+          const sectorId = getSectorIdFromName(sectorName);
+          const sectorCode = sectorId.toUpperCase();
+          
+          console.log(`Buscando sector Canarias con código: ${sectorCode}, original: ${sectorName}`);
+          
+          // Buscar por código de sector
+          currentYearData = autonomousCommunitiesData.find(row => 
+            row["Año"] === year && 
+            normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+            row["Sector Id"].includes(sectorCode)
+          );
+          
+          previousYearData = autonomousCommunitiesData.find(row => 
+            row["Año"] === previousYear && 
+            normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
+            row["Sector Id"].includes(sectorCode)
+          );
         }
+        
+        console.log('Datos Canarias actual:', currentYearData);
+        console.log('Datos Canarias anterior:', previousYearData);
+        
+        if (currentYearData && previousYearData) {
+          const currentValue = parseFloat(currentYearData["% PIB I+D"].replace(',', '.'));
+          const previousValue = parseFloat(previousYearData["% PIB I+D"].replace(',', '.'));
+          
+          console.log(`Canarias - Valor actual: ${currentValue}, Valor anterior: ${previousValue}`);
+          
+          if (previousValue > 0) {
+            const yoyValue = ((currentValue - previousValue) / previousValue) * 100;
+            console.log(`Canarias - YoY calculado exacto: ${yoyValue}`);
+            
+            // Devolver el valor sin redondeo a cero
+            return yoyValue;
+          }
+        } else {
+          console.log('No se encontraron datos completos para calcular YoY de Canarias');
+        }
+      } catch (error) {
+        console.error(`Error calculando YoY para Canarias, sector ${sectorName}:`, error);
+        return null;
       }
     } else if (flagCode === 'country') {
       // Para otros países, buscar en gdpData por ISO3
@@ -901,7 +1004,9 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
         const previousValue = parseFloat(previousYearData['%GDP'].replace(',', '.'));
         
         if (previousValue > 0) {
-          return ((currentValue - previousValue) / previousValue) * 100;
+          const yoyValue = ((currentValue - previousValue) / previousValue) * 100;
+          // Devolver el valor sin redondeo a cero
+          return yoyValue;
         }
       }
     }
@@ -909,124 +1014,9 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
     return null;
   };
 
-  // Función para calcular el valor monetario en millones de euros
-  const calculateMonetaryValue = (
-    gdpData: GDPConsolidadoData[],
-    autonomousCommunitiesData: GastoIDComunidadesData[],
-    year: string,
-    region: RegionData,
-    sectorName: string,
-    percentageValue: number
-  ): number => {
-    const flagCode = region.flagCode;
-    
-    if (flagCode === 'eu') {
-      // Para la Unión Europea, buscar en gdpData
-      const euData = gdpData.find(row => 
-        row.Year === year && 
-        normalizarTextoLocal(row.Country).includes('european union') && 
-        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
-      );
-      
-      if (euData && euData.Approx_RD_Investment_million_euro) {
-        return parseFloat(euData.Approx_RD_Investment_million_euro.replace(',', '.'));
-      }
-    } else if (flagCode === 'es') {
-      // Para España, buscar en gdpData
-      const esData = gdpData.find(row => 
-        row.Year === year && 
-        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
-        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
-      );
-      
-      if (esData && esData.Approx_RD_Investment_million_euro) {
-        return parseFloat(esData.Approx_RD_Investment_million_euro.replace(',', '.'));
-      }
-    } else if (flagCode === 'canary_islands') {
-      // Para Canarias, buscar en autonomousCommunitiesData
-      const sectorId = getSectorIdFromName(sectorName);
-      
-      const canaryData = autonomousCommunitiesData.find(row => 
-        row["Año"] === year && 
-        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
-        normalizarTextoLocal(row["Sector Id"]) === normalizarTextoLocal(sectorId === 'total' ? '(_T)' : `(${sectorId.toUpperCase()})`)
-      );
-      
-      if (canaryData && canaryData["Gasto en I+D (Miles €)"]) {
-        // Convertir de miles a millones
-        const valueInThousands = canaryData["Gasto en I+D (Miles €)"].replace('.', '').replace(',', '.');
-        return parseFloat(valueInThousands) / 1000;
-      }
-    } else if (flagCode === 'country') {
-      // Para otros países, buscar en gdpData por ISO3
-      if (!region.iso3) return percentageValue * 100; // Valor aproximado por defecto
-      
-      const countryData = gdpData.find(row => 
-        row.Year === year && 
-        row.ISO3 === region.iso3 && 
-        normalizarTextoLocal(row.Sector) === normalizarTextoLocal(sectorName)
-      );
-      
-      if (countryData && countryData.Approx_RD_Investment_million_euro) {
-        return parseFloat(countryData.Approx_RD_Investment_million_euro.replace(',', '.'));
-      }
-    }
-    
-    // Si no pudimos encontrar un valor específico, devolver una estimación
-    return percentageValue * 100;
-  };
-
-  // Función para obtener el total de PIB para una región
-  const getTotalPib = (
-    gdpData: GDPConsolidadoData[],
-    autonomousCommunitiesData: GastoIDComunidadesData[],
-    year: string,
-    flagCode: FlagCode,
-    iso3?: string
-  ): string => {
-    if (flagCode === 'eu') {
-      const euTotalData = gdpData.find(row => 
-        row.Year === year && 
-        normalizarTextoLocal(row.Country).includes('european union') && 
-        row.Sector === "All Sectors"
-      );
-      
-      if (euTotalData) {
-        return euTotalData['%GDP'].replace(',', '.');
-      }
-    } else if (flagCode === 'es') {
-      const esTotalData = gdpData.find(row => 
-        row.Year === year && 
-        (normalizarTextoLocal(row.Country).includes('spain') || normalizarTextoLocal(row.País || '').includes('españa')) && 
-        row.Sector === "All Sectors"
-      );
-      
-      if (esTotalData) {
-        return esTotalData['%GDP'].replace(',', '.');
-      }
-    } else if (flagCode === 'canary_islands') {
-      const canaryTotalData = autonomousCommunitiesData.find(row => 
-        row["Año"] === year && 
-        normalizarTextoLocal(row["Comunidad Limpio"]) === "canarias" && 
-        row["Sector Id"] === "(_T)"
-      );
-      
-      if (canaryTotalData) {
-        return canaryTotalData['% PIB I+D'].replace(',', '.');
-      }
-    } else if (flagCode === 'country' && iso3) {
-      const countryTotalData = gdpData.find(row => 
-        row.Year === year && 
-        row.ISO3 === iso3 && 
-        row.Sector === "All Sectors"
-      );
-      
-      if (countryTotalData) {
-        return countryTotalData['%GDP'].replace(',', '.');
-      }
-    }
-    
-    return "2.22"; // Valor predeterminado si no se encuentra
+  // Agregar función para formatear números con separador de miles
+  const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('es-ES').format(value);
   };
 
   // Función personalizada para el contenido del tooltip
@@ -1035,13 +1025,37 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
       const data = payload[0].payload;
       
       // Obtener el cambio YoY desde los datos
-      const yoyChange = data.yoyChange !== undefined ? data.yoyChange : 5.2; // Valor de ejemplo si no está disponible
+      const yoyChange = data.yoyChange !== undefined ? data.yoyChange : null; 
       
       // Obtener el valor monetario desde los datos
       const monetaryValue = data.monetaryValue !== undefined ? data.monetaryValue : Math.round(data.value * 100);
       
+      // Obtener el total de PIB
+      const totalPib = data.totalPib || parseFloat(data.value.toString()).toFixed(2);
+      
       // Usar el color del sector para la línea superior
       const borderColor = data.color || '#64748b'; // Color por defecto si no hay color de sector
+      
+      // Determinar el color basado en si el YoY es positivo o negativo
+      const yoyColor = yoyChange === null ? 'bg-gray-100 text-gray-600' : 
+                       (yoyChange > 0 ? 'bg-green-100 text-green-700' : 
+                        yoyChange < 0 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600');
+      
+      // Determinar el icono basado en si el YoY es positivo o negativo
+      const yoyIcon = yoyChange === null ? null : 
+                     (yoyChange > 0 ? 
+                      "M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" :
+                      yoyChange < 0 ?
+                      "M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" :
+                      "M5.75 12.25H18.25M5.75 12.25L9 16M5.75 12.25L9 9");
+      
+      // Formatear el valor YoY para mostrar - redondear a 1 decimal siempre
+      const formattedYoY = yoyChange === null ? "" : 
+                          (Math.abs(yoyChange) < 0.01 ? "±0.0% YoY" : 
+                          `${yoyChange > 0 ? '+' : ''}${yoyChange.toFixed(1)}% YoY`);
+      
+      // Determinar el estilo visual del indicador YoY
+      const yoyDisplay = yoyChange === null ? "hidden" : "flex";
       
       return (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden" style={{ width: "240px", boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
@@ -1056,43 +1070,45 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
               <div>
                 <div className="text-sm font-bold text-gray-900">{data.name}</div>
                 <div className="text-xs text-gray-500">{region}</div>
-              </div>
-            </div>
+          </div>
+          </div>
             
             {/* Valores principales */}
             <div className="flex justify-between items-start mb-3">
               <div>
                 <div className="text-2xl font-bold text-gray-900">{data.value.toFixed(2)}%</div>
                 <div className="text-xs text-gray-500">{t.ofGDP}</div>
-              </div>
+          </div>
               <div className="text-right">
                 <div className="text-xl font-bold text-gray-900">{data.sharePercentage?.toFixed(1)}%</div>
                 <div className="text-xs text-gray-500">del total</div>
               </div>
             </div>
             
-            {/* Indicador YoY */}
-            <div className="flex justify-end mb-3">
-              <div className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                <svg 
-                  className="h-3 w-3 mr-0.5" 
-                  fill="currentColor" 
-                  viewBox="0 0 20 20"
-                >
-                  <path 
-                    fillRule="evenodd" 
-                    d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                +{Math.abs(yoyChange).toFixed(1)}% YoY
+            {/* Indicador YoY - solo se muestra si hay datos disponibles */}
+            <div className={`justify-end mb-3 ${yoyDisplay}`}>
+              <div className={`inline-flex items-center px-2 py-0.5 ${yoyColor} text-xs rounded-full`}>
+                {yoyIcon && (
+                  <svg 
+                    className="h-3 w-3 mr-0.5" 
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d={yoyIcon}
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                {formattedYoY}
               </div>
             </div>
             
             {/* Información adicional */}
             <div className="flex justify-between items-center text-xs">
-              <div className="text-gray-700 font-medium">{Math.round(monetaryValue)} M€</div>
-              <div className="text-blue-600 font-medium">Total: {data.totalPib || "2.22"}% {t.ofGDP}</div>
+              <div className="text-gray-700 font-medium">{formatNumber(Math.round(monetaryValue))} M€</div>
+              <div className="text-blue-600 font-medium">Total: {totalPib}% {t.ofGDP}</div>
             </div>
           </div>
         </div>
