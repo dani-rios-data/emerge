@@ -259,17 +259,13 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     const labels = chartData.map(item => language === 'es' ? item.nameEs : item.nameEn);
     const values = chartData.map(item => item.value);
     
-    // Generar colores (destacar algunas comunidades de interés)
+    // Generar colores (Canarias en amarillo, el resto azul)
     const backgroundColors = chartData.map(item => {
-      // Destacar comunidades específicas
-      const highlightedCommunities = ['Madrid', 'País Vasco', 'Cataluña', 'Navarra'];
-      const communityName = item.nameEs;
-      
-      if (highlightedCommunities.some(highlight => normalizeText(communityName).includes(normalizeText(highlight)))) {
-        return CHART_PALETTE.HIGHLIGHT;
+      const communityName = item.nameEs.toLowerCase();
+      if (communityName.includes('canarias')) {
+        return '#FFD600'; // Amarillo Canarias
       }
-      
-      return CHART_PALETTE.DEFAULT;
+      return '#1e88e5'; // Azul para el resto
     });
     
     // Configuración de datos para el gráfico
@@ -281,13 +277,10 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           (language === 'es' ? 'Miles de €' : 'Thousand €'),
         data: values,
         backgroundColor: backgroundColors,
-        borderColor: backgroundColors.map(color => color === CHART_PALETTE.HIGHLIGHT ? 
-          '#ff1744' : // Borde más oscuro para barras destacadas
-          '#0d47a1'   // Borde más oscuro para barras normales
-        ),
+        borderColor: backgroundColors.map(color => color === '#FFD600' ? '#FFD600' : '#0d47a1'),
         borderWidth: 1,
         borderRadius: 4,
-        barThickness: 20,
+        barThickness: 12, // Más delgadas
       }]
     };
     
@@ -399,27 +392,13 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
         },
         x: {
           grid: {
-            color: '#f0f0f0'
+            display: false // Ocultar grid del eje X
           },
           ticks: {
-            color: CHART_PALETTE.TEXT,
-            callback: function(value) {
-              const numValue = Number(value);
-              if (dataDisplayType === 'percent_gdp') {
-                return `${formatNumber(numValue, numValue < 1 ? 2 : 1)}%`;
-              } else {
-                return formatNumber(numValue / 1000, 0) + (language === 'es' ? ' M€' : ' M€');
-              }
-            }
+            display: false // Ocultar etiquetas del eje X
           },
           title: {
-            display: true,
-            text: t.axisLabel,
-            color: CHART_PALETTE.TEXT,
-            font: {
-              weight: 'normal',
-              size: 12
-            }
+            display: false // Ocultar título del eje X
           }
         }
       }
@@ -486,8 +465,8 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
 
   return (
     <div className="relative h-full" ref={containerRef}>
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">{getChartTitle()}</h3>
+      <div className="mb-2 text-center">
+        <h3 className="text-base font-semibold text-gray-800 text-center">{getChartTitle()}</h3>
       </div>
       <div className="h-[calc(100%-2rem)] w-full">
         <Bar 

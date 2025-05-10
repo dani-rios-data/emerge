@@ -141,6 +141,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   const [autonomousCommunitiesData, setAutonomousCommunitiesData] = useState<AutonomousCommunityData[]>([]);
   const [dataDisplayType, setDataDisplayType] = useState<DataDisplayType>('percent_gdp');
   
+  // Nuevas variables de estado para los filtros de comunidades autónomas
+  const [availableRegionYears, setAvailableRegionYears] = useState<number[]>([]);
+  const [selectedRegionYear, setSelectedRegionYear] = useState<number>(2023);
+  const [selectedRegionSector, setSelectedRegionSector] = useState<string>("All Sectors");
+  
   // Función auxiliar para acceder a los textos según el idioma actual
   const t = texts[language];
 
@@ -200,252 +205,178 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           throw new Error(`${t.errorPrefix} ${europeResponse.status} - ${europeResponse.statusText}`);
         }
         
-        console.log("Respuesta recibida:", europeResponse.status, europeResponse.statusText);
-        
-        const europeCSV = await europeResponse.text();
-        console.log("Tamaño de datos CSV recibidos:", europeCSV.length, "caracteres");
-        
-        // Procesar los CSV con PapaParse - Usamos coma como delimitador
-        const europeResult = Papa.parse<ExtendedEuropeCSVData>(europeCSV, {
+        const europeText = await europeResponse.text();
+        const europeResult = Papa.parse(europeText, {
           header: true,
-          delimiter: ',', // El archivo usa coma, no punto y coma
-          skipEmptyLines: true
+          skipEmptyLines: true,
         });
         
-        if (europeResult.errors && europeResult.errors.length > 0) {
-          console.warn("Advertencias al procesar CSV:", europeResult.errors);
-        }
-        
-        console.log("Muestra de datos procesados:", europeResult.data.slice(0, 3));
-        
-        // Cargar datos de comunidades autónomas
-        const communityResponse = await fetch('./data/GDP_data/gasto_ID_comunidades_porcentaje_pib.csv');
-        if (!communityResponse.ok) {
-          console.warn(`Advertencia: No se pudieron cargar los datos de comunidades autónomas: ${communityResponse.status} - ${communityResponse.statusText}`);
-        } else {
-          const communityCSV = await communityResponse.text();
-          
-          // Procesar CSV de comunidades autónomas
-          const communityResult = Papa.parse<AutonomousCommunityData>(communityCSV, {
-            header: true,
-            delimiter: ';', // El archivo usa punto y coma
-            skipEmptyLines: true
-          });
-          
-          if (communityResult.errors && communityResult.errors.length > 0) {
-            console.warn("Advertencias al procesar CSV de comunidades autónomas:", communityResult.errors);
-          }
-          
-          setAutonomousCommunitiesData(communityResult.data);
-          console.log("Datos de comunidades autónomas cargados:", communityResult.data.length);
-        }
-        
-        // Procesamiento posterior: asegurar que Value tenga el valor de %GDP
-        const processedData = europeResult.data.map(item => ({
-          ...item,
-          Value: item['%GDP'] || item.Value || '0' // Asegurar que Value siempre tiene un valor
-        }));
+        const parsedEuropeData = europeResult.data as ExtendedEuropeCSVData[];
+        setEuropeData(parsedEuropeData);
         
         // Extraer los años disponibles
-        const years = new Set<number>();
-        processedData.forEach(row => {
-          const year = parseInt(row.Year);
-          if (!isNaN(year)) {
-            years.add(year);
-          }
+        const uniqueYears = Array.from(new Set(parsedEuropeData.map(item => parseInt(item.Year))))
+          .filter(year => !isNaN(year))
+          .sort((a, b) => b - a); // Ordenar de más reciente a más antiguo
+        
+        setAvailableYears(uniqueYears);
+        if (uniqueYears.length > 0) {
+          setSelectedYear(uniqueYears[0]); // Establecer el año más reciente por defecto
+        }
+        
+        // Cargar datos de comunidades autónomas de España
+        const autonomousResponse = await fetch('./data/GDP_data/gasto_ID_comunidades_porcentaje_pib.csv');
+        if (!autonomousResponse.ok) {
+          throw new Error(`${t.errorPrefix} ${autonomousResponse.status} - ${autonomousResponse.statusText}`);
+        }
+        
+        const autonomousText = await autonomousResponse.text();
+        const autonomousResult = Papa.parse(autonomousText, {
+          header: true,
+          delimiter: ";",
+          skipEmptyLines: true,
         });
-        const sortedYears = Array.from(years).sort((a, b) => b - a); // Ordenados descendentemente
         
-        // Establecer los años disponibles y actualizar el año seleccionado al más reciente
-        setAvailableYears(sortedYears);
-        if (sortedYears.length > 0) {
-          setSelectedYear(sortedYears[0]); // El primer año (el más reciente)
+        const parsedAutonomousData = autonomousResult.data as AutonomousCommunityData[];
+        setAutonomousCommunitiesData(parsedAutonomousData);
+        
+        // Extraer los años disponibles para comunidades autónomas
+        const regionYears = Array.from(new Set(parsedAutonomousData.map(item => parseInt(item.Año))))
+          .filter(year => !isNaN(year))
+          .sort((a, b) => b - a); // Ordenar de más reciente a más antiguo
+        
+        setAvailableRegionYears(regionYears);
+        if (regionYears.length > 0) {
+          setSelectedRegionYear(regionYears[0]); // Establecer el año más reciente por defecto
         }
         
-        console.log("Años disponibles:", sortedYears);
-        
-        // Extraer los sectores disponibles para verificación
-        const availableSectors = [...new Set(processedData.map(item => item.Sector))];
-        console.log("Sectores disponibles en el CSV:", availableSectors);
-        
-        // Establecer el sector por defecto como "All Sectors" si está disponible
-        if (availableSectors.includes("All Sectors")) {
-          setSelectedSector("All Sectors");
-        }
-        
-        setEuropeData(processedData); 
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error cargando datos:', err);
-        setError(err instanceof Error ? err.message : `${t.errorPrefix} Error desconocido`);
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        setError(error instanceof Error ? error.message : String(error));
+      } finally {
         setIsLoading(false);
       }
     };
     
     loadCSVData();
-  }, [t]); // Se ejecuta solo una vez al montar el componente
-
-  // Filtrar datos cuando cambia el año o sector
-  useEffect(() => {
-    if (europeData.length === 0) return;
-    
-    console.log(`Filtrando datos para año ${selectedYear} y sector "${selectedSector}"`);
-    
-    // Verificar si hay datos para el año y sector seleccionados
-    const dataForSelection = europeData.filter(row => 
-      parseInt(row.Year) === selectedYear && 
-      row.Sector === selectedSector
-    );
-    
-    if (dataForSelection.length === 0) {
-      console.warn(`No se encontraron datos para el año ${selectedYear} y sector "${selectedSector}"`);
-    } else {
-      console.log(`Se encontraron ${dataForSelection.length} registros para el año ${selectedYear} y sector "${selectedSector}"`);
-      
-      // Mostrar algunos ejemplos para depuración
-      console.log("Ejemplos de países con datos:", dataForSelection.slice(0, 5).map(item => 
-        `${item.Country} (${item.ISO3}): ${item['%GDP']}%`
-      ));
-    }
-  }, [selectedYear, selectedSector, europeData]);
-
-  // Función para manejar el cambio de sector
+  }, [t]); // Solo se ejecuta cuando cambia el idioma
+  
   const handleSectorChange = (sectorId: string) => {
-    // Transformar el ID del sector al valor esperado en el CSV
-    const sectorMapping: Record<string, string> = {
-      'total': 'All Sectors',
-      'business': 'Business enterprise sector',
-      'government': 'Government sector',
-      'education': 'Higher education sector',
-      'nonprofit': 'Private non-profit sector'
-    };
-    
-    const csvSectorValue = sectorMapping[sectorId] || 'All Sectors';
-    console.log("Sector seleccionado:", sectorId, "-> Valor en CSV:", csvSectorValue);
-    setSelectedSector(csvSectorValue);
+    const sectorInEnglish = rdSectors.find(s => s.id === sectorId)?.name.en || "All Sectors";
+    setSelectedSector(sectorInEnglish);
   };
-
-  // Función para obtener el ID de sector basado en el nombre en inglés
+  
+  // Nuevo manejador para cambio de sector en comunidades autónomas
+  const handleRegionSectorChange = (sectorId: string) => {
+    const sectorInEnglish = rdSectors.find(s => s.id === sectorId)?.name.en || "All Sectors";
+    setSelectedRegionSector(sectorInEnglish);
+  };
+  
   const getSectorId = (sectorNameEn: string): string => {
     const sector = rdSectors.find(s => s.name.en === sectorNameEn);
-    return sector?.id || 'total';
+    return sector ? sector.id : "_T"; // "_T" es el ID para "Todos los sectores"
   };
-
-  // Agregar nuevo handler para cambio de tipo de visualización
+  
   const handleDataTypeChange = (newType: DataDisplayType) => {
     setDataDisplayType(newType);
   };
-
-  // Función para mapear los datos al formato necesario para RDComparisonChart
+  
   const mapToGDPConsolidadoData = (data: ExtendedEuropeCSVData[]): GDPConsolidadoData[] => {
-    return data
-      .filter(item => item.ISO3) // Filtrar solo los elementos que tienen ISO3
-      .map(item => ({
+    return data.map(item => {
+      const mapped: GDPConsolidadoData = {
         Country: item.Country,
-        País: item.País || item.Country, // Asegurarse de que siempre hay un valor
+        País: item.País,
         Year: item.Year,
         Sector: item.Sector,
         '%GDP': item['%GDP'],
-        ISO3: item.ISO3!, // El signo ! indica que sabemos que existe por el filtro anterior
+        ISO3: item.ISO3 || '',
         Value: item.Value,
-        Approx_RD_Investment_million_euro: item.Approx_RD_Investment_million_euro
-      }));
+        Approx_RD_Investment_million_euro: item.Approx_RD_Investment_million_euro,
+      };
+      return mapped;
+    });
   };
-
-  // Componente para mostrar entidades supranacionales como la UE y Zona Euro
+  
   const SupranationalEntities = () => {
-    // Texto dinámico para países/countries
-    const countriesText = language === 'es' ? 'países' : 'countries';
+    // Componente para mostrar las entidades supranacionales
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
-        <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
-          {t.supranational}
-        </div>
-        <div className="border border-blue-200 rounded-b-md border-t-0 p-3">
-          <div className="mb-3 flex">
-            <h3 className="text-xs font-semibold text-gray-800 mr-1">
-              {language === 'es' ? `Unión Europea (27 ${countriesText})` : `European Union (27 ${countriesText})`}
-            </h3>
-            <p className="text-xs text-gray-600">{t.euFull}</p>
+      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        <h4 className="text-sm font-semibold mb-3 text-gray-700">{t.supranational}</h4>
+        <div className="grid grid-cols-1 gap-2">
+          <div className="flex items-center p-2 bg-blue-50 rounded border border-blue-100">
+            <div className="w-4 h-4 rounded-full bg-blue-600 mr-2"></div>
+            <span className="text-sm text-gray-700">{t.euroArea19}</span>
+            <span className="text-xs text-gray-500 ml-1">{t.euroArea19Full}</span>
           </div>
-          <div className="mb-3 flex">
-            <h3 className="text-xs font-semibold text-gray-800 mr-1">
-              {language === 'es' ? `Zona Euro (20 ${countriesText})` : `Euro Area (20 ${countriesText})`}
-            </h3>
-            <p className="text-xs text-gray-600">{t.euroArea20Full}</p>
+          <div className="flex items-center p-2 bg-blue-50 rounded border border-blue-100">
+            <div className="w-4 h-4 rounded-full bg-blue-700 mr-2"></div>
+            <span className="text-sm text-gray-700">{t.euroArea20}</span>
+            <span className="text-xs text-gray-500 ml-1">{t.euroArea20Full}</span>
           </div>
-          <div className="flex">
-            <h3 className="text-xs font-semibold text-gray-800 mr-1">
-              {language === 'es' ? `Zona Euro (19 ${countriesText})` : `Euro Area (19 ${countriesText})`}
-            </h3>
-            <p className="text-xs text-gray-600">{t.euroArea19Full}</p>
+          <div className="flex items-center p-2 bg-blue-50 rounded border border-blue-100">
+            <div className="w-4 h-4 rounded-full bg-blue-800 mr-2"></div>
+            <span className="text-sm text-gray-700">{t.europeanUnion}</span>
+            <span className="text-xs text-gray-500 ml-1">{t.euFull}</span>
           </div>
         </div>
       </div>
     );
   };
-
-  // Componente para mostrar la leyenda de banderas de observación
+  
   const ObservationFlags = () => (
-    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full">
-      <div className="bg-blue-600 text-white text-xs font-semibold text-center py-2 rounded-t-md">
-        {t.observationFlags}
-      </div>
-      <div className="border border-blue-200 rounded-b-md border-t-0">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 p-3 text-xs text-gray-600">
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(e)</div>
-            <span>{t.estimated}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(p)</div>
-            <span>{t.provisional}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(d)</div>
-            <span>{t.definitionDiffers}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(bd)</div>
-            <span>{t.breakInTimeSeriesDefinitionDiffers}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(b)</div>
-            <span>{t.breakInTimeSeries}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(de)</div>
-            <span>{t.definitionDiffersEstimated}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(dp)</div>
-            <span>{t.definitionDiffersProvisional}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(ep)</div>
-            <span>{t.estimatedProvisional}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(bp)</div>
-            <span>{t.breakInTimeSeriesProvisional}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-10 pl-4 mr-2 font-medium text-black">(u)</div>
-            <span>{t.lowReliability}</span>
-          </div>
+    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+      <h4 className="text-sm font-semibold mb-3 text-gray-700">{t.observationFlags}</h4>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">e</span>
+          <span className="text-xs text-gray-600">{t.estimated}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">p</span>
+          <span className="text-xs text-gray-600">{t.provisional}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">d</span>
+          <span className="text-xs text-gray-600">{t.definitionDiffers}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">b</span>
+          <span className="text-xs text-gray-600">{t.breakInTimeSeries}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">bd</span>
+          <span className="text-xs text-gray-600">{t.breakInTimeSeriesDefinitionDiffers}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">de</span>
+          <span className="text-xs text-gray-600">{t.definitionDiffersEstimated}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">dp</span>
+          <span className="text-xs text-gray-600">{t.definitionDiffersProvisional}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">ep</span>
+          <span className="text-xs text-gray-600">{t.estimatedProvisional}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">bp</span>
+          <span className="text-xs text-gray-600">{t.breakInTimeSeriesProvisional}</span>
+        </div>
+        <div className="flex items-center p-1.5">
+          <span className="inline-block w-6 text-center font-bold text-xs mr-2 text-blue-800">u</span>
+          <span className="text-xs text-gray-600">{t.lowReliability}</span>
         </div>
       </div>
     </div>
   );
-
-  // Componente para título de sección
+  
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-lg font-bold mb-4 text-teal-800 border-b border-teal-200 pb-2">
+    <h2 className="text-xl font-bold mb-4 text-blue-800 border-b border-blue-100 pb-2">
       {title}
     </h2>
   );
-
-  // Componente para título de subsección
+  
   const SubsectionTitle = ({ title }: { title: string }) => (
     <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
       {title}
@@ -626,9 +557,67 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
             <div className="mb-8">
               <SubsectionTitle title={language === 'es' ? 
-                `Inversión en I+D por Comunidad Autónoma - ${getSectorName(selectedSector)} (${selectedYear})` : 
-                `R&D Investment by Autonomous Community - ${getSectorName(selectedSector)} (${selectedYear})`} 
+                `Inversión en I+D por Comunidad Autónoma - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})` : 
+                `R&D Investment by Autonomous Community - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})`} 
               />
+              
+              {/* Filtros para la sección de comunidades autónomas */}
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-blue-500 mr-2"
+                      >
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                      <select 
+                        value={selectedRegionYear}
+                        onChange={(e) => setSelectedRegionYear(parseInt(e.target.value))}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      >
+                        {availableRegionYears.map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                      <select 
+                        value={getSectorId(selectedRegionSector)}
+                        onChange={(e) => handleRegionSectorChange(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                      >
+                        {rdSectors.map(sector => (
+                          <option key={sector.id} value={sector.id}>
+                            {sector.name[language]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Selector de tipo de datos visible */}
+                  <div>
+                    <DataTypeSelector 
+                      dataType={dataDisplayType} 
+                      onChange={handleDataTypeChange} 
+                      language={language} 
+                    />
+                  </div>
+                </div>
+              </div>
               
               {/* Primera fila: Mapa y Gráfica de comunidades autónomas */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -636,9 +625,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
                   <SpanishRegionsMap 
                     data={autonomousCommunitiesData} 
-                    selectedYear={selectedYear} 
+                    selectedYear={selectedRegionYear} 
                     language={language} 
-                    selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector)}
+                    selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
                     dataDisplayType={dataDisplayType}
                   />
                 </div>
@@ -649,9 +638,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     <div className="h-full overflow-hidden" data-testid="region-ranking-chart">
                       <RegionRankingChart 
                         data={autonomousCommunitiesData}
-                        selectedYear={selectedYear}
+                        selectedYear={selectedRegionYear}
                         language={language}
-                        selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector)}
+                        selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
                         dataDisplayType={dataDisplayType}
                       />
                     </div>
