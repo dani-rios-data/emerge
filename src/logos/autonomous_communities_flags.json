@@ -10,12 +10,12 @@
     "flag": "https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg"
   },
   {
-    "community": "Asturias",
+    "community": "Principado de Asturias",
     "code": "AST",
     "flag": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg"
   },
   {
-    "community": "Islas Baleares",
+    "community": "Illes Balears / Islas Baleares",
     "code": "BAL",
     "flag": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg"
   },
@@ -30,7 +30,7 @@
     "flag": "https://upload.wikimedia.org/wikipedia/commons/3/30/Flag_of_Cantabria.svg"
   },
   {
-    "community": "Castilla-La Mancha",
+    "community": "Castilla - La Mancha",
     "code": "CLM",
     "flag": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_Castile-La_Mancha.svg"
   },
@@ -52,7 +52,7 @@
   {
     "community": "Extremadura",
     "code": "EXT",
-    "flag": "https://upload.wikimedia.org/wikipedia/commons/3/31/Flag_of_Extremadura%2C_Spain.svg"
+    "flag": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Flag_of_Extremadura%2C_Spain.svg"
   },
   {
     "community": "Galicia",
@@ -80,18 +80,18 @@
     "flag": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Flag_of_the_Region_of_Murcia.svg"
   },
   {
-    "community": "Navarra",
+    "community": "Comunidad Foral de Navarra",
     "code": "NAV",
     "flag": "https://upload.wikimedia.org/wikipedia/commons/3/36/Bandera_de_Navarra.svg"
   },
   {
-    "community": "Ceuta",
+    "community": "Ciudad Autónoma de Ceuta",
     "code": "CEU",
-    "flag": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_Ceuta.svg"
+    "flag": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Flag_of_Ceuta.svg"
   },
   {
-    "community": "Melilla",
+    "community": "Ciudad Autónoma de Melilla",
     "code": "MEL",
-    "flag": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Flag_of_Melilla.svg"
+    "flag": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Flag_of_Melilla.svg"
   }
 ] 

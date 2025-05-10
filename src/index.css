@@ -1,3 +1,262 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Estilos para tooltips */
+.map-tooltip, .chart-tooltip, #global-map-tooltip, #global-chart-tooltip {
+  position: fixed;
+  z-index: 999999;
+  pointer-events: none;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Clases de utilidad para los tooltips */
+#global-map-tooltip .text-green-600, 
+#global-chart-tooltip .text-green-600,
+.map-tooltip .text-green-600, 
+.chart-tooltip .text-green-600 { color: #059669; }
+
+#global-map-tooltip .text-red-600,
+#global-chart-tooltip .text-red-600,
+.map-tooltip .text-red-600,
+.chart-tooltip .text-red-600 { color: #DC2626; }
+
+#global-map-tooltip .bg-blue-50,
+#global-chart-tooltip .bg-blue-50,
+.map-tooltip .bg-blue-50,
+.chart-tooltip .bg-blue-50 { background-color: #EFF6FF; }
+
+#global-map-tooltip .bg-yellow-50,
+#global-chart-tooltip .bg-yellow-50,
+.map-tooltip .bg-yellow-50,
+.chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+
+#global-map-tooltip .border-blue-100,
+#global-chart-tooltip .border-blue-100,
+.map-tooltip .border-blue-100,
+.chart-tooltip .border-blue-100 { border-color: #DBEAFE; }
+
+#global-map-tooltip .border-gray-100,
+#global-chart-tooltip .border-gray-100,
+.map-tooltip .border-gray-100,
+.chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
+
+#global-map-tooltip .border-gray-200,
+#global-chart-tooltip .border-gray-200,
+.map-tooltip .border-gray-200,
+.chart-tooltip .border-gray-200 { border-color: #E5E7EB; }
+
+#global-map-tooltip .text-gray-500,
+#global-chart-tooltip .text-gray-500,
+.map-tooltip .text-gray-500,
+.chart-tooltip .text-gray-500 { color: #6B7280; }
+
+#global-map-tooltip .text-blue-700,
+#global-chart-tooltip .text-blue-700,
+.map-tooltip .text-blue-700,
+.chart-tooltip .text-blue-700 { color: #1D4ED8; }
+
+#global-map-tooltip .text-gray-800,
+#global-chart-tooltip .text-gray-800,
+.map-tooltip .text-gray-800,
+.chart-tooltip .text-gray-800 { color: #1F2937; }
+
+#global-map-tooltip .text-gray-600,
+#global-chart-tooltip .text-gray-600,
+.map-tooltip .text-gray-600,
+.chart-tooltip .text-gray-600 { color: #4B5563; }
+
+#global-map-tooltip .text-yellow-500,
+#global-chart-tooltip .text-yellow-500,
+.map-tooltip .text-yellow-500,
+.chart-tooltip .text-yellow-500 { color: #F59E0B; }
+
+#global-map-tooltip .rounded-lg,
+#global-chart-tooltip .rounded-lg,
+.map-tooltip .rounded-lg,
+.chart-tooltip .rounded-lg { border-radius: 0.5rem; }
+
+#global-map-tooltip .shadow-lg,
+#global-chart-tooltip .shadow-lg,
+.map-tooltip .shadow-lg,
+.chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+
+#global-map-tooltip .p-3,
+#global-chart-tooltip .p-3,
+.map-tooltip .p-3,
+.chart-tooltip .p-3 { padding: 0.75rem; }
+
+#global-map-tooltip .p-4,
+#global-chart-tooltip .p-4,
+.map-tooltip .p-4,
+.chart-tooltip .p-4 { padding: 1rem; }
+
+#global-map-tooltip .p-2,
+#global-chart-tooltip .p-2,
+.map-tooltip .p-2,
+.chart-tooltip .p-2 { padding: 0.5rem; }
+
+#global-map-tooltip .pt-3,
+#global-chart-tooltip .pt-3,
+.map-tooltip .pt-3,
+.chart-tooltip .pt-3 { padding-top: 0.75rem; }
+
+#global-map-tooltip .mb-3,
+#global-chart-tooltip .mb-3,
+.map-tooltip .mb-3,
+.chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
+
+#global-map-tooltip .mb-1,
+#global-chart-tooltip .mb-1,
+.map-tooltip .mb-1,
+.chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
+
+#global-map-tooltip .mb-4,
+#global-chart-tooltip .mb-4,
+.map-tooltip .mb-4,
+.chart-tooltip .mb-4 { margin-bottom: 1rem; }
+
+#global-map-tooltip .mr-1,
+#global-chart-tooltip .mr-1,
+.map-tooltip .mr-1,
+.chart-tooltip .mr-1 { margin-right: 0.25rem; }
+
+#global-map-tooltip .mr-2,
+#global-chart-tooltip .mr-2,
+.map-tooltip .mr-2,
+.chart-tooltip .mr-2 { margin-right: 0.5rem; }
+
+#global-map-tooltip .mt-1,
+#global-chart-tooltip .mt-1,
+.map-tooltip .mt-1,
+.chart-tooltip .mt-1 { margin-top: 0.25rem; }
+
+#global-map-tooltip .text-xs,
+#global-chart-tooltip .text-xs,
+.map-tooltip .text-xs,
+.chart-tooltip .text-xs { font-size: 0.75rem; }
+
+#global-map-tooltip .text-sm,
+#global-chart-tooltip .text-sm,
+.map-tooltip .text-sm,
+.chart-tooltip .text-sm { font-size: 0.875rem; }
+
+#global-map-tooltip .text-lg,
+#global-chart-tooltip .text-lg,
+.map-tooltip .text-lg,
+.chart-tooltip .text-lg { font-size: 1.125rem; }
+
+#global-map-tooltip .text-xl,
+#global-chart-tooltip .text-xl,
+.map-tooltip .text-xl,
+.chart-tooltip .text-xl { font-size: 1.25rem; }
+
+#global-map-tooltip .font-bold,
+#global-chart-tooltip .font-bold,
+.map-tooltip .font-bold,
+.chart-tooltip .font-bold { font-weight: 700; }
+
+#global-map-tooltip .font-medium,
+#global-chart-tooltip .font-medium,
+.map-tooltip .font-medium,
+.chart-tooltip .font-medium { font-weight: 500; }
+
+#global-map-tooltip .flex,
+#global-chart-tooltip .flex,
+.map-tooltip .flex,
+.chart-tooltip .flex { display: flex; }
+
+#global-map-tooltip .items-center,
+#global-chart-tooltip .items-center,
+.map-tooltip .items-center,
+.chart-tooltip .items-center { align-items: center; }
+
+#global-map-tooltip .justify-between,
+#global-chart-tooltip .justify-between,
+.map-tooltip .justify-between,
+.chart-tooltip .justify-between { justify-content: space-between; }
+
+#global-map-tooltip .w-8,
+#global-chart-tooltip .w-8,
+.map-tooltip .w-8,
+.chart-tooltip .w-8 { width: 2rem; }
+
+#global-map-tooltip .h-6,
+#global-chart-tooltip .h-6,
+.map-tooltip .h-6,
+.chart-tooltip .h-6 { height: 1.5rem; }
+
+#global-map-tooltip .w-36,
+#global-chart-tooltip .w-36,
+.map-tooltip .w-36,
+.chart-tooltip .w-36 { width: 9rem; }
+
+#global-map-tooltip .rounded,
+#global-chart-tooltip .rounded,
+.map-tooltip .rounded,
+.chart-tooltip .rounded { border-radius: 0.25rem; }
+
+#global-map-tooltip .rounded-md,
+#global-chart-tooltip .rounded-md,
+.map-tooltip .rounded-md,
+.chart-tooltip .rounded-md { border-radius: 0.375rem; }
+
+#global-map-tooltip .overflow-hidden,
+#global-chart-tooltip .overflow-hidden,
+.map-tooltip .overflow-hidden,
+.chart-tooltip .overflow-hidden { overflow: hidden; }
+
+#global-map-tooltip .border-t,
+#global-chart-tooltip .border-t,
+.map-tooltip .border-t,
+.chart-tooltip .border-t { border-top-width: 1px; }
+
+#global-map-tooltip .border-b,
+#global-chart-tooltip .border-b,
+.map-tooltip .border-b,
+.chart-tooltip .border-b { border-bottom-width: 1px; }
+
+#global-map-tooltip .border,
+#global-chart-tooltip .border,
+.map-tooltip .border,
+.chart-tooltip .border { border-width: 1px; }
+
+#global-map-tooltip .space-y-2 > * + *,
+#global-chart-tooltip .space-y-2 > * + *,
+.map-tooltip .space-y-2 > * + *,
+.chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+
+#global-map-tooltip .max-w-xs,
+#global-chart-tooltip .max-w-xs,
+.map-tooltip .max-w-xs,
+.chart-tooltip .max-w-xs { max-width: 20rem; }
+
+#global-map-tooltip .mx-1,
+#global-chart-tooltip .mx-1,
+.map-tooltip .mx-1,
+.chart-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+
+#global-map-tooltip .w-full,
+#global-chart-tooltip .w-full,
+.map-tooltip .w-full,
+.chart-tooltip .w-full { width: 100%; }
+
+#global-map-tooltip .h-full,
+#global-chart-tooltip .h-full,
+.map-tooltip .h-full,
+.chart-tooltip .h-full { height: 100%; }
+
+#global-map-tooltip img,
+#global-chart-tooltip img,
+.map-tooltip img,
+.chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+
+#global-map-tooltip .flag-container,
+#global-chart-tooltip .flag-container,
+.map-tooltip .flag-container,
+.chart-tooltip .flag-container { min-width: 2rem; min-height: 1.5rem; }
