@@ -4,6 +4,8 @@ import CountryRankingChart from '../../components/CountryRankingChart';
 import SectorDistribution from '../../components/SectorDistribution';
 import RDComparisonChart from '../../components/RDComparisonChart';
 import DataTypeSelector, { DataDisplayType } from '../../components/DataTypeSelector';
+import SpanishRegionsMap from '../../components/SpanishRegionsMap';
+import RegionRankingChart from '../../components/RegionRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 
@@ -621,9 +623,61 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <div className="mb-6">
             <SectionTitle title={t.spanishRegionsTitle} />
             
-            {/* Espacio para futuras subsecciones de comunidades autónomas */}
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
-              <p>{language === 'es' ? "Más subsecciones de comunidades autónomas se añadirán próximamente" : "More autonomous communities subsections coming soon"}</p>
+            {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
+            <div className="mb-8">
+              <SubsectionTitle title={language === 'es' ? 
+                `Inversión en I+D por Comunidad Autónoma - ${getSectorName(selectedSector)} (${selectedYear})` : 
+                `R&D Investment by Autonomous Community - ${getSectorName(selectedSector)} (${selectedYear})`} 
+              />
+              
+              {/* Primera fila: Mapa y Gráfica de comunidades autónomas */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Mapa de España con comunidades autónomas */}
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+                  <SpanishRegionsMap 
+                    data={autonomousCommunitiesData} 
+                    selectedYear={selectedYear} 
+                    language={language} 
+                    selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector)}
+                    dataDisplayType={dataDisplayType}
+                  />
+                </div>
+                
+                {/* Ranking de comunidades autónomas */}
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-[500px]">
+                  {autonomousCommunitiesData.length > 0 ? (
+                    <div className="h-full overflow-hidden" data-testid="region-ranking-chart">
+                      <RegionRankingChart 
+                        data={autonomousCommunitiesData}
+                        selectedYear={selectedYear}
+                        language={language}
+                        selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector)}
+                        dataDisplayType={dataDisplayType}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex justify-center items-center h-full">
+                      {isLoading ? (
+                        <div className="flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                          <p className="mt-4 text-gray-500">{t.loading}</p>
+                        </div>
+                      ) : error ? (
+                        <div className="text-red-500">
+                          <p>{error}</p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">{t.noData}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Espacio para futuras subsecciones de comunidades autónomas */}
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
+                <p>{language === 'es' ? "Más subsecciones de análisis detallado por comunidades autónomas se añadirán próximamente" : "More detailed autonomous communities analysis subsections coming soon"}</p>
+              </div>
             </div>
           </div>
         </>
