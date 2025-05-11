@@ -13,11 +13,11 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({ dataType, onChange,
   const texts = {
     es: {
       percentGDP: "% del PIB",
-      millionEuro: "M€"
+      millionEuro: "€"
     },
     en: {
       percentGDP: "% of GDP",
-      millionEuro: "M€"
+      millionEuro: "€"
     }
   };
 

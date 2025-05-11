@@ -139,79 +139,63 @@ const mapTexts = {
 };
 
 // Tabla de mapeo entre nombres de comunidades en el CSV y nombres en GeoJSON
-const communityNameMapping: { [key: string]: string } = {
-  // Mapeo de nombres en español (como aparecen en el CSV) a nombres esperados en GeoJSON
-  // Andalucía
-  'Andalucía': 'Andalucía',
-  'Andalucia': 'Andalucía',
-  // Aragón
-  'Aragón': 'Aragón',
-  'Aragon': 'Aragón',
-  // Asturias
-  'Principado de Asturias': 'Asturias',
-  'Asturias': 'Asturias',
-  // Baleares
-  'Illes Balears / Islas Baleares': 'Islas Baleares',
-  'Islas Baleares': 'Islas Baleares',
-  'Illes Balears': 'Islas Baleares',
-  'Baleares': 'Islas Baleares',
-  'Balearic Islands': 'Islas Baleares',
-  // Canarias
-  'Canarias': 'Canarias',
-  'Islas Canarias': 'Canarias',
-  'Canary Islands': 'Canarias',
-  // Cantabria
-  'Cantabria': 'Cantabria',
-  // Castilla-La Mancha - Añadir todas las posibles variantes
-  'Castilla - La Mancha': 'Castilla-La Mancha',
-  'Castilla-La Mancha': 'Castilla-La Mancha',
-  'Castilla La Mancha': 'Castilla-La Mancha',
-  'Castilla-la Mancha': 'Castilla-La Mancha',
-  'Castillalamancha': 'Castilla-La Mancha',
-  // Castilla y León
-  'Castilla y León': 'Castilla y León',
-  'Castilla y Leon': 'Castilla y León',
-  'Castilla León': 'Castilla y León',
-  'Castile and León': 'Castilla y León',
-  // Cataluña
-  'Cataluña': 'Cataluña',
-  'Cataluna': 'Cataluña',
-  'Catalunya': 'Cataluña',
-  'Catalonia': 'Cataluña',
-  // Comunidad Valenciana
-  'Comunidad Valenciana': 'Comunidad Valenciana',
-  'C. Valenciana': 'Comunidad Valenciana',
-  'Valencia': 'Comunidad Valenciana',
-  'Valencian Community': 'Comunidad Valenciana',
-  // Extremadura
-  'Extremadura': 'Extremadura',
-  // Galicia
-  'Galicia': 'Galicia',
-  // La Rioja
-  'La Rioja': 'La Rioja',
-  'Rioja': 'La Rioja',
-  // Madrid
-  'Comunidad de Madrid': 'Comunidad de Madrid',
-  'Madrid': 'Comunidad de Madrid',
-  // Murcia
-  'Región de Murcia': 'Región de Murcia',
-  'Region de Murcia': 'Región de Murcia',
-  'Murcia': 'Región de Murcia',
-  // Navarra
-  'Comunidad Foral de Navarra': 'Navarra',
-  'Navarra': 'Navarra',
-  'Navarre': 'Navarra',
-  // País Vasco
-  'País Vasco': 'País Vasco',
-  'Pais Vasco': 'País Vasco',
-  'Euskadi': 'País Vasco',
-  'Basque Country': 'País Vasco',
-  // Ceuta
-  'Ciudad Autónoma de Ceuta': 'Ceuta',
-  'Ceuta': 'Ceuta',
-  // Melilla
-  'Ciudad Autónoma de Melilla': 'Melilla',
-  'Melilla': 'Melilla'
+// Actualizado para usar el mismo formato que en RegionRankingChart.tsx
+const communityNameMapping: { [key: string]: { es: string, en: string } } = {
+  'Andalucía': { es: 'Andalucía', en: 'Andalusia' },
+  'Andalucia': { es: 'Andalucía', en: 'Andalusia' },
+  'Aragón': { es: 'Aragón', en: 'Aragon' },
+  'Aragon': { es: 'Aragón', en: 'Aragon' },
+  'Principado de Asturias': { es: 'Asturias', en: 'Asturias' },
+  'Asturias': { es: 'Asturias', en: 'Asturias' },
+  'Illes Balears / Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Illes Balears': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Balearic Islands': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Islas Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Canary Islands': { es: 'Canarias', en: 'Canary Islands' },
+  'Cantabria': { es: 'Cantabria', en: 'Cantabria' },
+  'Castilla - La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-la Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castillalamancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla y León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla y Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Cataluña': { es: 'Cataluña', en: 'Catalonia' },
+  'Cataluna': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalunya': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalonia': { es: 'Cataluña', en: 'Catalonia' },
+  'Comunidad Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'C. Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencia': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencian Community': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Extremadura': { es: 'Extremadura', en: 'Extremadura' },
+  'Galicia': { es: 'Galicia', en: 'Galicia' },
+  'La Rioja': { es: 'La Rioja', en: 'La Rioja' },
+  'Rioja': { es: 'La Rioja', en: 'La Rioja' },
+  'Comunidad de Madrid': { es: 'Madrid', en: 'Madrid' },
+  'Madrid': { es: 'Madrid', en: 'Madrid' },
+  'Región de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Region de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Comunidad Foral de Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarre': { es: 'Navarra', en: 'Navarre' },
+  'País Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Pais Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Euskadi': { es: 'País Vasco', en: 'Basque Country' },
+  'Basque Country': { es: 'País Vasco', en: 'Basque Country' },
+  'Ciudad Autónoma de Ceuta': { es: 'Ceuta', en: 'Ceuta' },
+  'Ceuta': { es: 'Ceuta', en: 'Ceuta' },
+  'Ciudad Autónoma de Melilla': { es: 'Melilla', en: 'Melilla' },
+  'Melilla': { es: 'Melilla', en: 'Melilla' }
 };
 
 // Función para normalizar texto (remover acentos y caracteres especiales)
@@ -237,18 +221,18 @@ function getCommunityName(feature: GeoJsonFeature, language: 'es' | 'en'): strin
       'ES-AS': {es: 'Asturias', en: 'Asturias'},
       'ES-CB': {es: 'Cantabria', en: 'Cantabria'},
       'ES-CL': {es: 'Castilla y León', en: 'Castile and León'},
-      'ES-CM': {es: 'Castilla-La Mancha', en: 'Castilla-La Mancha'},
+      'ES-CM': {es: 'Castilla-La Mancha', en: 'Castilla–La Mancha'},
       'ES-CN': {es: 'Canarias', en: 'Canary Islands'},
       'ES-CT': {es: 'Cataluña', en: 'Catalonia'},
       'ES-EX': {es: 'Extremadura', en: 'Extremadura'},
       'ES-GA': {es: 'Galicia', en: 'Galicia'},
       'ES-IB': {es: 'Islas Baleares', en: 'Balearic Islands'},
-      'ES-MC': {es: 'Región de Murcia', en: 'Murcia'},
-      'ES-MD': {es: 'Comunidad de Madrid', en: 'Madrid'},
+      'ES-MC': {es: 'Murcia', en: 'Murcia'},
+      'ES-MD': {es: 'Madrid', en: 'Madrid'},
       'ES-NC': {es: 'Navarra', en: 'Navarre'},
       'ES-PV': {es: 'País Vasco', en: 'Basque Country'},
       'ES-RI': {es: 'La Rioja', en: 'La Rioja'},
-      'ES-VC': {es: 'Comunidad Valenciana', en: 'Valencia'},
+      'ES-VC': {es: 'Com. Valenciana', en: 'Valencia'},
       'ES-CE': {es: 'Ceuta', en: 'Ceuta'},
       'ES-ML': {es: 'Melilla', en: 'Melilla'}
     };
@@ -384,10 +368,12 @@ function getCommunityValue(
     // Segunda forma: coincidencia a través del mapeo
     const mappingMatch = Object.keys(communityNameMapping).some(key => {
       const keyNormalized = normalizarTexto(key);
-      const valueNormalized = normalizarTexto(communityNameMapping[key]);
+      // Ajustar para usar la nueva estructura del objeto
+      const valueEs = communityNameMapping[key].es;
+      const valueEsNormalized = normalizarTexto(valueEs);
       
-      return (keyNormalized === normalizedCommunityName && valueNormalized === itemNormalizedName) ||
-             (valueNormalized === normalizedCommunityName && keyNormalized === itemNormalizedName);
+      return (keyNormalized === normalizedCommunityName && valueEsNormalized === itemNormalizedName) ||
+              (valueEsNormalized === normalizedCommunityName && keyNormalized === itemNormalizedName);
     });
     
     // Tercera forma: verificar si el nombre del GeoJSON contiene parte del nombre del CSV o viceversa
@@ -597,7 +583,7 @@ function getCommunityFlagUrl(communityName: string): string {
     'cantabria': 'cantabria',
     'castilla-la mancha': 'castilla-la mancha',
     'castile and león': 'castilla y leon',
-    'castile and leon': 'castilla y leon',
+    'castilla and leon': 'castilla y leon',
     'catalonia': 'cataluña',
     'valencia': 'comunidad valenciana',
     'extremadura': 'extremadura',
@@ -675,11 +661,11 @@ function getCommunityFlagUrl(communityName: string): string {
     // Verificar coincidencia por mapeo
     for (const key in communityNameMapping) {
       const normalizedKey = normalizarTexto(key);
-      const normalizedValue = normalizarTexto(communityNameMapping[key]);
+      const normalizedValueEs = normalizarTexto(communityNameMapping[key].es);
       
       // Si el nombre normalizado coincide con la clave o el valor del mapeo
-      if (normalizedKey === searchName || normalizedValue === searchName) {
-        const targetName = normalizedValue;
+      if (normalizedKey === searchName || normalizedValueEs === searchName) {
+        const targetName = normalizedValueEs;
         
         // Buscar bandera que coincida con el valor del mapeo
         matchingFlag = communityFlags.find(flag => 
@@ -1170,7 +1156,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           return itemNormalizedName === normalizedCommunityName ||
                 Object.keys(communityNameMapping).some(key => 
                   normalizarTexto(key) === normalizedCommunityName && 
-                  normalizarTexto(communityNameMapping[key]) === itemNormalizedName);
+                  normalizarTexto(communityNameMapping[key].es) === itemNormalizedName);
         });
         
         if (communityIndex === -1) return null;
@@ -1216,7 +1202,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             borderRadius: '4px',
             padding: '0', // No aplicamos padding aquí porque lo aplicaremos en las clases internas
             minWidth: '150px',
-            maxWidth: '280px',
+            maxWidth: '320px', // Aumentado de 280px a 320px para más espacio
             border: '1px solid #e2e8f0',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
             fontSize: '14px',
@@ -1254,6 +1240,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             #global-map-tooltip .mr-1 { margin-right: 0.25rem; }
             #global-map-tooltip .mr-2 { margin-right: 0.5rem; }
             #global-map-tooltip .mt-1 { margin-top: 0.25rem; }
+            #global-map-tooltip .mt-3 { margin-top: 0.75rem; }
             #global-map-tooltip .text-xs { font-size: 0.75rem; }
             #global-map-tooltip .text-sm { font-size: 0.875rem; }
             #global-map-tooltip .text-lg { font-size: 1.125rem; }
@@ -1266,6 +1253,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             #global-map-tooltip .w-8 { width: 2rem; }
             #global-map-tooltip .h-6 { height: 1.5rem; }
             #global-map-tooltip .w-36 { width: 9rem; }
+            #global-map-tooltip .w-48 { width: 12rem; }
             #global-map-tooltip .rounded { border-radius: 0.25rem; }
             #global-map-tooltip .rounded-md { border-radius: 0.375rem; }
             #global-map-tooltip .overflow-hidden { overflow: hidden; }
@@ -1345,8 +1333,9 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           .attr('stroke', '#000')
           .attr('stroke-width', 1.5);
         
-        // Obtener datos de la comunidad - Asegurar que obtenemos el nombre en el idioma correcto
-        let communityName = '';
+        // Obtener datos de la comunidad
+        let rawCommunityName = '';
+        
         // Primero intentar obtener el nombre desde el ISO código si está disponible
         if (d.properties?.iso) {
           const code = d.properties.iso.toString().toUpperCase();
@@ -1357,63 +1346,73 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             'ES-AS': {es: 'Asturias', en: 'Asturias'},
             'ES-CB': {es: 'Cantabria', en: 'Cantabria'},
             'ES-CL': {es: 'Castilla y León', en: 'Castile and León'},
-            'ES-CM': {es: 'Castilla-La Mancha', en: 'Castilla-La Mancha'},
+            'ES-CM': {es: 'Castilla-La Mancha', en: 'Castilla–La Mancha'},
             'ES-CN': {es: 'Canarias', en: 'Canary Islands'},
             'ES-CT': {es: 'Cataluña', en: 'Catalonia'},
             'ES-EX': {es: 'Extremadura', en: 'Extremadura'},
             'ES-GA': {es: 'Galicia', en: 'Galicia'},
             'ES-IB': {es: 'Islas Baleares', en: 'Balearic Islands'},
-            'ES-MC': {es: 'Región de Murcia', en: 'Murcia'},
-            'ES-MD': {es: 'Comunidad de Madrid', en: 'Madrid'},
+            'ES-MC': {es: 'Murcia', en: 'Murcia'},
+            'ES-MD': {es: 'Madrid', en: 'Madrid'},
             'ES-NC': {es: 'Navarra', en: 'Navarre'},
             'ES-PV': {es: 'País Vasco', en: 'Basque Country'},
             'ES-RI': {es: 'La Rioja', en: 'La Rioja'},
-            'ES-VC': {es: 'Comunidad Valenciana', en: 'Valencia'},
+            'ES-VC': {es: 'Com. Valenciana', en: 'Valencia'},
             'ES-CE': {es: 'Ceuta', en: 'Ceuta'},
             'ES-ML': {es: 'Melilla', en: 'Melilla'}
           };
           
+          // Si el código ISO existe, usarlo para obtener el nombre estandarizado
           if (code in isoCodeMap) {
-            communityName = language === 'es' ? isoCodeMap[code].es : isoCodeMap[code].en;
+            rawCommunityName = language === 'es' ? isoCodeMap[code].es : isoCodeMap[code].en;
           }
         }
         
         // Si no pudimos obtenerlo por ISO, usar el método normal
-        if (!communityName) {
-          communityName = getCommunityName(d, language);
+        if (!rawCommunityName) {
+          rawCommunityName = getCommunityName(d, language);
+        }
+        
+        // Usamos el mapeo estandarizado para asegurar consistencia con RegionRankingChart
+        let communityName = rawCommunityName;
+        
+        // Buscar en el mapeo de comunidades para usar exactamente el mismo nombre que en RegionRankingChart
+        for (const key in communityNameMapping) {
+          const normalizedKey = normalizarTexto(key);
+          const normalizedRawName = normalizarTexto(rawCommunityName);
           
-          // Forzar traducción adicional si estamos en inglés
-          if (language === 'en') {
-            // Mapa de traducciones para nombres de comunidades
-            const translations: Record<string, string> = {
-              'Andalucía': 'Andalusia',
-              'Aragón': 'Aragon',
-              'Asturias': 'Asturias',
-              'Islas Baleares': 'Balearic Islands',
-              'Baleares': 'Balearic Islands',
-              'Canarias': 'Canary Islands',
-              'Cantabria': 'Cantabria',
-              'Castilla-La Mancha': 'Castilla-La Mancha',
-              'Castilla y León': 'Castile and León',
-              'Cataluña': 'Catalonia',
-              'Comunidad Valenciana': 'Valencia',
-              'Extremadura': 'Extremadura',
-              'Galicia': 'Galicia',
-              'La Rioja': 'La Rioja',
-              'Madrid': 'Madrid',
-              'Comunidad de Madrid': 'Madrid',
-              'Murcia': 'Murcia',
-              'Región de Murcia': 'Murcia',
-              'Navarra': 'Navarre',
-              'País Vasco': 'Basque Country',
-              'Ceuta': 'Ceuta',
-              'Melilla': 'Melilla'
-            };
-            
-            // Buscar si el nombre actual tiene una traducción
-            for (const [es, en] of Object.entries(translations)) {
-              if (communityName === es || normalizarTexto(communityName) === normalizarTexto(es)) {
-                communityName = en;
+          // Paso 1: Buscar coincidencia exacta primero
+          if (normalizedKey === normalizedRawName) {
+            // Usar el nombre estandarizado según el idioma
+            communityName = language === 'es' 
+              ? communityNameMapping[key].es 
+              : communityNameMapping[key].en;
+            console.log(`Coincidencia exacta encontrada para "${rawCommunityName}" → "${communityName}"`);
+            break;
+          }
+        }
+        
+        // Si no se encontró coincidencia exacta, buscar por otras variantes del nombre
+        if (communityName === rawCommunityName) {
+          // Buscar variaciones comunes como Castilla-León vs Castilla y León
+          const problematicNames = {
+            'castilla-leon': 'Castilla y León',
+            'castilla-león': 'Castilla y León',
+            'castille': 'Castilla y León',
+            'castilla leon': 'Castilla y León',
+            'castilla león': 'Castilla y León',
+          };
+          
+          const normalizedRawName = normalizarTexto(rawCommunityName);
+          if (normalizedRawName in problematicNames) {
+            const correctKey = problematicNames[normalizedRawName as keyof typeof problematicNames];
+            // Buscar el nombre correcto en el mapeo
+            for (const key in communityNameMapping) {
+              if (normalizarTexto(key) === normalizarTexto(correctKey)) {
+                communityName = language === 'es' 
+                  ? communityNameMapping[key].es 
+                  : communityNameMapping[key].en;
+                console.log(`Corrección aplicada para "${rawCommunityName}" → "${communityName}"`);
                 break;
               }
             }
@@ -1515,20 +1514,42 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           // Comparativa con España
           if (spainValue !== null && value !== null) {
             const spainDiff = value - spainValue;
-            const spainPercent = (spainDiff / spainValue) * 100;
-            const isSpainPositive = spainDiff > 0;
             
-            tooltipContent += `
-              <!-- vs España -->
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-36">
-                  vs ${language === 'es' ? 'España' : 'Spain'} (${dataDisplayType === 'percent_gdp' ? spainValue.toFixed(2) + '%' : formatNumberWithThousandSeparator(spainValue, 0) + ' mil €'}):
-                </span>
-                <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
-                  ${isSpainPositive ? '+' : ''}${spainPercent.toFixed(1)}%
-                </span>
-              </div>
-            `;
+            if (dataDisplayType === 'percent_gdp') {
+              // Formato para modo porcentaje PIB (como estaba antes)
+              const spainPercent = (spainDiff / spainValue) * 100;
+              const isSpainPositive = spainDiff > 0;
+              
+              tooltipContent += `
+                <!-- vs España -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-48">
+                    vs ${language === 'es' ? 'España' : 'Spain'} (${spainValue.toFixed(2) + '%'}):
+                  </span>
+                  <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
+                    ${isSpainPositive ? '+' : ''}${spainPercent.toFixed(1)}%
+                  </span>
+                </div>
+              `;
+            } else {
+              // Para modo euros, calcular el promedio y cambiar el texto
+              const avgSpainValue = spainValue / 19; // Dividir entre las 19 comunidades autónomas
+              const spainDiffWithAvg = value - avgSpainValue;
+              const spainPercentWithAvg = (spainDiffWithAvg / avgSpainValue) * 100;
+              const isSpainPositive = spainDiffWithAvg > 0;
+              
+              tooltipContent += `
+                <!-- vs Media España -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-48">
+                    vs ${language === 'es' ? 'Media España' : 'Avg Spain'} (${formatNumberWithThousandSeparator(avgSpainValue, 0) + ' mil €'}):
+                  </span>
+                  <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
+                    ${isSpainPositive ? '+' : ''}${spainPercentWithAvg.toFixed(1)}%
+                  </span>
+                </div>
+              `;
+            }
           }
           
           // Comparativa con Canarias
@@ -1540,7 +1561,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             tooltipContent += `
               <!-- vs Canarias -->
               <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-36">
+                <span class="text-gray-600 inline-block w-48">
                   vs ${language === 'es' ? 'Canarias' : 'Canary Islands'} (${dataDisplayType === 'percent_gdp' ? canariasValue.toFixed(2) + '%' : formatNumberWithThousandSeparator(canariasValue, 0) + ' mil €'}):
                 </span>
                 <span class="font-medium ${isCanariasPositive ? 'text-green-600' : 'text-red-600'}">
@@ -1550,37 +1571,72 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
             `;
           }
           
-          // PIB y gasto para contextualizar (solo en modo porcentaje del PIB)
-          if (dataDisplayType === 'percent_gdp') {
-            // Intentar obtener PIB y Gasto de los datos
-            const communityData = data.find((item: AutonomousCommunityData) => 
-              normalizarTexto(item["Comunidad Limpio"]) === normalizarTexto(communityName) &&
-              item["Año"] === selectedYear.toString() &&
-              item["Sector Id"] === `(${selectedSector === 'total' ? '_T' : selectedSector.toUpperCase()})`
+          // PIB y gasto para contextualizar (siempre mostrarlos, no solo en modo porcentaje del PIB)
+          const communityData = data.find((item: AutonomousCommunityData) => 
+            (normalizarTexto(item["Comunidad Limpio"]) === normalizarTexto(communityName) ||
+             normalizarTexto(item["Comunidad en Inglés"]) === normalizarTexto(communityName) ||
+             normalizarTexto(item["Comunidad (Original)"]) === normalizarTexto(communityName)) &&
+            item["Año"] === selectedYear.toString() &&
+            item["Sector Id"] === `(${selectedSector === 'total' ? '_T' : selectedSector.toUpperCase()})`
+          );
+          
+          // Si no se encuentra el dato, intentar con una búsqueda más flexible
+          let gdpValue = 0;
+          let spendingValue = 0;
+          
+          if (communityData) {
+            gdpValue = parseFloat(communityData["PIB (Miles €)"].replace(',', '.'));
+            spendingValue = parseFloat(communityData["Gasto en I+D (Miles €)"].replace(',', '.'));
+          } else {
+            // Búsqueda más flexible - intentar con cualquier sector si no encuentra en el sector específico
+            const anyDataForCommunity = data.find((item: AutonomousCommunityData) =>
+              (normalizarTexto(item["Comunidad Limpio"]) === normalizarTexto(communityName) ||
+               normalizarTexto(item["Comunidad en Inglés"]) === normalizarTexto(communityName) ||
+               normalizarTexto(item["Comunidad (Original)"]) === normalizarTexto(communityName)) &&
+              item["Año"] === selectedYear.toString()
             );
             
-            if (communityData) {
-              const gdpValue = parseFloat(communityData["PIB (Miles €)"].replace(',', '.'));
-              const spendingValue = parseFloat(communityData["Gasto en I+D (Miles €)"].replace(',', '.'));
-              
-              if (!isNaN(gdpValue) && !isNaN(spendingValue)) {
-                tooltipContent += `
-                  <!-- Datos adicionales de contexto -->
-                  <div class="mt-3 pt-3 border-t border-gray-100">
-                    <div class="text-xs text-gray-700">
-                      <div class="flex justify-between items-center mb-1">
-                        <span>PIB:</span>
-                        <span class="font-medium">${formatNumberWithThousandSeparator(gdpValue / 1000000, 2)} ${language === 'es' ? 'mill. €' : 'M€'}</span>
-                      </div>
-                      <div class="flex justify-between items-center">
-                        <span>${language === 'es' ? 'Gasto I+D:' : 'R&D Spend:'}</span>
-                        <span class="font-medium">${formatNumberWithThousandSeparator(spendingValue, 0)} ${language === 'es' ? 'mil €' : 'k€'}</span>
-                      </div>
-                    </div>
-                  </div>
-                `;
+            if (anyDataForCommunity) {
+              gdpValue = parseFloat(anyDataForCommunity["PIB (Miles €)"].replace(',', '.'));
+              spendingValue = parseFloat(anyDataForCommunity["Gasto en I+D (Miles €)"].replace(',', '.'));
+            } else {
+              // Búsqueda adicional usando mapeo de nombres
+              for (const key in communityNameMapping) {
+                if (normalizarTexto(key) === normalizarTexto(communityName) || 
+                    normalizarTexto(communityNameMapping[key].es) === normalizarTexto(communityName)) {
+                  // Buscar por ambos nombres: el original y el mapeado
+                  const mappedData = data.find((item: AutonomousCommunityData) =>
+                    (normalizarTexto(item["Comunidad Limpio"]) === normalizarTexto(key) ||
+                      normalizarTexto(item["Comunidad Limpio"]) === normalizarTexto(communityNameMapping[key].es)) &&
+                    item["Año"] === selectedYear.toString()
+                  );
+                  
+                  if (mappedData) {
+                    gdpValue = parseFloat(mappedData["PIB (Miles €)"].replace(',', '.'));
+                    spendingValue = parseFloat(mappedData["Gasto en I+D (Miles €)"].replace(',', '.'));
+                    break;
+                  }
+                }
               }
             }
+          }
+          
+          if (!isNaN(gdpValue) && !isNaN(spendingValue)) {
+            tooltipContent += `
+              <!-- Datos adicionales de contexto -->
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <div class="text-xs text-gray-700">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="font-medium">PIB:</span>
+                    <span>${formatNumberWithThousandSeparator(gdpValue / 1000000, 2)} ${language === 'es' ? 'mill. €' : 'M€'}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium">${language === 'es' ? 'Gasto I+D:' : 'R&D Spend:'}</span>
+                    <span>${formatNumberWithThousandSeparator(spendingValue, 0)} ${language === 'es' ? 'mil €' : 'k€'}</span>
+                  </div>
+                </div>
+              </div>
+            `;
           }
           
           tooltipContent += `

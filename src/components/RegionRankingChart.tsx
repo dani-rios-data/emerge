@@ -133,6 +133,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
 }) => {
   const chartRef = useRef<Chart<'bar', number[], string>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -143,10 +144,25 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       hideGlobalTooltip();
     };
 
+    // Definir handleScroll fuera del bloque if
+    const handleScroll = () => {
+      hideGlobalTooltip();
+    };
+
     container.addEventListener('mouseleave', handleMouseLeave);
+    
+    // Añadir manejador de eventos de scroll para ocultar el tooltip
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
     
     return () => {
       container.removeEventListener('mouseleave', handleMouseLeave);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
       
       // Limpiar tooltip global al desmontar
       const globalTooltip = document.getElementById('global-chart-tooltip');
@@ -245,13 +261,13 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
         borderRadius: '4px',
         padding: '0', // No aplicamos padding aquí porque lo aplicaremos en las clases internas
         minWidth: '150px',
-        maxWidth: '280px',
+        maxWidth: '320px', // Aumentado de 280px a 320px para más espacio
         border: '1px solid #e2e8f0',
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
         fontSize: '14px',
         lineHeight: '1.5',
         color: '#333',
-        transition: 'opacity 0.15s ease-in-out'
+        transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
       });
       
       document.body.appendChild(tooltipElement);
@@ -260,6 +276,15 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       const styleSheet = document.createElement('style');
       styleSheet.id = 'tooltip-chart-styles';
       styleSheet.textContent = `
+        #global-chart-tooltip {
+          transform-origin: center;
+          transform: scale(0.95);
+          transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+        }
+        #global-chart-tooltip.visible {
+          opacity: 1 !important;
+          transform: scale(1);
+        }
         #global-chart-tooltip .text-green-600 { color: #059669; }
         #global-chart-tooltip .text-red-600 { color: #DC2626; }
         #global-chart-tooltip .bg-blue-50 { background-color: #EFF6FF; }
@@ -296,6 +321,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
         #global-chart-tooltip .w-8 { width: 2rem; }
         #global-chart-tooltip .h-6 { height: 1.5rem; }
         #global-chart-tooltip .w-36 { width: 9rem; }
+        #global-chart-tooltip .w-48 { width: 12rem; }
         #global-chart-tooltip .rounded { border-radius: 0.25rem; }
         #global-chart-tooltip .rounded-md { border-radius: 0.375rem; }
         #global-chart-tooltip .overflow-hidden { overflow: hidden; }
@@ -326,10 +352,21 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     Object.assign(tooltipEl.style, {
       position: 'fixed',
       display: 'block',
-      opacity: '1',
+      opacity: '0',
       zIndex: '999999',
       pointerEvents: 'none',
-      transition: 'opacity 0.15s'
+      backgroundColor: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      borderRadius: '4px',
+      padding: '0', // No aplicamos padding aquí porque lo aplicaremos en las clases internas
+      minWidth: '150px',
+      maxWidth: '320px', // Aumentado de 280px a 320px para más espacio
+      border: '1px solid #e2e8f0',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+      fontSize: '14px',
+      lineHeight: '1.5',
+      color: '#333',
+      transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
     });
     
     const tooltipWidth = tooltipEl.offsetWidth;
@@ -339,37 +376,50 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     const mouseX = event.clientX;
     const mouseY = event.clientY;
     
-    // Calcular posición del tooltip
-    let left = mouseX + 15;
-    let top = mouseY - tooltipHeight / 2;
+    // Posicionar más cerca del elemento - menos offset
+    let left = mouseX + 10; // Reducido de 15px a 10px
+    let top = mouseY - (tooltipHeight / 2);
     
     // Ajustar posición si se sale de la ventana
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
     if (left + tooltipWidth > windowWidth) {
-      left = mouseX - tooltipWidth - 15;
+      left = mouseX - tooltipWidth - 10; // Cambiar a la izquierda del cursor
     }
     
     if (top + tooltipHeight > windowHeight) {
-      top = mouseY - tooltipHeight - 15;
+      top = windowHeight - tooltipHeight - 10;
     }
     
-    if (top < 0) {
-      top = 15;
+    if (top < 10) {
+      top = 10;
     }
     
-    // Establecer posición y visibilidad
-    tooltipEl.style.left = `${left}px`;
-    tooltipEl.style.top = `${top}px`;
+    // Establecer posición y visibilidad con precisión
+    tooltipEl.style.left = `${Math.floor(left)}px`;
+    tooltipEl.style.top = `${Math.floor(top)}px`;
+    
+    // Agregar clase visible tras un pequeño delay para activar la animación
+    setTimeout(() => {
+      tooltipEl.classList.add('visible');
+    }, 10);
   };
 
   // Ocultar el tooltip global
   const hideGlobalTooltip = (): void => {
     const tooltipEl = document.getElementById('global-chart-tooltip');
     if (tooltipEl) {
-      tooltipEl.style.display = 'none';
-      tooltipEl.style.opacity = '0';
+      // Quitar la clase visible primero para la animación
+      tooltipEl.classList.remove('visible');
+      
+      // Después de la transición, ocultar el tooltip
+      setTimeout(() => {
+        if (tooltipEl) {
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.opacity = '0';
+        }
+      }, 150); // Tiempo suficiente para la animación
     }
   };
 
@@ -609,6 +659,61 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
   
   const chartData = getFilteredData();
 
+  // Estilos para el contenedor con scroll
+  const scrollContainerStyle: React.CSSProperties = {
+    height: '400px', // Altura fija para el contenedor
+    overflowY: 'auto', // Permitir scroll vertical
+    border: '1px solid #f0f0f0',
+    borderRadius: '8px',
+    padding: '0 10px',
+    // Estilos para el scrollbar en diferentes navegadores
+    scrollbarWidth: 'thin', // Firefox
+    scrollbarColor: '#d1d5db #f3f4f6', // Firefox
+    // Los siguientes estilos son para Webkit (Chrome, Safari, Edge)
+    // No son estándar pero mejoran la apariencia
+    msOverflowStyle: 'none',
+  } as React.CSSProperties;
+
+  // Agregar estilos específicos para el scrollbar con CSS en useEffect
+  useEffect(() => {
+    // Crear un elemento de estilo
+    const styleElement = document.createElement('style');
+    styleElement.id = 'custom-scrollbar-styles';
+    
+    // Definir estilos para el scrollbar
+    styleElement.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 8px;
+        border: 2px solid #f3f4f6;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #9ca3af;
+      }
+    `;
+    
+    // Agregar al head del documento
+    document.head.appendChild(styleElement);
+    
+    // Limpiar al desmontar
+    return () => {
+      const existingStyle = document.getElementById('custom-scrollbar-styles');
+      if (existingStyle && existingStyle.parentNode) {
+        existingStyle.parentNode.removeChild(existingStyle);
+      }
+    };
+  }, []);
+
+  // Altura dinámica para el gráfico en función del número de comunidades
+  const chartHeight = Math.max(400, chartData.length * 28); // Reducido para que las barras estén más juntas
+
   // Obtener el promedio de España
   const getSpainAverage = (): number | null => {
     // Valores para España por año según gdp_consolidado.csv (basado en "% GDP")
@@ -723,7 +828,9 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
         borderColor: backgroundColors.map(color => color === CHART_PALETTE.CANARIAS ? CHART_PALETTE.CANARIAS : d3.color(palette.MID)?.darker(0.2)?.toString() || palette.MID),
         borderWidth: 1,
         borderRadius: 4,
-        barThickness: 12, // Más delgadas
+        barThickness: 18, // Barras gruesas
+        barPercentage: 0.95, // Aumentado para reducir el espacio entre barras
+        categoryPercentage: 0.97, // Aumentado para reducir el espacio entre categorías
       }]
     };
     
@@ -757,7 +864,12 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
             color: CHART_PALETTE.TEXT,
             font: {
               size: 11
-            }
+            },
+            padding: 5 // Añadir padding para mejorar la visualización
+          },
+          afterFit: (scaleInstance) => {
+            // Asegurar que haya suficiente espacio para las etiquetas
+            scaleInstance.width = Math.max(scaleInstance.width, 120);
           }
         },
         x: {
@@ -770,6 +882,14 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           title: {
             display: false
           }
+        }
+      },
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+          top: 10,
+          bottom: 10
         }
       }
     };
@@ -895,21 +1015,42 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           
           // Comparativa con España
           if (spainValue !== null) {
-            const spainDiff = communityData.value - spainValue;
-            const spainPercent = (spainDiff / spainValue) * 100;
-            const isSpainPositive = spainDiff > 0;
-            
-            tooltipContent += `
-              <!-- vs España -->
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-36">
-                  ${t.vsSpain} (${dataDisplayType === 'percent_gdp' ? spainValue.toFixed(2) + '%' : formatNumber(spainValue, 0) + ' mil €'}):
-                </span>
-                <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
-                  ${isSpainPositive ? '+' : ''}${spainPercent.toFixed(1)}%
-                </span>
-              </div>
-            `;
+            if (dataDisplayType === 'percent_gdp') {
+              // Formato para modo porcentaje PIB
+              const spainDiff = communityData.value - spainValue;
+              const spainPercent = (spainDiff / spainValue) * 100;
+              const isSpainPositive = spainDiff > 0;
+              
+              tooltipContent += `
+                <!-- vs España -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-48">
+                    ${t.vsSpain} (${spainValue.toFixed(2) + '%'}):
+                  </span>
+                  <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
+                    ${isSpainPositive ? '+' : ''}${spainPercent.toFixed(1)}%
+                  </span>
+                </div>
+              `;
+            } else {
+              // Para modo euros, calcular la media y cambiar el texto
+              const avgSpainValue = spainValue / 19; // Dividir entre las 19 comunidades autónomas
+              const spainDiffWithAvg = communityData.value - avgSpainValue;
+              const spainPercentWithAvg = (spainDiffWithAvg / avgSpainValue) * 100;
+              const isSpainPositive = spainDiffWithAvg > 0;
+              
+              tooltipContent += `
+                <!-- vs Media España -->
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-48">
+                    ${language === 'es' ? 'vs Media España' : 'vs Avg Spain'} (${formatNumber(avgSpainValue, 0) + ' mil €'}):
+                  </span>
+                  <span class="font-medium ${isSpainPositive ? 'text-green-600' : 'text-red-600'}">
+                    ${isSpainPositive ? '+' : ''}${spainPercentWithAvg.toFixed(1)}%
+                  </span>
+                </div>
+              `;
+            }
           }
           
           // Comparativa con Canarias
@@ -921,7 +1062,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
             tooltipContent += `
               <!-- vs Canarias -->
               <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-36">
+                <span class="text-gray-600 inline-block w-48">
                   ${t.vsCanarias} (${dataDisplayType === 'percent_gdp' ? canariasValue.toFixed(2) + '%' : formatNumber(canariasValue, 0) + ' mil €'}):
                 </span>
                 <span class="font-medium ${isCanariasPositive ? 'text-green-600' : 'text-red-600'}">
@@ -931,29 +1072,26 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
             `;
           }
           
-          // PIB y gasto para contextualizar (solo en modo porcentaje del PIB)
-          if (dataDisplayType === 'percent_gdp') {
-            // Usar datos de la comunidad
-            const gdpValue = communityData.gdp;
-            const spendingValue = communityData.spending;
-            
-            if (gdpValue && spendingValue) {
-              tooltipContent += `
-                <!-- Datos adicionales de contexto -->
-                <div class="mt-3 pt-3 border-t border-gray-100">
-                  <div class="text-xs text-gray-700">
-                    <div class="flex justify-between items-center mb-1">
-                      <span>PIB:</span>
-                      <span class="font-medium">${formatNumber(gdpValue / 1000000, 2)} ${language === 'es' ? 'mill. €' : 'M€'}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span>${language === 'es' ? 'Gasto I+D:' : 'R&D Spend:'}</span>
-                      <span class="font-medium">${formatNumber(spendingValue, 0)} ${language === 'es' ? 'mil €' : 'k€'}</span>
-                    </div>
+          // PIB y gasto para contextualizar (siempre mostrarlos, no solo en modo porcentaje del PIB)
+          const gdpValue = communityData.gdp;
+          const spendingValue = communityData.spending;
+          
+          if (gdpValue && spendingValue) {
+            tooltipContent += `
+              <!-- Datos adicionales de contexto -->
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <div class="text-xs text-gray-700">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="font-medium">PIB:</span>
+                    <span>${formatNumber(gdpValue / 1000000, 2)} ${language === 'es' ? 'mill. €' : 'M€'}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium">${language === 'es' ? 'Gasto I+D:' : 'R&D Spend:'}</span>
+                    <span>${formatNumber(spendingValue, 0)} ${language === 'es' ? 'mil €' : 'k€'}</span>
                   </div>
                 </div>
-              `;
-            }
+              </div>
+            `;
           }
           
           tooltipContent += `
@@ -964,6 +1102,8 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           
           // Mostrar tooltip global con el contenido generado
           const nativeEvent = event.native as MouseEvent;
+          
+          // Ya no necesitamos ajustar el clientY, ya que clientY ya está en coordenadas de ventana
           positionGlobalTooltip(nativeEvent, tooltipContent);
         }
       }
@@ -1031,12 +1171,20 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       <div className="mb-2 text-center">
         <h3 className="text-base font-semibold text-gray-800 text-center">{getChartTitle()}</h3>
       </div>
-      <div className="relative h-[calc(100%-2rem)] w-full">
-        <Bar 
-          ref={chartRef}
-          data={chartConfig.data}
-          options={chartConfig.options}
-        />
+      
+      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
+        <div style={{ height: `${chartHeight}px`, width: '100%' }}>
+          <Bar 
+            ref={chartRef}
+            data={chartConfig.data}
+            options={chartConfig.options}
+          />
+        </div>
+      </div>
+      
+      {/* Etiqueta del eje X centrada */}
+      <div className="text-center mt-2 mb-2 text-sm font-medium text-gray-700">
+        {t.axisLabel}
       </div>
     </div>
   );
