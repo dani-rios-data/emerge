@@ -258,17 +258,45 @@ function getCommunityName(feature: GeoJsonFeature, language: 'es' | 'en'): strin
     }
   }
   
-  // Intentar obtener el nombre de la comunidad de diferentes propiedades posibles
-  if (language === 'es') {
-    return (
-      props.name_es ||
-      props.nameEsp ||
-      props.nombre ||
-      props.name ||
-      props.ccaa ||
-      'Desconocido'
-    ) as string;
-  } else {
+  // Si el idioma es inglés, intentar obtener el nombre en inglés
+  if (language === 'en') {
+    // Mapeo de nombres en español a inglés para las comunidades autónomas
+    const spanishToEnglish: Record<string, string> = {
+      'Andalucía': 'Andalusia',
+      'Aragón': 'Aragon',
+      'Principado de Asturias': 'Asturias',
+      'Asturias': 'Asturias',
+      'Islas Baleares': 'Balearic Islands',
+      'Baleares': 'Balearic Islands',
+      'Canarias': 'Canary Islands',
+      'Cantabria': 'Cantabria',
+      'Castilla-La Mancha': 'Castilla-La Mancha',
+      'Castilla y León': 'Castile and León',
+      'Cataluña': 'Catalonia',
+      'Comunidad Valenciana': 'Valencia',
+      'Valencia': 'Valencia',
+      'Extremadura': 'Extremadura',
+      'Galicia': 'Galicia',
+      'La Rioja': 'La Rioja',
+      'Comunidad de Madrid': 'Madrid',
+      'Madrid': 'Madrid',
+      'Región de Murcia': 'Murcia',
+      'Murcia': 'Murcia',
+      'Navarra': 'Navarre',
+      'País Vasco': 'Basque Country',
+      'Ceuta': 'Ceuta',
+      'Melilla': 'Melilla'
+    };
+    
+    // Intentar obtener el nombre en inglés primero
+    const nameEs = props.name_es || props.nameEsp || props.nombre || props.name || props.ccaa || '';
+    
+    // Si tenemos un nombre en español, traducirlo
+    if (nameEs && nameEs in spanishToEnglish) {
+      return spanishToEnglish[nameEs];
+    }
+    
+    // Intentar obtener directamente el nombre en inglés de las propiedades
     return (
       props.name_en ||
       props.nameEng ||
@@ -277,6 +305,16 @@ function getCommunityName(feature: GeoJsonFeature, language: 'es' | 'en'): strin
       'Unknown'
     ) as string;
   }
+  
+  // Para español, usar el nombre original
+  return (
+    props.name_es ||
+    props.nameEsp ||
+    props.nombre ||
+    props.name ||
+    props.ccaa ||
+    'Desconocido'
+  ) as string;
 }
 
 // Función para obtener el código de la comunidad
@@ -546,6 +584,39 @@ function getCommunityFlagUrl(communityName: string): string {
   // Normalizar el nombre de la comunidad
   const normalizedName = normalizarTexto(communityName);
   
+  // Si estamos en inglés, primero traducir el nombre a español para buscar la bandera
+  let searchName = normalizedName;
+  
+  // Mapa de traducciones inglés a español
+  const translationsToSpanish: Record<string, string> = {
+    'andalusia': 'andalucia',
+    'aragon': 'aragon',
+    'asturias': 'asturias',
+    'balearic islands': 'islas baleares',
+    'canary islands': 'canarias',
+    'cantabria': 'cantabria',
+    'castilla-la mancha': 'castilla-la mancha',
+    'castile and león': 'castilla y leon',
+    'castile and leon': 'castilla y leon',
+    'catalonia': 'cataluña',
+    'valencia': 'comunidad valenciana',
+    'extremadura': 'extremadura',
+    'galicia': 'galicia',
+    'la rioja': 'la rioja',
+    'madrid': 'madrid',
+    'murcia': 'murcia',
+    'navarre': 'navarra',
+    'basque country': 'pais vasco',
+    'ceuta': 'ceuta',
+    'melilla': 'melilla'
+  };
+  
+  // Si el nombre normalizado está en inglés, traducirlo a español
+  if (translationsToSpanish[normalizedName]) {
+    searchName = translationsToSpanish[normalizedName];
+    console.log(`Nombre traducido de "${normalizedName}" a "${searchName}" para buscar bandera`);
+  }
+  
   // Crear un mapa de conversión específico para nombres problemáticos
   const specificNameMapping: Record<string, string> = {
     'extremadura': 'extremadura',
@@ -570,7 +641,7 @@ function getCommunityFlagUrl(communityName: string): string {
   };
 
   // Si el nombre normalizado está en el mapa de conversión específico, usar ese nombre
-  const mappedName = specificNameMapping[normalizedName] || normalizedName;
+  const mappedName = specificNameMapping[searchName] || searchName;
   
   console.log("Buscando bandera para: ", communityName, "normalizado a:", normalizedName, "mapeado a:", mappedName);
   
@@ -591,7 +662,8 @@ function getCommunityFlagUrl(communityName: string): string {
   }
   
   // Para Castilla-La Mancha, buscar específicamente
-  if (normalizedName.includes('castilla') && normalizedName.includes('mancha') && !matchingFlag) {
+  if ((normalizedName.includes('castilla') && normalizedName.includes('mancha')) || 
+      (searchName.includes('castilla') && searchName.includes('mancha')) && !matchingFlag) {
     matchingFlag = communityFlags.find(flag => 
       normalizarTexto(flag.community).includes('castilla') && 
       normalizarTexto(flag.community).includes('mancha')
@@ -606,7 +678,7 @@ function getCommunityFlagUrl(communityName: string): string {
       const normalizedValue = normalizarTexto(communityNameMapping[key]);
       
       // Si el nombre normalizado coincide con la clave o el valor del mapeo
-      if (normalizedKey === normalizedName || normalizedValue === normalizedName) {
+      if (normalizedKey === searchName || normalizedValue === searchName) {
         const targetName = normalizedValue;
         
         // Buscar bandera que coincida con el valor del mapeo
@@ -628,7 +700,8 @@ function getCommunityFlagUrl(communityName: string): string {
     const code = codeMatch ? codeMatch[1].toUpperCase() : '';
     
     // Buscar específicamente por código CLM para Castilla-La Mancha
-    if (normalizedName.includes('castilla') && normalizedName.includes('mancha')) {
+    if (normalizedName.includes('castilla') && normalizedName.includes('mancha') ||
+        searchName.includes('castilla') && searchName.includes('mancha')) {
       matchingFlag = communityFlags.find(flag => flag.code === 'CLM');
     } else if (code) {
       matchingFlag = communityFlags.find(flag => 
@@ -644,9 +717,42 @@ function getCommunityFlagUrl(communityName: string): string {
     console.log("No se encontró bandera para:", communityName);
     
     // Fallback específico para Castilla-La Mancha (directo)
-    if (normalizedName.includes('castilla') && normalizedName.includes('mancha')) {
+    if (normalizedName.includes('castilla') && normalizedName.includes('mancha') ||
+        searchName.includes('castilla') && searchName.includes('mancha')) {
       console.log("Usando URL directa para Castilla-La Mancha");
       return "https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg";
+    }
+    
+    // Intentar obtener la bandera a través de un mapeo de nombres en inglés a códigos de regiones
+    const englishToCodes: Record<string, string> = {
+      'andalusia': 'AND',
+      'aragon': 'ARA',
+      'asturias': 'AST',
+      'balearic islands': 'BAL',
+      'canary islands': 'CAN',
+      'cantabria': 'CAN',
+      'castilla-la mancha': 'CLM',
+      'castile and león': 'CYL',
+      'catalonia': 'CAT',
+      'valencia': 'VAL',
+      'extremadura': 'EXT',
+      'galicia': 'GAL',
+      'la rioja': 'RIO',
+      'madrid': 'MAD',
+      'murcia': 'MUR',
+      'navarre': 'NAV',
+      'basque country': 'PVA',
+      'ceuta': 'CEU',
+      'melilla': 'MEL'
+    };
+    
+    const regionCode = englishToCodes[normalizedName];
+    if (regionCode) {
+      matchingFlag = communityFlags.find(flag => flag.code === regionCode);
+      if (matchingFlag) {
+        console.log("Bandera encontrada por código de región:", matchingFlag.flag);
+        return matchingFlag.flag;
+      }
     }
     
     return '';
@@ -941,6 +1047,28 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
     loadGeoJson();
   }, []);
   
+  // Efecto que se ejecuta cuando cambia el idioma para forzar actualización
+  useEffect(() => {
+    // Limpiar el SVG y volver a renderizar cuando cambia el idioma
+    if (svgRef.current && geoJson) {
+      console.log("Idioma cambiado a:", language, "- Forzando redibujado del mapa");
+      
+      // Limpiar SVG
+      const svg = d3.select(svgRef.current);
+      svg.selectAll('*').remove();
+      
+      // Forzar un redibujado completo del mapa - Esto asegura que los nombres se actualicen
+      // El useEffect principal del mapa se ejecutará automáticamente al renderizarse nuevamente
+      const containerWidth = mapRef.current?.clientWidth || 600;
+      const containerHeight = mapRef.current?.clientHeight || 400;
+      
+      // Establecer dimensiones del SVG
+      svg
+        .attr('width', containerWidth)
+        .attr('height', containerHeight);
+    }
+  }, [language, geoJson]);
+  
   // Efecto para renderizar el mapa
   useEffect(() => {
     if (!geoJson || !svgRef.current) return;
@@ -1217,8 +1345,81 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           .attr('stroke', '#000')
           .attr('stroke-width', 1.5);
         
-        // Obtener datos de la comunidad
-        const communityName = getCommunityName(d, language);
+        // Obtener datos de la comunidad - Asegurar que obtenemos el nombre en el idioma correcto
+        let communityName = '';
+        // Primero intentar obtener el nombre desde el ISO código si está disponible
+        if (d.properties?.iso) {
+          const code = d.properties.iso.toString().toUpperCase();
+          // Mapeo de códigos ISO a nombres completos
+          const isoCodeMap: Record<string, {es: string, en: string}> = {
+            'ES-AN': {es: 'Andalucía', en: 'Andalusia'},
+            'ES-AR': {es: 'Aragón', en: 'Aragon'},
+            'ES-AS': {es: 'Asturias', en: 'Asturias'},
+            'ES-CB': {es: 'Cantabria', en: 'Cantabria'},
+            'ES-CL': {es: 'Castilla y León', en: 'Castile and León'},
+            'ES-CM': {es: 'Castilla-La Mancha', en: 'Castilla-La Mancha'},
+            'ES-CN': {es: 'Canarias', en: 'Canary Islands'},
+            'ES-CT': {es: 'Cataluña', en: 'Catalonia'},
+            'ES-EX': {es: 'Extremadura', en: 'Extremadura'},
+            'ES-GA': {es: 'Galicia', en: 'Galicia'},
+            'ES-IB': {es: 'Islas Baleares', en: 'Balearic Islands'},
+            'ES-MC': {es: 'Región de Murcia', en: 'Murcia'},
+            'ES-MD': {es: 'Comunidad de Madrid', en: 'Madrid'},
+            'ES-NC': {es: 'Navarra', en: 'Navarre'},
+            'ES-PV': {es: 'País Vasco', en: 'Basque Country'},
+            'ES-RI': {es: 'La Rioja', en: 'La Rioja'},
+            'ES-VC': {es: 'Comunidad Valenciana', en: 'Valencia'},
+            'ES-CE': {es: 'Ceuta', en: 'Ceuta'},
+            'ES-ML': {es: 'Melilla', en: 'Melilla'}
+          };
+          
+          if (code in isoCodeMap) {
+            communityName = language === 'es' ? isoCodeMap[code].es : isoCodeMap[code].en;
+          }
+        }
+        
+        // Si no pudimos obtenerlo por ISO, usar el método normal
+        if (!communityName) {
+          communityName = getCommunityName(d, language);
+          
+          // Forzar traducción adicional si estamos en inglés
+          if (language === 'en') {
+            // Mapa de traducciones para nombres de comunidades
+            const translations: Record<string, string> = {
+              'Andalucía': 'Andalusia',
+              'Aragón': 'Aragon',
+              'Asturias': 'Asturias',
+              'Islas Baleares': 'Balearic Islands',
+              'Baleares': 'Balearic Islands',
+              'Canarias': 'Canary Islands',
+              'Cantabria': 'Cantabria',
+              'Castilla-La Mancha': 'Castilla-La Mancha',
+              'Castilla y León': 'Castile and León',
+              'Cataluña': 'Catalonia',
+              'Comunidad Valenciana': 'Valencia',
+              'Extremadura': 'Extremadura',
+              'Galicia': 'Galicia',
+              'La Rioja': 'La Rioja',
+              'Madrid': 'Madrid',
+              'Comunidad de Madrid': 'Madrid',
+              'Murcia': 'Murcia',
+              'Región de Murcia': 'Murcia',
+              'Navarra': 'Navarre',
+              'País Vasco': 'Basque Country',
+              'Ceuta': 'Ceuta',
+              'Melilla': 'Melilla'
+            };
+            
+            // Buscar si el nombre actual tiene una traducción
+            for (const [es, en] of Object.entries(translations)) {
+              if (communityName === es || normalizarTexto(communityName) === normalizarTexto(es)) {
+                communityName = en;
+                break;
+              }
+            }
+          }
+        }
+        
         const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language, dataDisplayType);
         const rank = getCommunityRank(d);
         
@@ -1538,6 +1739,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           .attr('font-size', '8px') 
           .attr('font-weight', 'bold')
           .attr('fill', '#0077b6')
+          .attr('class', 'canarias-label')
           .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
       }
     };
@@ -1554,8 +1756,38 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
     };
   }, [geoJson, data, selectedYear, selectedSector, language, dataDisplayType, onClick]);
   
+  // Efecto específico para manejar cambios de idioma
+  useEffect(() => {
+    if (geoJson && svgRef.current) {
+      console.log(`Idioma cambiado a: ${language} - Actualizando mapa completo`);
+      
+      // Forzar actualización de IDs de comunidades y etiquetas
+      const svg = d3.select(svgRef.current);
+      
+      // Actualizar IDs y nombres de comunidades
+      svg.selectAll<SVGPathElement, GeoJsonFeature>('.community').each(function(d) {
+        const path = d3.select(this);
+        const name = getCommunityName(d, language);
+        
+        // Actualizar ID
+        path.attr('id', `community-${normalizarTexto(name)}`);
+        
+        // Si tiene etiqueta asociada, actualizarla
+        const labelId = path.attr('id') + '-label';
+        const label = svg.select(`#${labelId}`);
+        if (!label.empty()) {
+          label.text(name);
+        }
+      });
+      
+      // Actualizar la etiqueta de Canarias
+      svg.select('.canarias-label')
+        .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
+    }
+  }, [language, geoJson]);
+  
   return (
-    <div className="relative w-full h-full" ref={mapRef}>
+    <div className="relative w-full h-full" ref={mapRef} key={`map-${language}-${selectedYear}-${selectedSector}`}>
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center">
@@ -1581,4 +1813,9 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
   );
 };
 
-export default SpanishRegionsMap; 
+// Componente envoltorio para forzar recarga cuando cambia el idioma
+const ForceUpdateMap: React.FC<SpanishRegionsMapProps> = (props) => {
+  return <SpanishRegionsMap key={`language-${props.language}`} {...props} />;
+};
+
+export default ForceUpdateMap; 

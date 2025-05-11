@@ -377,6 +377,39 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     // Normalizar el nombre de la comunidad
     const normalizedName = normalizeText(communityName);
     
+    // Si estamos en inglés, primero traducir el nombre a español para buscar la bandera
+    let searchName = normalizedName;
+    
+    // Mapa de traducciones inglés a español
+    const translationsToSpanish: Record<string, string> = {
+      'andalusia': 'andalucia',
+      'aragon': 'aragon',
+      'asturias': 'asturias',
+      'balearic islands': 'islas baleares',
+      'canary islands': 'canarias',
+      'cantabria': 'cantabria',
+      'castilla-la mancha': 'castilla-la mancha',
+      'castile and león': 'castilla y leon',
+      'castile and leon': 'castilla y leon',
+      'catalonia': 'cataluña',
+      'valencia': 'comunidad valenciana',
+      'extremadura': 'extremadura',
+      'galicia': 'galicia',
+      'la rioja': 'la rioja',
+      'madrid': 'madrid',
+      'murcia': 'murcia',
+      'navarre': 'navarra',
+      'basque country': 'pais vasco',
+      'ceuta': 'ceuta',
+      'melilla': 'melilla'
+    };
+    
+    // Si el nombre normalizado está en inglés, traducirlo a español
+    if (translationsToSpanish[normalizedName]) {
+      searchName = translationsToSpanish[normalizedName];
+      console.log(`Nombre traducido de "${normalizedName}" a "${searchName}" para buscar bandera`);
+    }
+    
     // Crear un mapa de conversión específico para nombres problemáticos
     const specificNameMapping: Record<string, string> = {
       'extremadura': 'extremadura',
@@ -398,7 +431,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     };
 
     // Si el nombre normalizado está en el mapa de conversión específico, usar ese nombre
-    const mappedName = specificNameMapping[normalizedName] || normalizedName;
+    const mappedName = specificNameMapping[searchName] || searchName;
     
     console.log("Ranking - Buscando bandera para: ", communityName, "normalizado a:", normalizedName, "mapeado a:", mappedName);
     
@@ -423,11 +456,14 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       // Verificar coincidencia por mapeo
       for (const key in communityNameMapping) {
         const normalizedKey = normalizeText(key);
-        const normalizedValue = normalizeText(communityNameMapping[key][language]);
+        const normalizedValueEs = normalizeText(communityNameMapping[key].es);
+        const normalizedValueEn = normalizeText(communityNameMapping[key].en);
         
-        // Si el nombre normalizado coincide con la clave o el valor del mapeo
-        if (normalizedKey === mappedName || normalizedValue === mappedName) {
-          const targetName = normalizedValue;
+        // Si el nombre normalizado coincide con la clave o los valores del mapeo
+        if (normalizedKey === searchName || 
+            normalizedValueEs === searchName || 
+            normalizedValueEn === searchName) {
+          const targetName = normalizedValueEs;
           
           // Buscar bandera que coincida con el valor del mapeo
           matchingFlag = communityFlags.find(flag => 
@@ -441,7 +477,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       }
     }
     
-    // Si no se ha encontrado bandera, hacer una búsqueda más relajada por código
+    // Si aún no se ha encontrado bandera, hacer una búsqueda más relajada por código
     if (!matchingFlag) {
       // Extraer posible código de región de la comunidad (si existe en el formato "ES-XX")
       const codeMatch = communityName.match(/ES-(\w{2})/i);
@@ -459,6 +495,39 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
       return matchingFlag.flag;
     } else {
       console.log("Ranking - No se encontró bandera para:", communityName);
+      
+      // Intentar obtener la bandera a través de un mapeo de nombres en inglés a códigos de regiones
+      const englishToCodes: Record<string, string> = {
+        'andalusia': 'AND',
+        'aragon': 'ARA',
+        'asturias': 'AST',
+        'balearic islands': 'BAL',
+        'canary islands': 'CAN',
+        'cantabria': 'CBR', // Ajustado para evitar conflicto con Canarias
+        'castilla-la mancha': 'CLM',
+        'castile and león': 'CYL',
+        'catalonia': 'CAT',
+        'valencia': 'VAL',
+        'extremadura': 'EXT',
+        'galicia': 'GAL',
+        'la rioja': 'RIO',
+        'madrid': 'MAD',
+        'murcia': 'MUR',
+        'navarre': 'NAV',
+        'basque country': 'PVA',
+        'ceuta': 'CEU',
+        'melilla': 'MEL'
+      };
+      
+      const regionCode = englishToCodes[normalizedName];
+      if (regionCode) {
+        matchingFlag = communityFlags.find(flag => flag.code === regionCode);
+        if (matchingFlag) {
+          console.log("Ranking - Bandera encontrada por código de región:", matchingFlag.flag);
+          return matchingFlag.flag;
+        }
+      }
+      
       return '';
     }
   };
@@ -471,7 +540,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     }).format(value);
   };
 
-  // Procesar y filtrar datos para el año y sector seleccionado
+  // Procesamos y filtramos datos para el año y sector seleccionado
   const getFilteredData = () => {
     // Filtrar datos por año y sector
     const filteredData = data.filter(item => 
