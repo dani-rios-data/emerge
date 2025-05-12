@@ -495,9 +495,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 euComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${language === 'es' ? 
-                      `vs Media UE (${euValue.toFixed(2)}%):` : 
-                      `vs Avg EU (${euValue.toFixed(2)}%):`}</span>
+                    <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                      `vs Unión Europea (${euValue.toFixed(2)}%):` : 
+                      `vs European Union (${euValue.toFixed(2)}%):`}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                   </div>
                 `;
@@ -516,7 +516,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 euComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(euLocale, {maximumFractionDigits: 0})} M€</span>
                   </div>
                 `;
@@ -524,7 +524,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
             } else if (euValue !== null && euValue === 0) {
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Media UE:' : 'vs Avg EU:'}</span>
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    (dataDisplayType === 'percent_gdp' ? 'vs Unión Europea:' : 'vs Media UE:') : 
+                    (dataDisplayType === 'percent_gdp' ? 'vs European Union:' : 'vs Avg EU:')}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -552,7 +554,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 spainComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                   </div>
                 `;
@@ -571,7 +573,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 spainComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(spainLocale, {maximumFractionDigits: 0})} M€</span>
                   </div>
                 `;
@@ -580,7 +582,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const noDataText = language === 'es' ? 'vs España:' : 'vs Spain:';
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${noDataText}</span>
+                  <span class="text-gray-600 inline-block w-44">${noDataText}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -608,7 +610,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 canariasComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                   </div>
                 `;
@@ -627,7 +629,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                 
                 canariasComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : '-'}${Math.abs(difference).toLocaleString(canariasLocale, {maximumFractionDigits: 0})} M€</span>
                   </div>
                 `;
@@ -636,7 +638,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               const noDataText = language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:';
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${noDataText}</span>
+                  <span class="text-gray-600 inline-block w-44">${noDataText}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1223,7 +1225,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
           position: 'fixed',
           opacity: 0,
           transition: 'opacity 0.1s ease-in-out',
-          maxWidth: '300px'
+          maxWidth: '350px'
         }}
       >
         <div className="tooltip-content"></div>

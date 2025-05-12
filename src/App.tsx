@@ -27,7 +27,8 @@ const App: React.FC = () => {
       overviewDescription: "Resumen general de la actividad de I+D en Canarias, principales indicadores y tendencias.",
       investmentDescription: "Inversión total en I+D en Canarias, desglosada por sectores público y privado.",
       researchersDescription: "Número de investigadores activos en Canarias, distribución por áreas y centros de investigación.",
-      sources: "Fuentes de Datos"
+      sources: "Fuentes de Datos",
+      footerText: "Desarrollado por EMERGE - Asociación Canaria de Startups"
     },
     en: {
       title: "R&D Observatory of the Canary Islands",
@@ -40,7 +41,8 @@ const App: React.FC = () => {
       overviewDescription: "General summary of R&D activity in the Canary Islands, main indicators and trends.",
       investmentDescription: "Total R&D investment in the Canary Islands, broken down by public and private sectors.",
       researchersDescription: "Number of active researchers in the Canary Islands, distribution by areas and research centers.",
-      sources: "Data Sources"
+      sources: "Data Sources",
+      footerText: "Developed by EMERGE - Canary Islands Startup Association"
     }
   };
 
@@ -52,7 +54,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       {/* Contenedor para elementos fijos */}
       <div className="fixed top-0 left-0 right-0 z-30">
         {/* Header con logo integrado */}
@@ -194,7 +196,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Content - con margen superior para evitar que quede debajo de los elementos fijos */}
-      <div className="pt-32 max-w-7xl mx-auto px-6 pb-6">
+      <div className="pt-32 max-w-7xl mx-auto px-6 pb-6 flex-grow">
         {activeTab === 'overview' && (
           <div className="bg-white rounded shadow-md p-6 border border-gray-100">
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('overview')}</h2>
@@ -240,6 +242,13 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="w-full bg-white border-t border-gray-200 py-3 shadow-inner mt-auto">
+        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
+          {language === 'es' ? 'Desarrollado por EMERGE - Asociación Canaria de Startups' : 'Developed by EMERGE - Canary Islands Startup Association'}
+        </div>
+      </footer>
     </div>
   );
 };

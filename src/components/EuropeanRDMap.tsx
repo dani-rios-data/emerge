@@ -1248,9 +1248,9 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                   
                   euComparisonHtml = `
                     <div class="flex justify-between items-center text-xs">
-                      <span class="text-gray-600 inline-block w-36">${language === 'es' ? 
-                        `vs Media UE (${euValue.toFixed(2)}%):` : 
-                        `vs Avg EU (${euValue.toFixed(2)}%):`}</span>
+                      <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                        `vs Unión Europea (${euValue.toFixed(2)}%):` : 
+                        `vs European Union (${euValue.toFixed(2)}%):`}</span>
                       <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                     </div>
                   `;
@@ -1267,7 +1267,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                   
                   euComparisonHtml = `
                     <div class="flex justify-between items-center text-xs">
-                      <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                      <span class="text-gray-600 inline-block w-44">${labelText}</span>
                       <span class="font-medium ${color}">${isPositive ? '+' : '-'}${formatNumberWithThousandSeparator(Math.abs(difference), 0)} M€</span>
                     </div>
                   `;
@@ -1275,7 +1275,9 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
             } else if (!isEU) {
               euComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Media UE:' : 'vs Avg EU:'}</span>
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    dataDisplayType === 'percent_gdp' ? 'vs Unión Europea:' : 'vs Media UE:' : 
+                    dataDisplayType === 'percent_gdp' ? 'vs European Union:' : 'vs Avg EU:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1293,7 +1295,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                 
                 spainComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${language === 'es' ? 
+                    <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
                       `vs España (${spainValue.toFixed(2)}%):` : 
                       `vs Spain (${spainValue.toFixed(2)}%):`}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
@@ -1313,7 +1315,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                 
                 spainComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : '-'}${formatNumberWithThousandSeparator(Math.abs(difference), 0)} M€</span>
                   </div>
                 `;
@@ -1321,7 +1323,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
             } else if (!isSpain) {
               spainComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 'vs España:' : 'vs Spain:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1345,7 +1347,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                 
                 canariasComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : ''}${formattedDiff}%</span>
                   </div>
                 `;
@@ -1363,7 +1365,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                 
                 canariasComparisonHtml = `
                   <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-36">${labelText}</span>
+                    <span class="text-gray-600 inline-block w-44">${labelText}</span>
                     <span class="font-medium ${color}">${isPositive ? '+' : '-'}${formatNumberWithThousandSeparator(Math.abs(difference), 0)} M€</span>
                   </div>
                 `;
@@ -1371,7 +1373,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
             } else if (!isCanarias) {
               canariasComparisonHtml = `
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-36">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}</span>
                   <span class="font-medium text-gray-400">--</span>
                 </div>
               `;
@@ -1656,7 +1658,7 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
           position: 'fixed',
           opacity: 0,
           transition: 'opacity 0.1s ease-in-out',
-          maxWidth: '300px'
+          maxWidth: '350px'
         }}
       >
       </div>
