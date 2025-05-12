@@ -114,6 +114,7 @@ interface CommunityOption {
   name: string;
   code: string;
   flag: string;
+  originalName?: string;
 }
 
 interface FlagProps {
@@ -218,7 +219,7 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
   const [regionsData, setRegionsData] = useState<RegionData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityOption>({
-    name: 'Madrid',
+    name: language === 'es' ? 'Madrid' : 'Madrid',
     code: 'MAD',
     flag: autonomous_communities_flags.find(f => f.code === 'MAD')?.flag || ''
   });
@@ -351,10 +352,14 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
                     // Buscar el código y la bandera
                     let code = '';
                     let flagUrl = '';
+                    let displayName = communityName;
                     
                     // Buscar en el mapeo de comunidades
                     for (const [originalName, mappedNames] of Object.entries(communityNameMapping)) {
                       if (normalizeText(originalName) === normalizeText(communityName)) {
+                        // Usar el nombre traducido según el idioma
+                        displayName = language === 'es' ? mappedNames.es : mappedNames.en;
+                        
                         // Usar el nombre normalizado para buscar en autonomous_communities_flags
                         const communityFlag = autonomous_communities_flags.find(flag => 
                           normalizeText(flag.community).includes(normalizeText(mappedNames.es)) ||
@@ -384,7 +389,8 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
                     
                     // Agregar a la lista de comunidades disponibles
                     communitiesData.push({
-                      name: communityName,
+                      name: displayName,
+                      originalName: communityName, // Guardar nombre original para búsqueda de datos
                       code: code,
                       flag: flagUrl
                     });
@@ -536,15 +542,22 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
     }
     
     // Función mejorada para encontrar datos de una comunidad
-    const findCommunityData = (communityCode: string, communityName?: string) => {
+    const findCommunityData = (communityCode: string, communityName?: string, originalName?: string) => {
       // Intentar diferentes estrategias para encontrar los datos de la comunidad
+      // 1. Si tenemos nombre original, usarlo primero
+      if (originalName) {
+        const communityData = ccaaData.find(row => 
+          row['Año'] === year &&
+          (row['Sector Id'] === `(${sector.toUpperCase()})` || 
+          (sector === 'total' && row['Sector Id'] === "(_T)")) &&
+          normalizeText(row['Comunidad Limpio']) === normalizeText(originalName)
+        );
+        
+        if (communityData) return communityData;
+      }
 
-      // 1. Buscar por código de comunidad
-      const communityFlag = autonomous_communities_flags.find(flag => flag.code === communityCode);
-      if (!communityFlag && !communityName) return null;
-      
       // 2. Usar el nombre proporcionado o obtenerlo del código
-      const searchName = communityName || communityFlag?.community || '';
+      const searchName = communityName || communityCode;
       
       // 3. Buscar en los datos por nombre normalizado - CORREGIR CONDICIÓN LÓGICA (problema encontrado)
       let communityData = ccaaData.find(row => 
@@ -607,7 +620,11 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
     };
     
     // Datos para la comunidad seleccionada
-    const selectedCommunityData = findCommunityData(selectedCommunity.code, selectedCommunity.name);
+    const selectedCommunityData = findCommunityData(
+      selectedCommunity.code, 
+      selectedCommunity.name,
+      selectedCommunity.originalName
+    );
     
     // Datos para Canarias
     const canaryData = ccaaData.filter(row => 
