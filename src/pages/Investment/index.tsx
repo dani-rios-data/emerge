@@ -8,6 +8,7 @@ import SpanishRegionsMap from '../../components/SpanishRegionsMap';
 import RegionRankingChart from '../../components/RegionRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
+import CommunityDistribution from '../../components/CommunityDistribution';
 
 // Interfaz para los datos de comunidades autónomas
 interface AutonomousCommunityData {
@@ -543,11 +544,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 />
               )}
             </div>
-            
-            {/* Espacio para futuras subsecciones */}
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
-              <p>{language === 'es' ? "Más subsecciones se añadirán próximamente" : "More subsections coming soon"}</p>
-            </div>
           </div>
           
           {/* Sección 3: Comparación por comunidades autónomas de España */}
@@ -608,7 +604,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                   </div>
                   
-                  {/* Selector de tipo de datos visible */}
+                  {/* Selector de tipo de datos */}
                   <div>
                     <DataTypeSelector 
                       dataType={dataDisplayType} 
@@ -619,20 +615,26 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 </div>
               </div>
               
-              {/* Primera fila: Mapa y Gráfica de comunidades autónomas */}
+              {/* Mapa y Ranking */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Mapa de España con comunidades autónomas */}
+                {/* Mapa de España */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                  <SpanishRegionsMap 
-                    data={autonomousCommunitiesData} 
-                    selectedYear={selectedRegionYear} 
-                    language={language} 
-                    selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
-                    dataDisplayType={dataDisplayType}
-                  />
+                  {autonomousCommunitiesData.length > 0 ? (
+                    <SpanishRegionsMap 
+                      data={autonomousCommunitiesData} 
+                      selectedYear={selectedRegionYear} 
+                      language={language} 
+                      selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
+                      dataDisplayType={dataDisplayType}
+                    />
+                  ) : (
+                    <div className="flex justify-center items-center h-full">
+                      <p className="text-gray-500">{t.noData}</p>
+                    </div>
+                  )}
                 </div>
                 
-                {/* Ranking de comunidades autónomas */}
+                {/* Ranking de comunidades */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-[500px]">
                   {autonomousCommunitiesData.length > 0 ? (
                     <div className="h-full overflow-hidden" data-testid="region-ranking-chart">
@@ -646,27 +648,19 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                   ) : (
                     <div className="flex justify-center items-center h-full">
-                      {isLoading ? (
-                        <div className="flex flex-col items-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                          <p className="mt-4 text-gray-500">{t.loading}</p>
-                        </div>
-                      ) : error ? (
-                        <div className="text-red-500">
-                          <p>{error}</p>
-                        </div>
-                      ) : (
-                        <p className="text-gray-500">{t.noData}</p>
-                      )}
+                      <p className="text-gray-500">{t.noData}</p>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
+            
+            {/* Nueva Subsección 3.2: Distribución sectorial de la inversión en I+D */}
+            <div className="mb-8">
+              <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión en I+D" : "R&D Investment Distribution by Sectors"} />
               
-              {/* Espacio para futuras subsecciones de comunidades autónomas */}
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500 italic">
-                <p>{language === 'es' ? "Más subsecciones de análisis detallado por comunidades autónomas se añadirán próximamente" : "More detailed autonomous communities analysis subsections coming soon"}</p>
-              </div>
+              {/* Componente CommunityDistribution */}
+              <CommunityDistribution language={language} />
             </div>
           </div>
         </>
