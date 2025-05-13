@@ -9,6 +9,7 @@ import RegionRankingChart from '../../components/RegionRankingChart';
 import Papa from 'papaparse';
 import { DATA_PATHS, rdSectors } from '../../data/rdInvestment';
 import CommunityDistribution from '../../components/CommunityDistribution';
+import CommunityRDComparisonChart from '../../components/CommunityRDComparisonChart';
 
 // Interfaz para los datos de comunidades autónomas
 interface AutonomousCommunityData {
@@ -661,6 +662,16 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               
               {/* Componente CommunityDistribution */}
               <CommunityDistribution language={language} />
+              
+              {/* Nuevo componente CommunityRDComparisonChart */}
+              {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
+                <CommunityRDComparisonChart 
+                  language={language}
+                  gdpData={mapToGDPConsolidadoData(europeData)}
+                  autonomousCommunitiesData={autonomousCommunitiesData}
+                  years={availableYears.map(year => year.toString())}
+                />
+              )}
             </div>
           </div>
         </>

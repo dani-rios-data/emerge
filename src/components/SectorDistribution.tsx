@@ -1057,6 +1057,27 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
       // Determinar el estilo visual del indicador YoY
       const yoyDisplay = yoyChange === null ? "hidden" : "flex";
       
+      // Valores específicos para diferentes regiones y formato especial
+      let displayMonetaryValue = monetaryValue;
+      let monetaryUnit = '';
+      
+      // Determinar la unidad monetaria según la región
+      if (region === (language === 'es' ? 'Unión Europea' : 'European Union') || 
+          region === (language === 'es' ? 'España' : 'Spain')) {
+        // Para UE y España, mostrar en millones de euros
+        monetaryUnit = language === 'es' ? 'Mill. €' : 'Mill. €';
+      } else {
+        // Para comunidades autónomas, mostrar en miles de euros
+        monetaryUnit = language === 'es' ? 'miles €' : 'K €';
+        // Convertir el valor si está en millones
+        if (displayMonetaryValue < 1000) {
+          displayMonetaryValue = displayMonetaryValue * 1000;
+        }
+      }
+      
+      // Formatear el valor monetario según corresponda
+      const formattedMonetary = formatNumber(Math.round(displayMonetaryValue));
+      
       return (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden" style={{ width: "240px", boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}>
           {/* Línea superior de color */}
@@ -1107,7 +1128,7 @@ const SectorDistribution: React.FC<SectorDistributionProps> = ({ language }) => 
             
             {/* Información adicional */}
             <div className="flex justify-between items-center text-xs">
-              <div className="text-gray-700 font-medium">{formatNumber(Math.round(monetaryValue))} M€</div>
+              <div className="text-gray-700 font-medium">{formattedMonetary} {monetaryUnit}</div>
               <div className="text-blue-600 font-medium">Total: {totalPib}% {t.ofGDP}</div>
             </div>
           </div>
