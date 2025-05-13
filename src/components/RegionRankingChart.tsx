@@ -798,6 +798,35 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     }
   };
 
+  // Función para obtener el valor del año anterior para una comunidad
+  const getPreviousYearValue = (communityData: {
+    nameEs: string,
+    nameEn: string,
+    value: number,
+    spending: number,
+    gdp: number
+  }): number | null => {
+    // Buscar datos de la comunidad en el año anterior
+    const prevYearData = data.filter(item => 
+      item["Año"] === (selectedYear - 1).toString() &&
+      item["Sector Id"] === `(${csvSectorId})` &&
+      (
+        normalizeText(item["Comunidad Limpio"]) === normalizeText(communityData.nameEs) ||
+        normalizeText(item["Comunidad en Inglés"]) === normalizeText(communityData.nameEn) ||
+        normalizeText(item["Comunidad (Original)"]) === normalizeText(communityData.nameEs)
+      )
+    );
+    
+    if (prevYearData.length === 0) return null;
+    
+    // Obtener el valor según el tipo de visualización
+    if (dataDisplayType === 'percent_gdp') {
+      return parseFloat(prevYearData[0]['% PIB I+D'].replace(',', '.'));
+    } else {
+      return parseFloat(prevYearData[0]['Gasto en I+D (Miles €)'].replace(',', '.'));
+    }
+  };
+
   // Función para generar la configuración del gráfico
   const getChartConfig = () => {
     // Formatear etiquetas y valores
@@ -936,11 +965,11 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           const rank = dataIndex + 1;
           const total = chartData.length;
           
-          // Obtener variación con respecto al año anterior (simulado)
-          // En un caso real, deberíamos tener datos del año anterior
-          const prevYearValue = communityData.value * (0.9 + Math.random() * 0.2); // Simulación de valor anterior
-          const yoyChange = ((communityData.value - prevYearValue) / prevYearValue) * 100;
-          const yoyIsPositive = yoyChange > 0;
+          // Obtener variación con respecto al año anterior
+          const prevYearValue = getPreviousYearValue(communityData);
+          const hasYoYData = prevYearValue !== null;
+          const yoyChange = hasYoYData ? ((communityData.value - prevYearValue) / prevYearValue) * 100 : null;
+          const yoyIsPositive = yoyChange !== null && yoyChange > 0;
           
           // Construir contenido del tooltip con estilos inline para mayor compatibilidad
           let tooltipContent = `
@@ -978,15 +1007,28 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
               </div>
           `;
           
-          // Añadir variación YoY simulada
-          tooltipContent += `
-            <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-              </svg>
-              <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(2)}% vs ${selectedYear - 1}</span>
-            </div>
-          `;
+          // Añadir variación YoY
+          if (hasYoYData && yoyChange !== null) {
+            tooltipContent += `
+              <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                </svg>
+                <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(2)}% vs ${selectedYear - 1}</span>
+              </div>
+            `;
+          } else {
+            tooltipContent += `
+              <div class="text-gray-500 flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>No hay datos para ${selectedYear - 1}</span>
+              </div>
+            `;
+          }
           
           tooltipContent += `</div>`;
           
@@ -1190,4 +1232,4 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
   );
 };
 
-export default memo(RegionRankingChart); 
+export default memo(RegionRankingChart);
