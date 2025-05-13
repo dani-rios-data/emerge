@@ -73,6 +73,65 @@ interface SectorOption {
   };
 }
 
+// Tabla de mapeo entre nombres de comunidades en el CSV y nombres en español/inglés
+const communityNameMapping: { [key: string]: { es: string, en: string } } = {
+  'Andalucía': { es: 'Andalucía', en: 'Andalusia' },
+  'Andalucia': { es: 'Andalucía', en: 'Andalusia' },
+  'Aragón': { es: 'Aragón', en: 'Aragon' },
+  'Aragon': { es: 'Aragón', en: 'Aragon' },
+  'Principado de Asturias': { es: 'Asturias', en: 'Asturias' },
+  'Asturias': { es: 'Asturias', en: 'Asturias' },
+  'Illes Balears / Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Illes Balears': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Balearic Islands': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Islas Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Canary Islands': { es: 'Canarias', en: 'Canary Islands' },
+  'Cantabria': { es: 'Cantabria', en: 'Cantabria' },
+  'Castilla - La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-la Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castillalamancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla y León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla y Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Cataluña': { es: 'Cataluña', en: 'Catalonia' },
+  'Cataluna': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalunya': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalonia': { es: 'Cataluña', en: 'Catalonia' },
+  'Comunidad Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'C. Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencia': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencian Community': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Extremadura': { es: 'Extremadura', en: 'Extremadura' },
+  'Galicia': { es: 'Galicia', en: 'Galicia' },
+  'La Rioja': { es: 'La Rioja', en: 'La Rioja' },
+  'Rioja': { es: 'La Rioja', en: 'La Rioja' },
+  'Comunidad de Madrid': { es: 'Madrid', en: 'Madrid' },
+  'Madrid': { es: 'Madrid', en: 'Madrid' },
+  'Región de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Region de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Comunidad Foral de Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarre': { es: 'Navarra', en: 'Navarre' },
+  'País Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Pais Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Euskadi': { es: 'País Vasco', en: 'Basque Country' },
+  'Basque Country': { es: 'País Vasco', en: 'Basque Country' },
+  'Ciudad Autónoma de Ceuta': { es: 'Ceuta', en: 'Ceuta' },
+  'Ceuta': { es: 'Ceuta', en: 'Ceuta' },
+  'Ciudad Autónoma de Melilla': { es: 'Melilla', en: 'Melilla' },
+  'Melilla': { es: 'Melilla', en: 'Melilla' }
+};
+
 // Componente principal de la gráfica de comparación
 const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({ 
   language, 
@@ -86,7 +145,7 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
   // Estado para la comunidad seleccionada (por defecto Madrid)
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityOption>({
     name: 'Madrid',
-    localName: 'Comunidad de Madrid',
+    localName: 'Madrid',
     code: 'MAD'
   });
   
@@ -167,6 +226,27 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
         const englishName = row["Comunidad en Inglés"];
         const originalName = row["Comunidad (Original)"];
         
+        // Buscar nombre estandarizado usando communityNameMapping
+        let standardizedName = {
+          es: communityName,
+          en: englishName
+        };
+        
+        // Buscar en el mapeo para nombres estandarizados
+        for (const key in communityNameMapping) {
+          if (normalizeText(key) === normalizeText(communityName) || 
+              normalizeText(key) === normalizeText(originalName)) {
+            standardizedName = communityNameMapping[key];
+            break;
+          }
+        }
+        
+        // Caso especial para Madrid: asegurarse de usar el nombre estandarizado
+        if (normalizeText(communityName).includes('madrid') || 
+            normalizeText(originalName).includes('madrid')) {
+          standardizedName = { es: 'Madrid', en: 'Madrid' };
+        }
+        
         // Buscar la comunidad en el objeto de banderas
         const flag = autonomous_communities_flags.find(f => 
           normalizeText(f.community) === normalizeText(communityName) || 
@@ -176,11 +256,11 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
         // Extraer código de comunidad
         const code = flag?.code || getCommunityCodeFromName(communityName);
         
-        // Evitar duplicados
-        if (!acc.some(c => c.name === englishName)) {
+        // Evitar duplicados - usar el nombre estandarizado para comparaciones
+        if (!acc.some(c => normalizeText(c.name) === normalizeText(standardizedName.en))) {
           acc.push({
-            name: englishName,
-            localName: originalName.replace(/\(ES\d+\)\s/, ''),
+            name: standardizedName.en,
+            localName: standardizedName.es,
             code: code
           });
         }
@@ -301,17 +381,42 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
         dataPoint.canary = parseFloat(canaryData["% PIB I+D"].replace(',', '.'));
       }
       
-      // 3. Buscar datos de la comunidad seleccionada
-      const communityData = autonomousCommunitiesData.find(row => {
+      // 3. Buscar datos de la comunidad seleccionada utilizando el mapeo estandarizado
+      let communityData = autonomousCommunitiesData.find(row => {
         const isCorrectYear = row["Año"] === year;
+        const isCorrectSector = row["Sector Id"] === sectorCode;
+        
+        // Verificar si es la comunidad seleccionada usando diferentes campos
         const isSelectedCommunity = 
-          normalizeText(row["Comunidad Limpio"]) === normalizeText(selectedCommunity.name) ||
+          normalizeText(row["Comunidad Limpio"]) === normalizeText(selectedCommunity.localName) ||
           normalizeText(row["Comunidad en Inglés"]) === normalizeText(selectedCommunity.name) ||
           row["Comunidad (Original)"].includes(selectedCommunity.localName);
-        const isCorrectSector = row["Sector Id"] === sectorCode;
         
         return isCorrectYear && isSelectedCommunity && isCorrectSector;
       });
+      
+      // Si no encontramos datos con el enfoque directo, intentamos con el mapeo
+      if (!communityData) {
+        for (const key in communityNameMapping) {
+          // Verificar si la comunidad seleccionada coincide con alguna entrada del mapeo
+          if (normalizeText(communityNameMapping[key].es) === normalizeText(selectedCommunity.localName) ||
+              normalizeText(communityNameMapping[key].en) === normalizeText(selectedCommunity.name) ||
+              normalizeText(key) === normalizeText(selectedCommunity.localName) ||
+              normalizeText(key) === normalizeText(selectedCommunity.name)) {
+            
+            // Buscar en los datos usando todas las posibles formas del nombre
+            communityData = autonomousCommunitiesData.find(row => 
+              row["Año"] === year && 
+              (normalizeText(row["Comunidad Limpio"]) === normalizeText(key) ||
+               normalizeText(row["Comunidad Limpio"]) === normalizeText(communityNameMapping[key].es) ||
+               normalizeText(row["Comunidad en Inglés"]) === normalizeText(communityNameMapping[key].en)) && 
+              row["Sector Id"] === sectorCode
+            );
+            
+            if (communityData) break;
+          }
+        }
+      }
       
       if (communityData) {
         dataPoint.community = parseFloat(communityData["% PIB I+D"].replace(',', '.'));
@@ -397,12 +502,44 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
       // Encontrar el índice del año actual en los datos
       const yearIndex = timeSeriesData.findIndex(data => data.year === label);
       
+      // Filtrar valores nulos y ordenar de mayor a menor
+      const sortedPayload = [...payload]
+        .filter(entry => entry.value !== null)
+        .sort((a, b) => b.value - a.value);
+      
       return (
         <div className="bg-white p-3 rounded-lg shadow-md border border-gray-100">
           <p className="font-medium text-gray-700">{`${t.year}: ${label}`}</p>
           <div className="space-y-1 mt-2">
-            {payload.map((entry, index) => {
-              if (entry.value === null) return null;
+            {sortedPayload.map((entry, index) => {
+              // Obtener nombre estandarizado según el idioma
+              let displayName = entry.name;
+              
+              // Convertir "Spain" o "España" al nombre localizado
+              if (normalizeText(displayName).includes('spain') || normalizeText(displayName).includes('espana')) {
+                displayName = language === 'es' ? 'España' : 'Spain';
+              } 
+              // Convertir "Canary Islands" o "Canarias" al nombre localizado
+              else if (normalizeText(displayName).includes('canary') || normalizeText(displayName).includes('canarias')) {
+                displayName = language === 'es' ? 'Canarias' : 'Canary Islands';
+              }
+              // Caso especial para Madrid
+              else if (normalizeText(displayName).includes('madrid')) {
+                displayName = 'Madrid';
+              }
+              // Para otras comunidades, buscar en el mapeo
+              else {
+                for (const key in communityNameMapping) {
+                  if (normalizeText(key) === normalizeText(displayName) || 
+                      normalizeText(communityNameMapping[key].es) === normalizeText(displayName) ||
+                      normalizeText(communityNameMapping[key].en) === normalizeText(displayName)) {
+                    displayName = language === 'es' ? 
+                                 communityNameMapping[key].es : 
+                                 communityNameMapping[key].en;
+                    break;
+                  }
+                }
+              }
               
               // Calcular el cambio YoY
               const yoyChange = calculateYoY(entry.value, entry.dataKey, yearIndex);
@@ -416,7 +553,7 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
                     style={{ backgroundColor: entry.color }}
                   ></div>
                   <span className="text-sm">
-                    <span className="font-medium">{entry.name}: </span>
+                    <span className="font-medium">{displayName}: </span>
                     <span>{entry.value} {t.percentGDP}</span>
                     {yoyChange !== null && (
                       <span className={`ml-1.5 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>

@@ -199,24 +199,60 @@ interface CustomTooltipProps {
 // Tabla de mapeo entre nombres de comunidades en el CSV y nombres en español/inglés
 const communityNameMapping: { [key: string]: { es: string, en: string } } = {
   'Andalucía': { es: 'Andalucía', en: 'Andalusia' },
+  'Andalucia': { es: 'Andalucía', en: 'Andalusia' },
   'Aragón': { es: 'Aragón', en: 'Aragon' },
+  'Aragon': { es: 'Aragón', en: 'Aragon' },
   'Principado de Asturias': { es: 'Asturias', en: 'Asturias' },
+  'Asturias': { es: 'Asturias', en: 'Asturias' },
   'Illes Balears / Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Illes Balears': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
+  'Balearic Islands': { es: 'Islas Baleares', en: 'Balearic Islands' },
   'Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Islas Canarias': { es: 'Canarias', en: 'Canary Islands' },
+  'Canary Islands': { es: 'Canarias', en: 'Canary Islands' },
   'Cantabria': { es: 'Cantabria', en: 'Cantabria' },
   'Castilla - La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castilla-la Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
+  'Castillalamancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
   'Castilla y León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla y Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castilla-Leon': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and León': { es: 'Castilla y León', en: 'Castile and León' },
+  'Castile and Leon': { es: 'Castilla y León', en: 'Castile and León' },
   'Cataluña': { es: 'Cataluña', en: 'Catalonia' },
+  'Cataluna': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalunya': { es: 'Cataluña', en: 'Catalonia' },
+  'Catalonia': { es: 'Cataluña', en: 'Catalonia' },
   'Comunidad Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'C. Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencia': { es: 'Com. Valenciana', en: 'Valencia' },
+  'Valencian Community': { es: 'Com. Valenciana', en: 'Valencia' },
   'Extremadura': { es: 'Extremadura', en: 'Extremadura' },
   'Galicia': { es: 'Galicia', en: 'Galicia' },
   'La Rioja': { es: 'La Rioja', en: 'La Rioja' },
+  'Rioja': { es: 'La Rioja', en: 'La Rioja' },
   'Comunidad de Madrid': { es: 'Madrid', en: 'Madrid' },
+  'Madrid': { es: 'Madrid', en: 'Madrid' },
   'Región de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Region de Murcia': { es: 'Murcia', en: 'Murcia' },
+  'Murcia': { es: 'Murcia', en: 'Murcia' },
   'Comunidad Foral de Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarra': { es: 'Navarra', en: 'Navarre' },
+  'Navarre': { es: 'Navarra', en: 'Navarre' },
   'País Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Pais Vasco': { es: 'País Vasco', en: 'Basque Country' },
+  'Euskadi': { es: 'País Vasco', en: 'Basque Country' },
+  'Basque Country': { es: 'País Vasco', en: 'Basque Country' },
   'Ciudad Autónoma de Ceuta': { es: 'Ceuta', en: 'Ceuta' },
-  'Ciudad Autónoma de Melilla': { es: 'Melilla', en: 'Melilla' }
+  'Ceuta': { es: 'Ceuta', en: 'Ceuta' },
+  'Ciudad Autónoma de Melilla': { es: 'Melilla', en: 'Melilla' },
+  'Melilla': { es: 'Melilla', en: 'Melilla' }
 };
 
 const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language }) => {
@@ -430,42 +466,29 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
                   if (!uniqueCommunities.has(communityName)) {
                     uniqueCommunities.add(communityName);
                     
-                    // Buscar el código y la bandera
+                    // Buscar nombre estandarizado en el mapeo
+                    let displayName = communityName;
                     let code = '';
                     let flagUrl = '';
-                    let displayName = communityName;
                     
-                    // Buscar en el mapeo de comunidades
+                    // Buscar en el mapeo de comunidades para nombres estandarizados
                     for (const [originalName, mappedNames] of Object.entries(communityNameMapping)) {
                       if (normalizeText(originalName) === normalizeText(communityName)) {
                         // Usar el nombre traducido según el idioma
                         displayName = language === 'es' ? mappedNames.es : mappedNames.en;
-                        
-                        // Usar el nombre normalizado para buscar en autonomous_communities_flags
-                        const communityFlag = autonomous_communities_flags.find(flag => 
-                          normalizeText(flag.community).includes(normalizeText(mappedNames.es)) ||
-                          normalizeText(mappedNames.es).includes(normalizeText(flag.community))
-                        );
-                        
-                        if (communityFlag) {
-                          code = communityFlag.code;
-                          flagUrl = communityFlag.flag;
-                          break;
-                        }
+                        break;
                       }
                     }
                     
-                    // Si no encontramos bandera, hacemos una búsqueda más flexible
-                    if (!flagUrl) {
-                      const communityFlag = autonomous_communities_flags.find(flag => 
-                        normalizeText(flag.community).includes(normalizeText(communityName)) ||
-                        normalizeText(communityName).includes(normalizeText(flag.community))
-                      );
-                      
-                      if (communityFlag) {
-                        code = communityFlag.code;
-                        flagUrl = communityFlag.flag;
-                      }
+                    // Buscar la bandera de la comunidad
+                    const communityFlag = autonomous_communities_flags.find(flag => 
+                      normalizeText(flag.community).includes(normalizeText(communityName)) ||
+                      normalizeText(communityName).includes(normalizeText(flag.community))
+                    );
+                    
+                    if (communityFlag) {
+                      code = communityFlag.code;
+                      flagUrl = communityFlag.flag;
                     }
                     
                     // Excluir Canarias ya que tiene su propia gráfica
