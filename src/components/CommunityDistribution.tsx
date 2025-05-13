@@ -476,19 +476,19 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
                       if (normalizeText(originalName) === normalizeText(communityName)) {
                         // Usar el nombre traducido según el idioma
                         displayName = language === 'es' ? mappedNames.es : mappedNames.en;
-                        break;
+                          break;
                       }
                     }
                     
                     // Buscar la bandera de la comunidad
-                    const communityFlag = autonomous_communities_flags.find(flag => 
-                      normalizeText(flag.community).includes(normalizeText(communityName)) ||
-                      normalizeText(communityName).includes(normalizeText(flag.community))
-                    );
-                    
-                    if (communityFlag) {
-                      code = communityFlag.code;
-                      flagUrl = communityFlag.flag;
+                      const communityFlag = autonomous_communities_flags.find(flag => 
+                        normalizeText(flag.community).includes(normalizeText(communityName)) ||
+                        normalizeText(communityName).includes(normalizeText(flag.community))
+                      );
+                      
+                      if (communityFlag) {
+                        code = communityFlag.code;
+                        flagUrl = communityFlag.flag;
                     }
                     
                     // Excluir Canarias ya que tiene su propia gráfica
