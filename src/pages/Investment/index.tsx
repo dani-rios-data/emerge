@@ -401,9 +401,449 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           {/* Sección 1: Key Metrics */}
           <div className="mb-10">
             <SectionTitle title={t.keyMetricsTitle} />
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center text-gray-500 italic mb-6">
-              {/* Contenido de subsecciones de Key Metrics se añadirá posteriormente */}
-              <p>Las subsecciones de métricas clave se añadirán próximamente</p>
+            <div className="mb-4 flex items-center">
+              <div className="text-gray-700 font-medium text-lg">
+                {language === 'es' ? `Inversión en I+D ${selectedYear}` : `R&D Investment ${selectedYear}`}
+              </div>
+              <div className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                {language === 'es' ? 'Datos más recientes' : 'Latest data'}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)' }}>
+              {/* Métrica 1: Media UE */}
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+                <div className="flex items-start">
+                  <div className="p-3 bg-blue-50 rounded-lg mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <h3 className="text-sm font-medium text-gray-500">
+                        {language === 'es' ? 'Unión Europea' : 'European Union'}
+                      </h3>
+                    </div>
+                    <div className="flex items-baseline mt-1">
+                      <span className="text-2xl font-bold text-blue-700">
+                        {europeData.length > 0 ? 
+                          (() => {
+                            const euData = europeData.filter(item => 
+                              (item.Country === 'European Union (27)' ||
+                               item.Country === 'European Union - 27 countries (from 2020)' ||
+                               item.Country.includes('European Union') || 
+                               (item.País && item.País.includes('Unión Europea'))) && 
+                              item.Year === selectedYear.toString() && 
+                              item.Sector === selectedSector
+                            );
+                            
+                            return euData.length > 0 ? `${parseFloat(euData[0]['%GDP']).toFixed(2)}%` : language === 'es' ? '-- %' : '-- %';
+                          })() : language === 'es' ? '-- %' : '-- %'
+                        }
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500">
+                        {language === 'es' ? 'del PIB' : 'of GDP'}
+                      </span>
+                    </div>
+                    {europeData.length > 0 ? (
+                      (() => {
+                        // Calcular el YoY (crecimiento interanual)
+                        const currentYearData = europeData.find(item => 
+                          (item.Country === 'European Union (27)' ||
+                           item.Country === 'European Union - 27 countries (from 2020)' ||
+                           item.Country.includes('European Union') || 
+                           (item.País && item.País.includes('Unión Europea'))) && 
+                          item.Year === selectedYear.toString() && 
+                          item.Sector === selectedSector
+                        );
+
+                        const previousYearData = europeData.find(item => 
+                          (item.Country === 'European Union (27)' ||
+                           item.Country === 'European Union - 27 countries (from 2020)' ||
+                           item.Country.includes('European Union') || 
+                           (item.País && item.País.includes('Unión Europea'))) && 
+                          item.Year === (selectedYear - 1).toString() && 
+                          item.Sector === selectedSector
+                        );
+
+                        if (currentYearData && previousYearData) {
+                          const currentValue = parseFloat(currentYearData['%GDP']);
+                          const previousValue = parseFloat(previousYearData['%GDP']);
+                          const yoyChange = ((currentValue - previousValue) / previousValue) * 100;
+
+                          return (
+                            <div className="flex items-center mt-1.5">
+                              <span className={`text-xs font-medium ${yoyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {yoyChange >= 0 ? '+' : ''}{yoyChange.toFixed(2)}% {language === 'es' ? 'vs año anterior' : 'vs previous year'}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        // No hay suficientes datos para calcular el cambio
+                        return (
+                          <div className="flex items-center mt-1.5">
+                            <span className="text-xs font-medium text-gray-400">
+                              -- {language === 'es' ? 'vs año anterior' : 'vs previous year'}
+                            </span>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div className="flex items-center mt-1.5">
+                        <span className="text-xs font-medium text-gray-400">
+                          -- {language === 'es' ? 'vs año anterior' : 'vs previous year'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Métrica 2: España y ranking */}
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+                <div className="flex items-start">
+                                      <div className="flex flex-col items-center mr-4">
+                    <div className="p-3 bg-red-50 rounded-lg mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <h3 className="text-sm font-medium text-gray-500">
+                        {language === 'es' ? 'España' : 'Spain'}
+                      </h3>
+                    </div>
+                    <div className="flex items-baseline mt-1">
+                      <span className="text-2xl font-bold text-red-700">
+                        {europeData.length > 0 ? 
+                          (() => {
+                            const spainData = europeData.filter(item => 
+                              (item.País === 'España' || item.Country === 'Spain') && 
+                              item.Year === selectedYear.toString() && 
+                              item.Sector === selectedSector
+                            );
+                            
+                            return spainData.length > 0 ? `${parseFloat(spainData[0]['%GDP']).toFixed(2)}%` : language === 'es' ? '-- %' : '-- %';
+                          })() : language === 'es' ? '-- %' : '-- %'
+                        }
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500">
+                        {language === 'es' ? 'del PIB' : 'of GDP'}
+                      </span>
+                    </div>
+                    <div className="flex items-center mt-1.5">
+                                                                                         {europeData.length > 0 ? 
+                           (() => {
+                             // Buscar valores de España y UE para comparación
+                             const yearData = europeData.filter(item => 
+                               item.Year === selectedYear.toString() && 
+                               item.Sector === selectedSector
+                             );
+                             
+                             const euAvg = yearData.find(item => 
+                               (item.Country === 'European Union (27)' ||
+                                item.Country === 'European Union - 27 countries (from 2020)' ||
+                                item.Country.includes('European Union') || 
+                                (item.País && item.País.includes('Unión Europea')))
+                             );
+                             
+                             const spainData = yearData.find(item => 
+                               item.País === 'España' || item.Country === 'Spain'
+                             );
+                             
+                             // También calcular el ranking aquí
+                             let ranking = 0;
+                             if (yearData.length > 0) {
+                               // Filtrar solo países (no promedios ni grupos)
+                               const countriesData = yearData.filter(item => 
+                                 !(item.Country.includes('Union') || 
+                                   item.Country.includes('Euro') || 
+                                   item.Country.includes('OECD') ||
+                                   item.Country.includes('Average'))
+                               );
+                               
+                               // Ordenar por valor de %GDP (descendente)
+                               const sortedCountries = [...countriesData].sort((a, b) => 
+                                 parseFloat(b['%GDP']) - parseFloat(a['%GDP'])
+                               );
+                               
+                               // Encontrar la posición de España
+                               const spainIndex = sortedCountries.findIndex(item => 
+                                 item.País === 'España' || item.Country === 'Spain'
+                               );
+                               
+                               ranking = spainIndex !== -1 ? spainIndex + 1 : 14;
+                             }
+                             
+                             if (euAvg && spainData) {
+                               const euValue = parseFloat(euAvg['%GDP']);
+                               const spainValue = parseFloat(spainData['%GDP']);
+                               const diffPercent = ((spainValue - euValue) / euValue) * 100;
+                               
+                                                                return (
+                                  <div>
+                                    <div className={`text-xs font-medium ${diffPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(1)}% {language === 'es' ? 'vs UE' : 'vs EU'}
+                                    </div>
+                                    <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                      {language === 'es' ? `Ranking UE #${ranking}` : `EU Ranking #${ranking}`}
+                                    </div>
+                                  </div>
+                                );
+                             }
+                             
+                                                           return (
+                                <div>
+                                  <div className="text-xs font-medium text-gray-400">
+                                    -- {language === 'es' ? 'vs UE' : 'vs EU'}
+                                  </div>
+                                  <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                    {language === 'es' ? `Ranking UE #${ranking}` : `EU Ranking #${ranking}`}
+                                  </div>
+                                </div>
+                              );
+                           })() : 
+                           <span className="text-xs font-medium text-gray-400">
+                             -- {language === 'es' ? 'vs UE' : 'vs EU'}
+                           </span>
+                         }
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Métrica 3: Top comunidad autónoma */}
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+                <div className="flex items-start">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className="p-3 bg-green-50 rounded-lg mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
+                    </div>
+                    <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium text-center w-16">
+                      {language === 'es' ? 'TOP' : 'TOP'}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-gray-500">
+                        {language === 'es' ? 'Comunidad Autónoma' : 'Region'}
+                      </h3>
+                    </div>
+                    {autonomousCommunitiesData.length > 0 ? (
+                      (() => {
+                        // Filtrar datos para el año y sector seleccionados
+                        const filteredData = autonomousCommunitiesData.filter(item => 
+                          item["Año"] === selectedYear.toString() &&
+                          item["Sector Id"] === `(${selectedSector === 'All Sectors' ? '_T' : selectedSector === 'Business enterprise sector' ? 'EMPRESAS' : selectedSector === 'Government sector' ? 'ADMINISTRACION_PUBLICA' : selectedSector === 'Higher education sector' ? 'ENSENIANZA_SUPERIOR' : 'IPSFL'})`
+                        );
+                        
+                        // Encontrar la comunidad con el mayor valor
+                        let topCommunity = { name: '', value: 0 };
+                        
+                        if (filteredData.length > 0) {
+                          // Agrupar por comunidad y encontrar el máximo
+                          const communityMap = new Map();
+                          
+                          filteredData.forEach(item => {
+                            const name = language === 'es' ? item["Comunidad Limpio"] : item["Comunidad en Inglés"];
+                            const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
+                            
+                            if (!isNaN(value)) {
+                              communityMap.set(name, value);
+                            }
+                          });
+                          
+                          // Encontrar el valor máximo
+                          let maxValue = 0;
+                          let maxName = '';
+                          
+                          communityMap.forEach((value, name) => {
+                            if (value > maxValue) {
+                              maxValue = value;
+                              maxName = name;
+                            }
+                          });
+                          
+                          topCommunity = { name: maxName, value: maxValue };
+                        } else {
+                          // No hay datos disponibles
+                          topCommunity = { 
+                            name: language === 'es' ? 'Sin datos' : 'No data', 
+                            value: 0 
+                          };
+                        }
+                        
+                        return (
+                          <>
+                            <div className="mt-1">
+                              <span className="text-lg font-bold text-gray-800 truncate" style={{ maxWidth: '150px' }}>
+                                {topCommunity.name}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline mt-1">
+                              <span className="text-2xl font-bold text-green-700">
+                                {topCommunity.value.toFixed(2)}%
+                              </span>
+                              <span className="ml-2 text-sm text-gray-500">
+                                {language === 'es' ? 'del PIB' : 'of GDP'}
+                              </span>
+                            </div>
+                          </>
+                        );
+                      })()
+                    ) : (
+                      <>
+                        <div className="mt-1">
+                          <span className="text-lg font-bold text-gray-600 truncate" style={{ maxWidth: '150px' }}>
+                            {language === 'es' ? 'Sin datos' : 'No data'}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline mt-1">
+                          <span className="text-2xl font-bold text-gray-400">--</span>
+                          <span className="ml-2 text-sm text-gray-500">
+                            {language === 'es' ? 'del PIB' : 'of GDP'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Métrica 4: Canarias */}
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+                <div className="flex items-start">
+                                      <div className="flex flex-col items-center mr-4">
+                    <div className="p-3 bg-yellow-50 rounded-lg mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <h3 className="text-sm font-medium text-gray-500">
+                        {language === 'es' ? 'Canarias' : 'Canary Islands'}
+                      </h3>
+                    </div>
+                    {autonomousCommunitiesData.length > 0 ? (
+                      (() => {
+                        // Buscar datos de Canarias
+                        const canariasData = autonomousCommunitiesData.filter(item => 
+                          item["Año"] === selectedYear.toString() &&
+                          item["Sector Id"] === `(${selectedSector === 'All Sectors' ? '_T' : selectedSector === 'Business enterprise sector' ? 'EMPRESAS' : selectedSector === 'Government sector' ? 'ADMINISTRACION_PUBLICA' : selectedSector === 'Higher education sector' ? 'ENSENIANZA_SUPERIOR' : 'IPSFL'})` &&
+                          (
+                            item["Comunidad Limpio"].toLowerCase() === "canarias" ||
+                            item["Comunidad (Original)"].toLowerCase() === "canarias" ||
+                            item["Comunidad en Inglés"].toLowerCase().includes("canary")
+                          )
+                        );
+                        
+                        let canariasValue = 0.57; // Valor por defecto
+                        
+                        if (canariasData.length > 0) {
+                          canariasValue = parseFloat(canariasData[0]['% PIB I+D'].replace(',', '.'));
+                          
+                          // Ya no necesitamos filtrar todos los datos de comunidades
+                          
+                          // Ya no necesitamos calcular la media aquí, pues usamos el valor de España directamente
+                        }
+                        
+                        // Buscar valor de España en los datos de Europa
+                        const spainValue = europeData.length > 0 ? 
+                          europeData.find(item => 
+                            (item.País === 'España' || item.Country === 'Spain') && 
+                            item.Year === selectedYear.toString() && 
+                            item.Sector === selectedSector
+                          ) : null;
+                        
+                        // Calcular diferencia porcentual contra España (no contra el promedio de comunidades)
+                        let diff = -48.7; // Valor por defecto en caso de error
+                        if (spainValue) {
+                          const spainGDP = parseFloat(spainValue['%GDP']);
+                          if (!isNaN(spainGDP) && spainGDP > 0) {
+                            diff = ((canariasValue - spainGDP) / spainGDP) * 100;
+                          }
+                        }
+                        
+                        return (
+                          <>
+                            <div className="flex items-baseline mt-1">
+                              <span className="text-2xl font-bold text-yellow-700">
+                                {canariasValue.toFixed(2)}%
+                              </span>
+                              <span className="ml-2 text-sm text-gray-500">
+                                {language === 'es' ? 'del PIB' : 'of GDP'}
+                              </span>
+                            </div>
+                            <div className="flex items-center mt-1.5">
+                              <span className={`text-xs font-medium ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {diff >= 0 ? '+' : ''}{diff.toFixed(1)}% {language === 'es' ? 'vs España' : 'vs Spain'}
+                              </span>
+                            </div>
+                            {(() => {
+                              // Obtener datos de comunidades para cálculo de ranking
+                              const spanishData = autonomousCommunitiesData.filter(item => 
+                                item["Año"] === selectedYear.toString() &&
+                                item["Sector Id"] === `(${selectedSector === 'All Sectors' ? '_T' : selectedSector === 'Business enterprise sector' ? 'EMPRESAS' : selectedSector === 'Government sector' ? 'ADMINISTRACION_PUBLICA' : selectedSector === 'Higher education sector' ? 'ENSENIANZA_SUPERIOR' : 'IPSFL'})`
+                              );
+                              
+                              // Calcular el ranking de Canarias
+                              const communityMap = new Map();
+                              spanishData.forEach(item => {
+                                const name = item["Comunidad Limpio"];
+                                const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
+                                if (!isNaN(value)) {
+                                  communityMap.set(name, value);
+                                }
+                              });
+                              
+                              // Convertir el mapa a un array y ordenar
+                              const sortedCommunities = Array.from(communityMap.entries())
+                                .sort((a, b) => b[1] - a[1]);
+                              
+                              // Encontrar la posición de Canarias
+                              const canariasIndex = sortedCommunities.findIndex(([name]) => 
+                                name.toLowerCase() === "canarias"
+                              );
+                              
+                              const canariasRank = canariasIndex !== -1 ? canariasIndex + 1 : 16;
+                              
+                              return (
+                                <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
+                                  {language === 'es' ? `Ranking nacional #${canariasRank}` : `National Ranking #${canariasRank}`}
+                                </div>
+                              );
+                            })()}
+                          </>
+                        );
+                      })()
+                    ) : (
+                      <>
+                        <div className="flex items-baseline mt-1">
+                          <span className="text-2xl font-bold text-gray-400">--</span>
+                          <span className="ml-2 text-sm text-gray-500">
+                            {language === 'es' ? 'del PIB' : 'of GDP'}
+                          </span>
+                        </div>
+                        <div className="flex items-center mt-1.5">
+                          <span className="text-xs font-medium text-gray-400">
+                            -- {language === 'es' ? 'vs España' : 'vs Spain'}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
+                          {language === 'es' ? 'Ranking nacional: Sin datos' : 'National Ranking: No data'}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           

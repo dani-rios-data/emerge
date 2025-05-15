@@ -1009,14 +1009,14 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           
           // Añadir variación YoY
           if (hasYoYData && yoyChange !== null) {
-            tooltipContent += `
-              <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                  <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-                </svg>
-                <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(2)}% vs ${selectedYear - 1}</span>
-              </div>
-            `;
+          tooltipContent += `
+            <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+              </svg>
+              <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(2)}% vs ${selectedYear - 1}</span>
+            </div>
+          `;
           } else {
             tooltipContent += `
               <div class="text-gray-500 flex items-center mt-1 text-xs">
@@ -1232,4 +1232,4 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
   );
 };
 
-export default memo(RegionRankingChart);
+export default memo(RegionRankingChart); 
