@@ -468,19 +468,22 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6">
+    <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6 w-full" style={{ width: "100%", minWidth: "100%" }}>
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">{t.loading}</p>
+        <div className="flex justify-center items-center min-h-[700px] w-full" style={{ width: "100%" }}>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-500 text-lg">{t.loading}</p>
+          </div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700">
+        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700 min-h-[700px] flex items-center justify-center w-full" style={{ width: "100%" }}>
           <p>{error}</p>
         </div>
       ) : (
-        <>
+        <div className="w-full min-h-[700px]" style={{ width: "100%" }}>
           {/* Sección 1: Key Metrics */}
-          <div className="mb-12 mt-[-15px]">
+          <div className="mb-12 mt-[-15px] w-full">
             <SectionTitle title={t.keyMetricsTitle} />
             <div className="mb-4 flex items-center">
               {
@@ -1155,7 +1158,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

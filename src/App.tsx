@@ -48,17 +48,64 @@ const App: React.FC = () => {
 
   const t = (key: keyof typeof texts.es) => texts[language][key];
 
+  // Referencia para el contenido principal
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  
+  // Usar useEffect para detectar cambios de idioma y mantener la experiencia fluida
+  React.useEffect(() => {
+    // No hacer nada en el primer renderizado
+    // Este efecto solo restaurará la posición cuando cambie el idioma
+  }, [language]);
+  
   const toggleLanguage = () => {
+    // Capturar dimensiones y posición exacta antes del cambio
+    const contentElement = contentRef.current;
+    let scrollInfo = null;
+    
+    if (contentElement) {
+      // Guardar información de scroll y dimensiones relativas
+      const rect = contentElement.getBoundingClientRect();
+      const visibleRatio = Math.abs(rect.top) / contentElement.scrollHeight;
+      scrollInfo = {
+        element: contentElement,
+        visibleRatio,
+        visibleTop: rect.top,
+        // Capturar posición exacta de elementos visibles para referencia
+        elementAtViewport: document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2)
+      };
+    }
+    
+    // Preparar la transición visual suave
+    document.body.style.opacity = '0.98';
+    document.body.style.transition = 'opacity 0.15s ease';
+    
+    // Cambiar el idioma
     setLanguage(prev => prev === 'es' ? 'en' : 'es');
     setShowLangDropdown(false);
+    
+    // Restaurar la posición después del renderizado
+    setTimeout(() => {
+      // Primero hacer visible el contenido nuevamente
+      document.body.style.opacity = '1';
+      
+      // Intentar restaurar posición exacta
+      if (scrollInfo && scrollInfo.element) {
+        // Calcular la nueva posición basándose en la relación de visibilidad anterior
+        const targetScrollTop = scrollInfo.element.scrollHeight * scrollInfo.visibleRatio;
+        window.scrollTo({
+          top: targetScrollTop,
+          behavior: 'auto' // Usar 'auto' para evitar animación adicional
+        });
+      }
+    }, 50); // Un pequeño retraso para permitir que React complete el renderizado
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col w-full">
       {/* Contenedor para elementos fijos */}
-      <div className="fixed top-0 left-0 right-0 z-30">
+      <div className="fixed top-0 left-0 right-0 z-30 w-full">
         {/* Header con logo integrado */}
-        <header className="bg-white py-4 px-6 shadow-md border-b border-gray-200 relative flex items-center justify-between">
+        <header className="bg-white py-4 px-6 shadow-md border-b border-gray-200 relative flex items-center justify-between w-full">
           {/* Logo en el lado izquierdo, perfectamente centrado verticalmente */}
           <div className="flex-shrink-0">
             <img src="/emerge_logo.svg" alt="EMERGE Logo" className="h-12" />
@@ -98,16 +145,16 @@ const App: React.FC = () => {
 
         {/* Navigation - ancho completo, justo debajo del header */}
         <nav style={{ backgroundColor: '#006480' }} className="shadow-sm w-full border-b py-0.5" >
-          <div className="max-w-7xl mx-auto">
-            <ul className="flex pt-2 px-2">
+          <div className="max-w-7xl mx-auto" style={{ minWidth: "100%" }}>
+            <ul className="flex pt-2 px-2 justify-center" style={{ minWidth: "100%" }}>
               <li 
-                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md ${activeTab === 'overview' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center transition-all duration-200 rounded-t-md flex-none w-[180px] ${activeTab === 'overview' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
                 style={{ color: activeTab === 'overview' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('overview')}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center whitespace-nowrap">
                   <svg 
-                    className={`w-5 h-5 mr-2`}
+                    className={`w-5 h-5 mr-2 flex-shrink-0`}
                     style={{ color: activeTab === 'overview' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
@@ -119,13 +166,13 @@ const App: React.FC = () => {
                 </div>
               </li>
               <li 
-                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'investment' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center transition-all duration-200 rounded-t-md flex-none w-[180px] mx-1 ${activeTab === 'investment' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
                 style={{ color: activeTab === 'investment' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('investment')}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center whitespace-nowrap">
                   <svg 
-                    className={`w-5 h-5 mr-2`}
+                    className={`w-5 h-5 mr-2 flex-shrink-0`}
                     style={{ color: activeTab === 'investment' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
@@ -137,13 +184,13 @@ const App: React.FC = () => {
                 </div>
               </li>
               <li 
-                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'researchers' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center transition-all duration-200 rounded-t-md flex-none w-[180px] mx-1 ${activeTab === 'researchers' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
                 style={{ color: activeTab === 'researchers' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('researchers')}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center whitespace-nowrap">
                   <svg 
-                    className={`w-5 h-5 mr-2`}
+                    className={`w-5 h-5 mr-2 flex-shrink-0`}
                     style={{ color: activeTab === 'researchers' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
@@ -155,13 +202,13 @@ const App: React.FC = () => {
                 </div>
               </li>
               <li 
-                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md mx-1 ${activeTab === 'patents' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center transition-all duration-200 rounded-t-md flex-none w-[180px] mx-1 ${activeTab === 'patents' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
                 style={{ color: activeTab === 'patents' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('patents')}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center whitespace-nowrap">
                   <svg 
-                    className={`w-5 h-5 mr-2`}
+                    className={`w-5 h-5 mr-2 flex-shrink-0`}
                     style={{ color: activeTab === 'patents' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
@@ -173,13 +220,13 @@ const App: React.FC = () => {
                 </div>
               </li>
               <li 
-                className={`cursor-pointer py-2.5 px-4 text-center flex-1 transition-all duration-200 rounded-t-md ${activeTab === 'sources' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
+                className={`cursor-pointer py-2.5 px-4 text-center transition-all duration-200 rounded-t-md flex-none w-[180px] ${activeTab === 'sources' ? 'bg-white border-l border-r border-t border-white font-medium' : 'text-white hover:bg-opacity-80'}`}
                 style={{ color: activeTab === 'sources' ? '#006480' : 'white' }}
                 onClick={() => setActiveTab('sources')}
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center whitespace-nowrap">
                   <svg 
-                    className={`w-5 h-5 mr-2`}
+                    className={`w-5 h-5 mr-2 flex-shrink-0`}
                     style={{ color: activeTab === 'sources' ? '#006480' : 'white' }} 
                     fill="currentColor" 
                     viewBox="0 0 24 24" 
@@ -196,9 +243,9 @@ const App: React.FC = () => {
       </div>
 
       {/* Content - con margen superior para evitar que quede debajo de los elementos fijos */}
-      <div className="pt-32 max-w-7xl mx-auto px-6 pb-6 flex-grow">
+      <div ref={contentRef} className="pt-32 max-w-7xl mx-auto px-6 pb-6 flex-grow w-full">
         {activeTab === 'overview' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100">
+          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('overview')}</h2>
             
             {/* Componente de la página Overview */}
@@ -207,7 +254,7 @@ const App: React.FC = () => {
         )}
         
         {activeTab === 'investment' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100">
+          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('investment')}</h2>
             
             {/* Componente modular para la sección de Inversión */}
@@ -216,7 +263,7 @@ const App: React.FC = () => {
         )}
         
         {activeTab === 'researchers' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100">
+          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('researchers')}</h2>
             
             {/* Componente de la página Researchers */}
@@ -225,7 +272,7 @@ const App: React.FC = () => {
         )}
         
         {activeTab === 'patents' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100">
+          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('patents')}</h2>
             
             {/* Componente de la página Patents */}
@@ -234,7 +281,7 @@ const App: React.FC = () => {
         )}
         
         {activeTab === 'sources' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100">
+          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('sources')}</h2>
             
             {/* Componente modular para la sección de Fuentes de Datos */}

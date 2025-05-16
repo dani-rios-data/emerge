@@ -6,38 +6,48 @@ const Patents: React.FC = () => {
 
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-lg font-bold mb-4 text-teal-800 border-b border-teal-200 pb-2">
+    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
       {title}
     </h2>
   );
 
   // Componente para título de subsección
   const SubsectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
+    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
       {title}
     </h3>
   );
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6 w-full min-h-[700px]">
       {/* Sección 1: Key Metrics */}
-      <div className="mb-10">
+      <div className="mb-12 mt-[-15px]">
         <SectionTitle title={language === 'es' ? "Métricas clave" : "Key Metrics"} />
         <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Estadísticas de patentes" : "Patent Statistics"} />
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            {/* Espacio vacío para contenido futuro */}
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[200px] flex items-center justify-center w-full">
+            <div className="text-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-lg">{language === 'es' ? "En desarrollo" : "In development"}</p>
+            </div>
           </div>
         </div>
       </div>
       
       {/* Sección 2: Comparación entre la UE y países */}
-      <div className="mb-10">
+      <div className="mb-12">
         <SectionTitle title={language === 'es' ? "Comparación entre la UE y países" : "EU and Countries Comparison"} />
         <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Patentes por país" : "Patents by Country"} />
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            {/* Espacio vacío para contenido futuro */}
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+            <div className="text-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+              </svg>
+              <p className="text-lg">{language === 'es' ? "En desarrollo" : "In development"}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -47,8 +57,14 @@ const Patents: React.FC = () => {
         <SectionTitle title={language === 'es' ? "Comparación por comunidades autónomas de España" : "Spanish Autonomous Communities Comparison"} />
         <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Distribución regional de patentes" : "Regional Patents Distribution"} />
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
-            {/* Espacio vacío para contenido futuro */}
+          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+            <div className="text-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <p className="text-lg">{language === 'es' ? "En desarrollo" : "In development"}</p>
+            </div>
           </div>
         </div>
       </div>

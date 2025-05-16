@@ -72,19 +72,19 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-h-[700px]">
       {/* Introducción */}
-      <div className="bg-gradient-to-r from-dashboard-primary/10 to-dashboard-secondary/10 p-6 rounded-lg border border-dashboard-primary/20">
+      <div className="bg-gradient-to-r from-dashboard-primary/10 to-dashboard-secondary/10 p-6 rounded-lg border border-dashboard-primary/20 w-full">
         <h3 className="text-xl font-bold text-dashboard-primary mb-3">{t('title')}</h3>
         <p className="text-sm text-gray-700 leading-relaxed">{t('description')}</p>
       </div>
 
       {/* Lista de fuentes */}
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         {sources.map(source => (
           <div 
             key={source.id}
-            className="bg-white p-6 rounded-lg shadow-md border border-gray-100 transition-all hover:shadow-lg"
+            className="bg-white p-6 rounded-lg shadow-md border border-gray-100 transition-all hover:shadow-lg w-full"
           >
             <div className="flex items-start">
               <div className="flex-grow">
@@ -112,7 +112,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       </div>
 
       {/* Nota de atribución */}
-      <div className="text-right">
+      <div className="text-right w-full">
         <p className="text-xs text-gray-500 italic">
           {language === 'es' 
             ? 'Todos los datos utilizados en este observatorio son de acceso público y han sido obtenidos de fuentes oficiales.'
