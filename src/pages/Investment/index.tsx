@@ -153,6 +153,8 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   const t = texts[language];
 
   // Función para obtener el nombre del sector seleccionado
+  /* Esta función se mantiene por compatibilidad con posibles usos futuros */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getSectorName = (sectorValue: string): string => {
     if (sectorValue === 'All Sectors') {
       return language === 'es' ? 'Todos los sectores' : 'All sectors';
@@ -485,14 +487,20 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 (() => {
                   const { mostRecentYear } = getFixedKeyMetricsData();
                   return (
-                    <>
-                      <div className="text-gray-700 font-medium text-lg">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <h2 className="text-gray-700 font-medium text-sm">
                         {language === 'es' ? `Información para el año ${mostRecentYear}` : `Information for year ${mostRecentYear}`}
-                      </div>
-                      <div className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-                        {language === 'es' ? 'Datos más recientes' : 'Latest data'}
-                      </div>
-                    </>
+                      </h2>
+                      <div className="ml-2 bg-blue-50 border border-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full flex items-center">
+                        <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                {language === 'es' ? 'Datos más recientes' : 'Latest data'}
+              </div>
+                    </div>
                   );
                 })()
               }
@@ -514,16 +522,16 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                     <div className="flex items-baseline mt-1">
                       {
-                        (() => {
+                          (() => {
                           const { euData } = getFixedKeyMetricsData();
                           return (
                             <>
                               <span className="text-2xl font-bold text-blue-700">
                                 {euData ? `${parseFloat(euData['%GDP']).toFixed(2)}%` : '--'}
-                              </span>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {language === 'es' ? 'del PIB' : 'of GDP'}
-                              </span>
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500">
+                        {language === 'es' ? 'del PIB' : 'of GDP'}
+                      </span>
                             </>
                           );
                         })()
@@ -536,7 +544,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                           const currentValue = parseFloat(euData['%GDP']);
                           const previousValue = parseFloat(previousEuData['%GDP']);
                           const yoyChange = ((currentValue - previousValue) / previousValue) * 100;
-                          
+
                           return (
                             <div className="flex items-center mt-1.5">
                               <span className={`text-xs font-medium ${yoyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -545,7 +553,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                             </div>
                           );
                         }
-                        
+
                         return (
                           <div className="flex items-center mt-1.5">
                             <span className="text-xs font-medium text-gray-400">
@@ -562,7 +570,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Métrica 2: España y ranking */}
               <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
+                                      <div className="flex flex-col items-center mr-4">
                     <div className="p-3 bg-red-50 rounded-lg mb-2">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
@@ -577,16 +585,16 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                     <div className="flex items-baseline mt-1">
                       {
-                        (() => {
+                          (() => {
                           const { spainData } = getFixedKeyMetricsData();
                           return (
                             <>
                               <span className="text-2xl font-bold text-red-700">
                                 {spainData ? `${parseFloat(spainData['%GDP']).toFixed(2)}%` : '--'}
-                              </span>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {language === 'es' ? 'del PIB' : 'of GDP'}
-                              </span>
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500">
+                        {language === 'es' ? 'del PIB' : 'of GDP'}
+                      </span>
                             </>
                           );
                         })()
@@ -594,7 +602,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                     <div className="flex items-center mt-1.5">
                       {
-                        (() => {
+                           (() => {
                           const { euData, spainData } = getFixedKeyMetricsData();
                           const { mostRecentYear } = getFixedKeyMetricsData();
                           const yearStr = mostRecentYear.toString();
@@ -612,73 +620,73 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                                 item.Year === yearStr && item.Sector === 'All Sectors'
                               );
                               
-                              // Función para normalizar texto (remover acentos)
-                              const normalizeText = (text: string | undefined): string => {
-                                if (!text) return '';
-                                return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                              };
+                               // Función para normalizar texto (remover acentos)
+                               const normalizeText = (text: string | undefined): string => {
+                                 if (!text) return '';
+                                 return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                               };
                               
-                              // Función para verificar si una entidad es UE, zona euro u otra entidad no país
-                              const isSupranationalEntity = (name: string): boolean => {
-                                const normalizedName = normalizeText(name);
-                                return normalizedName.includes('european union') || 
-                                  normalizedName.includes('euro area') ||
-                                  normalizedName.includes('oecd') ||
-                                  normalizedName.includes('average');
-                              };
-                              
-                              // Filtrar solo países (no promedios ni grupos)
-                              const countriesData = yearData.filter(item => 
-                                !isSupranationalEntity(item.Country)
-                              );
-                              
-                              // Ordenar por valor de %GDP (descendente) con criterio estable
-                              const sortedCountries = [...countriesData].sort((a, b) => {
-                                // Comparar primero por valor
-                                const valueDiff = parseFloat(b['%GDP']) - parseFloat(a['%GDP']);
-                                if (valueDiff !== 0) return valueDiff;
-                                
-                                // Si los valores son iguales, ordenar alfabéticamente para mantener un orden estable
-                                return a.Country.localeCompare(b.Country);
-                              });
-                              
-                              // Encontrar la posición de España usando exactamente el mismo nombre que en el CSV
-                              const spainIndex = sortedCountries.findIndex(item => 
-                                item.Country === 'Spain'
-                              );
-                              
-                              ranking = spainIndex !== -1 ? spainIndex + 1 : 0;
-                            }
-                            
-                            return (
-                              <div>
-                                <div className={`text-xs font-medium ${diffPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(1)}% {language === 'es' ? 'vs UE' : 'vs EU'}
-                                </div>
-                                <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
-                                  {language === 'es' ? `Ranking UE #${ranking}` : `EU Ranking #${ranking}`}
-                                </div>
-                              </div>
-                            );
-                          }
-                          
-                          return (
-                            <div>
-                              <div className="text-xs font-medium text-gray-400">
-                                -- {language === 'es' ? 'vs UE' : 'vs EU'}
-                              </div>
-                              <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                               // Función para verificar si una entidad es UE, zona euro u otra entidad no país
+                               const isSupranationalEntity = (name: string): boolean => {
+                                 const normalizedName = normalizeText(name);
+                                 return normalizedName.includes('european union') || 
+                                        normalizedName.includes('euro area') ||
+                                        normalizedName.includes('oecd') ||
+                                        normalizedName.includes('average');
+                               };
+                               
+                               // Filtrar solo países (no promedios ni grupos)
+                               const countriesData = yearData.filter(item => 
+                                 !isSupranationalEntity(item.Country)
+                               );
+                               
+                               // Ordenar por valor de %GDP (descendente) con criterio estable
+                               const sortedCountries = [...countriesData].sort((a, b) => {
+                                 // Comparar primero por valor
+                                 const valueDiff = parseFloat(b['%GDP']) - parseFloat(a['%GDP']);
+                                 if (valueDiff !== 0) return valueDiff;
+                                 
+                                 // Si los valores son iguales, ordenar alfabéticamente para mantener un orden estable
+                                 return a.Country.localeCompare(b.Country);
+                               });
+                               
+                               // Encontrar la posición de España usando exactamente el mismo nombre que en el CSV
+                               const spainIndex = sortedCountries.findIndex(item => 
+                                 item.Country === 'Spain'
+                               );
+                               
+                               ranking = spainIndex !== -1 ? spainIndex + 1 : 0;
+                             }
+                               
+                                                                return (
+                                  <div>
+                                    <div className={`text-xs font-medium ${diffPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(1)}% {language === 'es' ? 'vs UE' : 'vs EU'}
+                                    </div>
+                                    <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                      {language === 'es' ? `Ranking UE #${ranking}` : `EU Ranking #${ranking}`}
+                                    </div>
+                                  </div>
+                                );
+                             }
+                             
+                                                           return (
+                                <div>
+                                  <div className="text-xs font-medium text-gray-400">
+                                    -- {language === 'es' ? 'vs UE' : 'vs EU'}
+                                  </div>
+                                  <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
                                 {language === 'es' ? `Ranking UE --` : `EU Ranking --`}
-                              </div>
-                            </div>
-                          );
+                                  </div>
+                                </div>
+                              );
                         })()
-                      }
+                         }
                     </div>
                   </div>
                 </div>
               </div>
-
+              
               {/* Métrica 3: Top comunidad autónoma */}
               <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
@@ -717,41 +725,41 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                             }
                           } catch {
                             // En caso de error, usar valor por defecto
-                          }
-                          
-                          return (
-                            <>
-                              <div className="mt-1">
-                                <span className="text-lg font-bold text-gray-800 truncate" style={{ maxWidth: '150px' }}>
-                                  {regionName}
-                                </span>
-                              </div>
-                              <div className="flex items-baseline mt-1">
-                                <span className="text-2xl font-bold text-green-700">
-                                  {value.toFixed(2)}%
-                                </span>
-                                <span className="ml-2 text-sm text-gray-500">
-                                  {language === 'es' ? 'del PIB' : 'of GDP'}
-                                </span>
-                              </div>
-                            </>
-                          );
                         }
                         
                         return (
                           <>
                             <div className="mt-1">
-                              <span className="text-lg font-bold text-gray-600 truncate" style={{ maxWidth: '150px' }}>
-                                {language === 'es' ? 'Sin datos' : 'No data'}
+                              <span className="text-lg font-bold text-gray-800 truncate" style={{ maxWidth: '150px' }}>
+                                  {regionName}
                               </span>
                             </div>
                             <div className="flex items-baseline mt-1">
-                              <span className="text-2xl font-bold text-gray-400">--</span>
+                              <span className="text-2xl font-bold text-green-700">
+                                  {value.toFixed(2)}%
+                              </span>
                               <span className="ml-2 text-sm text-gray-500">
                                 {language === 'es' ? 'del PIB' : 'of GDP'}
                               </span>
                             </div>
                           </>
+                        );
+                        }
+                        
+                        return (
+                      <>
+                        <div className="mt-1">
+                          <span className="text-lg font-bold text-gray-600 truncate" style={{ maxWidth: '150px' }}>
+                            {language === 'es' ? 'Sin datos' : 'No data'}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline mt-1">
+                          <span className="text-2xl font-bold text-gray-400">--</span>
+                          <span className="ml-2 text-sm text-gray-500">
+                            {language === 'es' ? 'del PIB' : 'of GDP'}
+                          </span>
+                        </div>
+                      </>
                         );
                       })()
                     }
@@ -762,7 +770,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Métrica 4: Canarias */}
               <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
+                                      <div className="flex flex-col items-center mr-4">
                     <div className="p-3 bg-yellow-50 rounded-lg mb-2">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -794,27 +802,27 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                           );
                           
                           // Extraer valores únicos por comunidad
-                          const communityMap = new Map();
+                              const communityMap = new Map();
                           allRegionData.forEach(item => {
-                            const name = item["Comunidad Limpio"];
-                            const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
-                            if (!isNaN(value)) {
-                              communityMap.set(name, value);
-                            }
-                          });
-                          
+                                const name = item["Comunidad Limpio"];
+                                const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
+                                if (!isNaN(value)) {
+                                  communityMap.set(name, value);
+                                }
+                              });
+                              
                           // Ordenar comunidades por valor
-                          const sortedCommunities = Array.from(communityMap.entries())
-                            .sort((a, b) => b[1] - a[1]);
-                          
-                          // Encontrar la posición de Canarias
-                          const canariasIndex = sortedCommunities.findIndex(([name]) => 
-                            name.toLowerCase() === "canarias"
-                          );
-                          
+                              const sortedCommunities = Array.from(communityMap.entries())
+                                .sort((a, b) => b[1] - a[1]);
+                              
+                              // Encontrar la posición de Canarias
+                              const canariasIndex = sortedCommunities.findIndex(([name]) => 
+                                name.toLowerCase() === "canarias"
+                              );
+                              
                           const canariasRank = canariasIndex !== -1 ? canariasIndex + 1 : 'N/A';
-                          
-                          return (
+                              
+                              return (
                             <>
                               <div className="flex items-baseline mt-1">
                                 <span className="text-2xl font-bold text-yellow-700">
@@ -829,30 +837,30 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                                   {diff >= 0 ? '+' : ''}{diff.toFixed(1)}% {language === 'es' ? 'vs España' : 'vs Spain'}
                                 </span>
                               </div>
-                              <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
-                                {language === 'es' ? `Ranking nacional #${canariasRank}` : `National Ranking #${canariasRank}`}
-                              </div>
-                            </>
-                          );
+                                <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
+                                  {language === 'es' ? `Ranking nacional #${canariasRank}` : `National Ranking #${canariasRank}`}
+                                </div>
+                          </>
+                        );
                         }
                         
                         return (
-                          <>
-                            <div className="flex items-baseline mt-1">
-                              <span className="text-2xl font-bold text-gray-400">--</span>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {language === 'es' ? 'del PIB' : 'of GDP'}
-                              </span>
-                            </div>
-                            <div className="flex items-center mt-1.5">
-                              <span className="text-xs font-medium text-gray-400">
-                                -- {language === 'es' ? 'vs España' : 'vs Spain'}
-                              </span>
-                            </div>
-                            <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
-                              {language === 'es' ? 'Ranking nacional: Sin datos' : 'National Ranking: No data'}
-                            </div>
-                          </>
+                      <>
+                        <div className="flex items-baseline mt-1">
+                          <span className="text-2xl font-bold text-gray-400">--</span>
+                          <span className="ml-2 text-sm text-gray-500">
+                            {language === 'es' ? 'del PIB' : 'of GDP'}
+                          </span>
+                        </div>
+                        <div className="flex items-center mt-1.5">
+                          <span className="text-xs font-medium text-gray-400">
+                            -- {language === 'es' ? 'vs España' : 'vs Spain'}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
+                          {language === 'es' ? 'Ranking nacional: Sin datos' : 'National Ranking: No data'}
+                        </div>
+                      </>
                         );
                       })()
                     }
@@ -869,8 +877,8 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             {/* Subsección 2.1: Mapa y ranking de inversión en I+D */}
             <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? 
-                `Distribución geográfica - ${getSectorName(selectedSector)} (${selectedYear})` : 
-                `Geographical Distribution - ${getSectorName(selectedSector)} (${selectedYear})`} 
+                `Distribución geográfica` : 
+                `Geographical Distribution`} 
               />
               
               {/* Filtros - DEJAR SOLO UN CONJUNTO DE FILTROS */}
@@ -1013,8 +1021,8 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
             <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? 
-                `Mapa regional - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})` : 
-                `Regional Map - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})`} 
+                `Distribución regional` : 
+                `Regional Distribution`} 
               />
               
               {/* Filtros para la sección de comunidades autónomas */}

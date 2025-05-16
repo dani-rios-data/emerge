@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
 import { Feature, Geometry } from 'geojson';
 import { SECTOR_COLORS } from '../utils/colors';
@@ -90,7 +90,7 @@ interface EuropeanRDMapProps {
 // URL del archivo GeoJSON de Europa
 const EUROPE_GEOJSON_URL = '/data/geo/europe.geojson';
 
-// Paleta de colores para el mapa basada en los colores de sectores
+  // Paleta de colores para el mapa basada en los colores de sectores
 const getSectorPalette = (sectorId: string) => {
   // Normalizar el ID del sector para asegurar compatibilidad
   let normalizedId = sectorId.toLowerCase();
@@ -105,8 +105,6 @@ const getSectorPalette = (sectorId: string) => {
   // Asegurar que usamos una clave válida para SECTOR_COLORS
   const validSectorId = (normalizedId in SECTOR_COLORS) ? normalizedId : 'total';
   const baseColor = SECTOR_COLORS[validSectorId as keyof typeof SECTOR_COLORS];
-  
-  console.log(`Sector ID: ${sectorId} -> Normalized: ${normalizedId} -> Valid: ${validSectorId} -> Color: ${baseColor}`);
   
   // Crear gradiente basado en el color del sector
   return {
@@ -621,18 +619,13 @@ function getColorForValue(
   selectedYear: string = '',
   dataDisplayType: DataDisplayType = 'percent_gdp'
 ): string {
-  // Log inicial para depuración
-  console.log(`getColorForValue llamado con: valor=${value}, sector=${selectedSector}, año=${selectedYear}, datos=${data.length}`);
-  
   // Si no hay datos, usar el color NULL
   if (value === null || value === undefined) {
-    console.log(`getColorForValue: valor null o undefined, usando color NULL para ${selectedSector}`);
     return getSectorPalette(selectedSector).NULL;
   }
   
   // Si el valor es exactamente 0, usar el color ZERO
   if (value === 0 || value === 0.0 || value.toString() === '0' || value.toString() === '0.0') {
-    console.log(`getColorForValue: valor exactamente 0, usando color ZERO para ${selectedSector}`);
     return getSectorPalette(selectedSector).ZERO;
   }
 
@@ -641,7 +634,6 @@ function getColorForValue(
   
   // Si no tenemos datos para calcular rangos, usar valores por defecto
   if (!data || !data.length || !selectedYear) {
-    console.log(`getColorForValue: usando rangos por defecto para valor=${value}`);
     if (value < 1.0) {
       return palette.MIN;
     } else if (value < 1.8) {
@@ -656,11 +648,9 @@ function getColorForValue(
   try {
     // Calcular rangos basados en los datos disponibles
     const range = getSectorValueRange(data, selectedYear, selectedSector, dataDisplayType);
-    console.log(`getColorForValue: calculando rangos - min=${range.min}, max=${range.max}`);
     
     // Si no hay suficiente rango, usar valores predeterminados
     if (range.max <= range.min || range.max - range.min < 0.001) {
-      console.log(`getColorForValue: rango insuficiente, usando valores por defecto`);
       if (value < 1.0) {
         return palette.MIN;
       } else if (value < 1.8) {
@@ -678,27 +668,17 @@ function getColorForValue(
     const threshold2 = range.min + 2 * step;
     const threshold3 = range.min + 3 * step;
     
-    console.log(`getColorForValue: umbrales - t1=${threshold1}, t2=${threshold2}, t3=${threshold3}`);
-    
     // Asignar color según el rango
-    let colorUsed;
     if (value <= threshold1) {
-      colorUsed = palette.MIN;
-      console.log(`getColorForValue: valor ${value} <= ${threshold1}, usando color MIN`);
+      return palette.MIN;
     } else if (value <= threshold2) {
-      colorUsed = palette.LOW;
-      console.log(`getColorForValue: valor ${value} <= ${threshold2}, usando color LOW`);
+      return palette.LOW;
     } else if (value <= threshold3) {
-      colorUsed = palette.MID;
-      console.log(`getColorForValue: valor ${value} <= ${threshold3}, usando color MID`);
+      return palette.MID;
     } else {
-      colorUsed = palette.HIGH;
-      console.log(`getColorForValue: valor ${value} > ${threshold3}, usando color HIGH`);
+      return palette.HIGH;
     }
-    
-    return colorUsed;
-  } catch (error) {
-    console.error(`Error en getColorForValue: ${error}`);
+  } catch {
     // En caso de error, usar valores por defecto
     if (value < 1.0) {
       return palette.MIN;
@@ -1023,16 +1003,15 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
   // Obtener la paleta de colores para el sector seleccionado
   const colorPalette = getSectorPalette(selectedSector);
   
-  // Log del sector seleccionado y su paleta
+  // Preparar paleta de colores para el sector seleccionado
   useEffect(() => {
-    console.log(`EuropeanRDMap: Sector seleccionado '${selectedSector}' - Paleta:`, colorPalette);
+    // No hacemos nada, pero mantenemos la dependencia para posibles futuras optimizaciones
   }, [selectedSector, colorPalette]);
 
   // Calcular el rango de valores cuando cambia el sector o el año
   useEffect(() => {
     const newRange = getSectorValueRange(data, selectedYear.toString(), selectedSector, dataDisplayType);
     setValueRange(newRange);
-    console.log(`Rango de valores para ${selectedSector} (${selectedYear}):`, newRange);
   }, [data, selectedYear, selectedSector, dataDisplayType]);
 
   // Cargar el GeoJSON
@@ -1060,28 +1039,50 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
       });
   }, [t.error, geojsonData]);
 
-  // Efecto para mostrar información sobre los datos CSV disponibles
+  // No necesitamos registrar información de datos en cada render
   useEffect(() => {
-    if (!data || data.length === 0) return;
-    
-    // Reducir logs para mejorar rendimiento
-    console.log('Datos CSV cargados:', data.length, 'registros');
-    
-    // Analizar años y sectores disponibles para verificar filtrado
-    const years = [...new Set(data.map(d => d.Year))].sort();
-    const sectors = [...new Set(data.map(d => d.Sector))].sort();
-    
-    console.log('Años disponibles:', years);
-    console.log('Sectores disponibles:', sectors);
-    
+    // Este efecto está vacío para eliminar logs innecesarios que afectan el rendimiento
   }, [data]);
 
-  // Función para obtener el valor del país optimizada
+  // Crear un caché con useMemo para los valores de los países
+  const countryValuesCache = useMemo(() => {
+    // Solo calcular si tenemos todos los datos necesarios
+    if (!data || !data.length || !geojsonData) return new Map();
+    
+    const cache = new Map<string, number | null>();
+    
+    // Precalcular valores para todos los países
+    geojsonData.features.forEach(feature => {
+      const countryId = feature.properties?.iso_a3 || getCountryName(feature);
+      if (countryId) {
+        const value = getCountryValue(feature, data, selectedYear.toString(), selectedSector, dataDisplayType);
+        cache.set(countryId, value);
+      }
+    });
+    
+    return cache;
+  }, [data, geojsonData, selectedYear, selectedSector, dataDisplayType]);
+
+  // Función para obtener el valor del país optimizada usando caché
   const getCountryValueOptimized = React.useCallback(
     (feature: GeoJsonFeature): number | null => {
-      return getCountryValue(feature, data, selectedYear.toString(), selectedSector, dataDisplayType);
-    }, 
-    [data, selectedYear, selectedSector, dataDisplayType]
+      const countryId = feature.properties?.iso_a3 || getCountryName(feature);
+      
+      // Usar el valor del caché si existe
+      if (countryId && countryValuesCache.has(countryId)) {
+        return countryValuesCache.get(countryId) || null;
+      }
+      
+      // Si no está en caché, calcularlo y guardarlo
+      const value = getCountryValue(feature, data, selectedYear.toString(), selectedSector, dataDisplayType);
+      if (countryId) {
+        // Modificar el Map es seguro porque es local a este componente
+        countryValuesCache.set(countryId, value);
+      }
+      
+      return value;
+    },
+    [data, selectedYear, selectedSector, dataDisplayType, countryValuesCache]
   );
 
   // Función para obtener el título del mapa basado en los datos seleccionados
@@ -1090,6 +1091,8 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
   };
   
   // Función para obtener el nombre del sector basado en el sector seleccionado
+  // Se utiliza en el componente al renderizar etiquetas del mapa
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getSectorText = (): string => {
     // Determinar el nombre del sector
     let sectorId = selectedSector.toLowerCase();
