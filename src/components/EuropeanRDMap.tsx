@@ -96,7 +96,7 @@ const getSectorPalette = (sectorId: string) => {
   let normalizedId = sectorId.toLowerCase();
   
   // Transformar nombres de sectores en inglés a IDs
-  if (normalizedId === 'all sectors') normalizedId = 'total';
+  if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') normalizedId = 'total';
   if (normalizedId === 'business enterprise sector') normalizedId = 'business';
   if (normalizedId === 'government sector') normalizedId = 'government';
   if (normalizedId === 'higher education sector') normalizedId = 'education';
@@ -247,9 +247,15 @@ function getEUValue(data: EuropeCSVData[], yearStr: string, sector: string, data
     const isEU = item.Country === 'European Union - 27 countries (from 2020)';
     const yearMatch = item.Year === yearStr;
     
-    // Para 'all' buscar el sector total
+    // Normalizar el sector para manejar 'All Sectors', 'total', etc.
+    let normalizedSector = sector.toLowerCase();
+    if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+      normalizedSector = 'total';
+    }
+    
+    // Para 'total' buscar el sector 'All Sectors'
     const sectorMatch = (
-      sector === 'total' && item.Sector === 'All Sectors'
+      normalizedSector === 'total' && item.Sector === 'All Sectors'
     ) || item.Sector === sector;
     
     return isEU && yearMatch && sectorMatch;
@@ -431,8 +437,15 @@ function getCountryValue(
       const isCorrectEuroAreaVersion = isCorrect2023 || isCorrect2015;
       
       const yearMatch = item.Year === selectedYear;
+      
+      // Normalizar el sector seleccionado para manejar diferentes formatos
+      let normalizedSector = selectedSector.toLowerCase();
+      if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+        normalizedSector = 'all sectors';
+      }
+      
       const sectorMatch = item.Sector === selectedSector || 
-                      (item.Sector === 'All Sectors' && selectedSector === 'All Sectors');
+                      (item.Sector === 'All Sectors' && (normalizedSector === 'all sectors' || selectedSector === 'All Sectors'));
       
       return isCorrectEuroArea && isCorrectEuroAreaVersion && yearMatch && sectorMatch;
     });
@@ -492,8 +505,15 @@ function getCountryValue(
     }
     
     const yearMatch = item.Year === selectedYear;
+    
+    // Normalizar el sector seleccionado para manejar diferentes formatos
+    let normalizedSector = selectedSector.toLowerCase();
+    if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+      normalizedSector = 'all sectors';
+    }
+    
     const sectorMatch = item.Sector === selectedSector || 
-                    (item.Sector === 'All Sectors' && selectedSector === 'All Sectors');
+                    (item.Sector === 'All Sectors' && (normalizedSector === 'all sectors' || selectedSector === 'All Sectors'));
     
     return countryMatches && yearMatch && sectorMatch;
   });
@@ -542,9 +562,15 @@ function getSectorValueRange(
     
     // Verificar si coincide con el sector
     let sectorName = selectedSector;
+    // Normalizar el sector seleccionado para manejar diferentes formatos
+    let normalizedSector = selectedSector.toLowerCase();
+    if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+      normalizedSector = 'all';
+    }
+    
     if ([
-      'total', 'all', 'business', 'government', 'education', 'nonprofit'
-    ].includes(selectedSector.toLowerCase())) {
+      'all', 'total', 'business', 'government', 'education', 'nonprofit'
+    ].includes(normalizedSector)) {
       const sectorNameMapping: Record<string, string> = {
         'total': 'All Sectors',
         'all': 'All Sectors',
@@ -553,10 +579,10 @@ function getSectorValueRange(
         'education': 'Higher education sector',
         'nonprofit': 'Private non-profit sector'
       };
-      sectorName = sectorNameMapping[selectedSector.toLowerCase()] || 'All Sectors';
+      sectorName = sectorNameMapping[normalizedSector] || 'All Sectors';
     }
     const sectorMatch = (item.Sector === sectorName) || 
-                        (item.Sector === 'All Sectors' && sectorName === 'All Sectors');
+                        (item.Sector === 'All Sectors' && (sectorName === 'All Sectors' || normalizedSector === 'all'));
     // Excluir Unión Europea y zonas euro
     const nombre = normalizarTexto(item.Country) + ' ' + normalizarTexto(item.País || '');
     const esUE = nombre.includes('union europea') || nombre.includes('european union');
