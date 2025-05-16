@@ -17,7 +17,7 @@ const App: React.FC = () => {
 
   const texts = {
     es: {
-      title: "Observatorio de I+D en Canarias",
+      title: "Islas Canarias Observatorio de I+D",
       subtitle: "Análisis comparativo e histórico de indicadores de innovación",
       overview: "Visión General",
       investment: "Inversión en I+D",
@@ -31,7 +31,7 @@ const App: React.FC = () => {
       footerText: "Desarrollado por EMERGE - Asociación Canaria de Startups"
     },
     en: {
-      title: "R&D Observatory of the Canary Islands",
+      title: "Canary Islands R&D Observatory",
       subtitle: "Comparative and historical analysis of innovation indicators",
       overview: "Overview",
       investment: "R&D Investment",
@@ -249,7 +249,7 @@ const App: React.FC = () => {
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('overview')}</h2>
             
             {/* Componente de la página Overview */}
-            <OverviewPage />
+            <OverviewPage language={language} />
           </div>
         )}
         
@@ -267,7 +267,7 @@ const App: React.FC = () => {
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('researchers')}</h2>
             
             {/* Componente de la página Researchers */}
-            <Researchers />
+            <Researchers language={language} />
           </div>
         )}
         
@@ -276,7 +276,7 @@ const App: React.FC = () => {
             <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('patents')}</h2>
             
             {/* Componente de la página Patents */}
-            <Patents />
+            <Patents language={language} />
           </div>
         )}
         

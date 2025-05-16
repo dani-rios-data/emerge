@@ -1,8 +1,14 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const Overview: React.FC = () => {
-  const { language } = useLanguage();
+interface OverviewProps {
+  language?: 'es' | 'en';
+}
+
+const Overview: React.FC<OverviewProps> = (props) => {
+  // Usar el language de props si está disponible, o del contexto si no
+  const contextLanguage = useLanguage();
+  const language = props.language || contextLanguage.language;
 
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (

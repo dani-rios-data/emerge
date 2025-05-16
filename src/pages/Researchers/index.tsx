@@ -1,8 +1,14 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const Researchers: React.FC = () => {
-  const { language } = useLanguage();
+interface ResearchersProps {
+  language?: 'es' | 'en';
+}
+
+const Researchers: React.FC<ResearchersProps> = (props) => {
+  // Usar el language de props si está disponible, o del contexto si no
+  const contextLanguage = useLanguage();
+  const language = props.language || contextLanguage.language;
 
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (

@@ -1,8 +1,14 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const Patents: React.FC = () => {
-  const { language } = useLanguage();
+interface PatentsProps {
+  language?: 'es' | 'en';
+}
+
+const Patents: React.FC<PatentsProps> = (props) => {
+  // Usar el language de props si está disponible, o del contexto si no
+  const contextLanguage = useLanguage();
+  const language = props.language || contextLanguage.language;
 
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
@@ -20,6 +26,22 @@ const Patents: React.FC = () => {
   
   return (
     <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6 w-full min-h-[700px]">
+      {/* Anuncio de limitación de datos */}
+      <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="flex items-start">
+          <div className="mr-3 mt-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-sm text-amber-800">
+            {language === 'es' 
+              ? 'Con la información disponible no es posible una comparación directa entre Europa y Canarias como en las pestañas anteriores. Por este motivo, se realizará la comparación entre la UE y los países de Europa por un lado, y entre las comunidades autónomas de España por otro.'
+              : 'With the available information, a direct comparison between Europe and the Canary Islands is not possible as in the previous tabs. For this reason, comparisons will be made between the EU and European countries on one hand, and between the autonomous communities of Spain on the other.'}
+          </p>
+        </div>
+      </div>
+      
       {/* Sección 1: Key Metrics */}
       <div className="mb-12 mt-[-15px]">
         <SectionTitle title={language === 'es' ? "Métricas clave" : "Key Metrics"} />

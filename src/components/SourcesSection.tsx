@@ -17,7 +17,15 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       rdSpending: "Gasto en I+D en España y comunidades autónomas",
       rdSpendingDesc: "Datos sobre el gasto en actividades de I+D por sectores en España y las comunidades autónomas.",
       rdSpendingRecent: "Periodo 2021-2023",
-      rdSpendingHistorical: "Datos históricos (2007-2020)"
+      rdSpendingHistorical: "Datos históricos (2007-2020)",
+      europeanResearchers: "Investigadores en Europa",
+      europeanResearchersDesc: "Datos sobre el personal dedicado a la investigación en países europeos.",
+      spanishResearchers: "Investigadores en España y Canarias",
+      spanishResearchersDesc: "Datos sobre el personal dedicado a la investigación en España y sus comunidades autónomas.",
+      europeanPatents: "Patentes en Europa",
+      europeanPatentsDesc: "Datos sobre las patentes registradas en países europeos.",
+      spanishPatents: "Patentes en España",
+      spanishPatentsDesc: "Datos sobre la evolución de solicitudes de patentes nacionales en España."
     },
     en: {
       title: "Data Sources",
@@ -29,7 +37,15 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       rdSpending: "R&D Spending in Spain and autonomous communities",
       rdSpendingDesc: "Data on spending on R&D activities by sectors in Spain and the autonomous communities.",
       rdSpendingRecent: "Period 2021-2023",
-      rdSpendingHistorical: "Historical data (2007-2020)"
+      rdSpendingHistorical: "Historical data (2007-2020)",
+      europeanResearchers: "Researchers in Europe",
+      europeanResearchersDesc: "Data on research personnel in European countries.",
+      spanishResearchers: "Researchers in Spain and Canary Islands",
+      spanishResearchersDesc: "Data on research personnel in Spain and its autonomous communities.",
+      europeanPatents: "Patents in Europe",
+      europeanPatentsDesc: "Data on registered patents in European countries.",
+      spanishPatents: "Patents in Spain",
+      spanishPatentsDesc: "Data on the evolution of national patent applications in Spain."
     }
   };
 
@@ -68,14 +84,45 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       url: "https://www3.gobiernodecanarias.org/istac/statistical-visualizer/visualizer/data.html?resourceType=dataset&agencyId=ISTAC&resourceId=E30057A_000005&version=~latest",
       organization: "ISTAC (Instituto Canario de Estadística)",
       logo: "/logos/istac.png"
+    },
+    {
+      id: "eurostat-researchers",
+      title: t('europeanResearchers'),
+      description: t('europeanResearchersDesc'),
+      url: "https://ec.europa.eu/eurostat/databrowser/view/tsc00004/default/table?lang=en&category=t_scitech.t_rd",
+      organization: "Eurostat",
+      logo: "/logos/eurostat.png"
+    },
+    {
+      id: "istac-researchers",
+      title: t('spanishResearchers'),
+      description: t('spanishResearchersDesc'),
+      url: "https://www3.gobiernodecanarias.org/istac/statistical-visualizer/visualizer/data.html?resourceType=dataset&agencyId=ISTAC&resourceId=E30057A_000001&version=~latest#visualization/table",
+      organization: "ISTAC (Instituto Canario de Estadística)",
+      logo: "/logos/istac.png"
+    },
+    {
+      id: "eurostat-patents",
+      title: t('europeanPatents'),
+      description: t('europeanPatentsDesc'),
+      url: "https://ec.europa.eu/eurostat/databrowser/view/sdg_09_40/default/table?lang=en",
+      organization: "Eurostat",
+      logo: "/logos/eurostat.png"
+    },
+    {
+      id: "oepm-patents",
+      title: t('spanishPatents'),
+      description: t('spanishPatentsDesc'),
+      url: "https://www.oepm.es/es/sobre-OEPM/estadisticas/graficos-evolucion-mensual-de-solicitudes-nacionales/graficos-de-evolucion-de-patentes/",
+      organization: "OEPM (Oficina Española de Patentes y Marcas)",
+      logo: "/logos/oepm.png"
     }
   ];
 
   return (
     <div className="space-y-6 w-full min-h-[700px]">
       {/* Introducción */}
-      <div className="bg-gradient-to-r from-dashboard-primary/10 to-dashboard-secondary/10 p-6 rounded-lg border border-dashboard-primary/20 w-full">
-        <h3 className="text-xl font-bold text-dashboard-primary mb-3">{t('title')}</h3>
+      <div className="p-6 rounded-lg border border-gray-200 w-full">
         <p className="text-sm text-gray-700 leading-relaxed">{t('description')}</p>
       </div>
 
