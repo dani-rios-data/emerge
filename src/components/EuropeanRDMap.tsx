@@ -1086,9 +1086,11 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
 
   // Función para obtener el título del mapa basado en los datos seleccionados
   const getMapTitle = (): string => {
-    // Establecer el formato del año
-    const yearText = selectedYear.toString();
-    
+    return `${t.rdInvestmentByCountry} · ${selectedYear}`;
+  };
+  
+  // Función para obtener el nombre del sector basado en el sector seleccionado
+  const getSectorText = (): string => {
     // Determinar el nombre del sector
     let sectorId = selectedSector.toLowerCase();
     
@@ -1113,9 +1115,27 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
     }
     
     const sectorKey = `sector_${sectorId}` as keyof typeof t;
-    const sectorText = t[sectorKey] || t.allSectors;
+    return t[sectorKey] || t.allSectors;
+  };
+  
+  // Función para obtener el color del sector para el título
+  const getSectorColor = (): string => {
+    // Normalizar el ID del sector para asegurar compatibilidad
+    let normalizedId = selectedSector.toLowerCase();
     
-    return `${t.rdInvestmentByCountry} - ${sectorText} (${yearText})`;
+    // Transformar nombres de sectores en inglés a IDs
+    if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') normalizedId = 'total';
+    if (normalizedId === 'business enterprise sector') normalizedId = 'business';
+    if (normalizedId === 'government sector') normalizedId = 'government';
+    if (normalizedId === 'higher education sector') normalizedId = 'education';
+    if (normalizedId === 'private non-profit sector') normalizedId = 'nonprofit';
+    
+    // Asegurar que usamos una clave válida para SECTOR_COLORS
+    const validSectorId = (normalizedId in SECTOR_COLORS) ? normalizedId : 'total';
+    const baseColor = SECTOR_COLORS[validSectorId as keyof typeof SECTOR_COLORS];
+    
+    // Devolver una versión más oscura del color para el texto
+    return d3.color(baseColor)?.darker(0.8)?.toString() || '#333333';
   };
 
   // Renderizar el mapa cuando los datos GeoJSON están disponibles
@@ -1742,6 +1762,50 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
         <h3 className="text-sm font-semibold text-gray-800">
           {getMapTitle()}
         </h3>
+                 <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+             style={{ backgroundColor: `${d3.color(getSectorColor())?.copy({ opacity: 0.15 })}` }}>
+          {(() => {
+            // Obtener el nombre exacto del sector desde los datos
+            const sectorMapping: Record<string, string> = {
+              'total': 'All Sectors',
+              'business': 'Business enterprise sector',
+              'government': 'Government sector',
+              'education': 'Higher education sector',
+              'nonprofit': 'Private non-profit sector'
+            };
+            
+            // Normalizar el ID del sector
+            let normalizedId = selectedSector.toLowerCase();
+            if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') normalizedId = 'total';
+            if (normalizedId === 'business enterprise sector') normalizedId = 'business';
+            if (normalizedId === 'government sector') normalizedId = 'government';
+            if (normalizedId === 'higher education sector') normalizedId = 'education';
+            if (normalizedId === 'private non-profit sector') normalizedId = 'nonprofit';
+            
+            // Obtener el nombre del sector en inglés
+            const sectorNameEn = sectorMapping[normalizedId] || 'All Sectors';
+            
+            // Traducir al idioma actual
+            if (language === 'es') {
+              switch (sectorNameEn) {
+                case 'All Sectors':
+                  return 'Todos los sectores';
+                case 'Business enterprise sector':
+                  return 'Sector empresarial';
+                case 'Government sector':
+                  return 'Sector gubernamental';
+                case 'Higher education sector':
+                  return 'Enseñanza Superior';
+                case 'Private non-profit sector':
+                  return 'Instituciones privadas sin fines de lucro';
+                default:
+                  return sectorNameEn;
+              }
+            } else {
+              return sectorNameEn;
+            }
+          })()}
+        </div>
       </div>
       
       <svg 

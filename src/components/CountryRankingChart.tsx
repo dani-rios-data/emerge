@@ -1,5 +1,6 @@
 import React, { memo, useRef, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
+import * as d3 from 'd3';
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -1181,27 +1182,15 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Función para obtener el título del gráfico basado en sector y año seleccionados
   const getChartTitle = () => {
-    let sectorText = texts[language].allSectors;
-    
-    switch (selectedSector) {
-      case "total":
-        sectorText = texts[language].sector_total;
-        break;
-      case "business":
-        sectorText = texts[language].sector_business;
-        break;
-      case "government":
-        sectorText = texts[language].sector_government;
-        break;
-      case "education":
-        sectorText = texts[language].sector_education;
-        break;
-      case "nonprofit":
-        sectorText = texts[language].sector_nonprofit;
-        break;
-    }
-    
-    return `${texts[language].countryRanking} - ${sectorText} (${selectedYear})`;
+    return `${texts[language].countryRanking} · ${selectedYear}`;
+  };
+  
+  // Función para obtener el color del sector para el título
+  const getSectorColor = () => {
+    // Obtener el color base del sector
+    const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+    // Usar d3 para obtener una versión más oscura del color
+    return d3.color(sectorColor)?.darker(0.8)?.toString() || '#333333';
   };
 
   return (
@@ -1211,6 +1200,44 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         <h3 className="text-sm font-semibold text-gray-800">
           {getChartTitle()}
         </h3>
+                 <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+             style={{ backgroundColor: `${d3.color(getSectorColor())?.copy({ opacity: 0.15 })}` }}>
+          {(() => {
+            // Obtener el nombre exacto del sector desde los datos de rdSectors
+            const sectorMapping: Record<string, string> = {
+              'total': 'All Sectors',
+              'business': 'Business enterprise sector',
+              'government': 'Government sector',
+              'education': 'Higher education sector',
+              'nonprofit': 'Private non-profit sector'
+            };
+            
+            // Obtener el nombre del sector en inglés primero
+            const sectorNameEn = sectorMapping[selectedSector] || 'All Sectors';
+            
+            // Obtener el nombre en el idioma actual
+            // Buscar en rdSectors (importado en la página principal) a través de props
+            // Si no está disponible, usar valores predeterminados
+            if (language === 'es') {
+              switch (sectorNameEn) {
+                case 'All Sectors':
+                  return 'Todos los sectores';
+                case 'Business enterprise sector':
+                  return 'Sector empresarial';
+                case 'Government sector':
+                  return 'Sector gubernamental';
+                case 'Higher education sector':
+                  return 'Enseñanza Superior';
+                case 'Private non-profit sector':
+                  return 'Instituciones privadas sin fines de lucro';
+                default:
+                  return sectorNameEn;
+              }
+            } else {
+              return sectorNameEn;
+            }
+          })()}
+        </div>
       </div>
       
       {sortedCountries.length > 0 ? (
