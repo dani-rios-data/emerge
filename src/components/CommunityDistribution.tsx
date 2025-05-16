@@ -43,7 +43,7 @@ const rdSectors = [
     code: 'PNP',
     name: {
       es: 'Instituciones privadas sin fines de lucro',
-      en: 'Private non-profit sector'
+      en: 'Private non-profit institutions'
     }
   }
 ];
@@ -889,12 +889,12 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
             },
             {
               id: 'nonprofit',
-              name: language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit sector',
+              name: language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit institutions',
               value: spainHistoricalValues[year]['nonprofit'],
               color: sectorColors.nonprofit,
               sharePercentage: (spainHistoricalValues[year]['nonprofit'] / spainHistoricalValues[year]['total']) * 100,
               monetaryValue: calculateMonetaryValueForSpain('nonprofit'),
-              yoyChange: calculateYoYChange(year, communityName, 'nonprofit', language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit sector')
+              yoyChange: calculateYoYChange(year, communityName, 'nonprofit', language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit institutions')
             }
           ];
         }
@@ -1313,7 +1313,7 @@ const CommunityDistribution: React.FC<CommunityDistributionProps> = ({ language 
         id: 'education'
       },
       {
-              name: language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit sector',
+              name: language === 'es' ? 'Instituciones privadas sin fines de lucro' : 'Private non-profit institutions',
         value: spainData.nonprofit,
               color: sectorColors.nonprofit,
         sharePercentage: (spainData.nonprofit / spainData.total) * 100,
