@@ -838,11 +838,33 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     
     // Generar colores (Canarias en amarillo, el resto según el sector)
     const backgroundColors = chartData.map(item => {
-      const communityName = item.nameEs.toLowerCase();
-      if (communityName.includes('canarias')) {
+      const communityNameEs = item.nameEs.toLowerCase();
+      const communityNameEn = item.nameEn.toLowerCase();
+      
+      // Detectar Canarias en ambos idiomas
+      if (communityNameEs.includes('canarias') || communityNameEn.includes('canary')) {
         return CHART_PALETTE.CANARIAS; // Amarillo Canarias
       }
-      return palette.MID; // Color según el sector
+      
+      // Detectar entidades supranacionales y España
+      if (
+        communityNameEs.includes('unión europea') || communityNameEn.includes('european union') ||
+        communityNameEs.includes('zona euro') || communityNameEn.includes('euro area') ||
+        communityNameEs.includes('españa') || communityNameEn.includes('spain')
+      ) {
+        // Usar colores específicos para entidades especiales
+        if (communityNameEs.includes('unión europea') || communityNameEn.includes('european union')) {
+          return '#4338ca'; // Índigo para UE
+        }
+        if (communityNameEs.includes('zona euro') || communityNameEn.includes('euro area')) {
+          return '#1e40af'; // Azul oscuro para Zona Euro
+        }
+        if (communityNameEs.includes('españa') || communityNameEn.includes('spain')) {
+          return '#dc2626'; // Rojo para España
+        }
+      }
+      
+      return palette.MID; // Color según el sector para el resto
     });
     
     // Configuración de datos para el gráfico
@@ -854,12 +876,18 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
           (language === 'es' ? 'Miles de €' : 'Thousand €'),
         data: values,
         backgroundColor: backgroundColors,
-        borderColor: backgroundColors.map(color => color === CHART_PALETTE.CANARIAS ? CHART_PALETTE.CANARIAS : d3.color(palette.MID)?.darker(0.2)?.toString() || palette.MID),
+        borderColor: backgroundColors.map(color => {
+          if (color === CHART_PALETTE.CANARIAS) return d3.color(CHART_PALETTE.CANARIAS)?.darker(0.2)?.toString() || CHART_PALETTE.CANARIAS;
+          if (color === '#4338ca') return d3.color('#4338ca')?.darker(0.2)?.toString() || '#4338ca'; // Borde UE
+          if (color === '#1e40af') return d3.color('#1e40af')?.darker(0.2)?.toString() || '#1e40af'; // Borde Zona Euro
+          if (color === '#dc2626') return d3.color('#dc2626')?.darker(0.2)?.toString() || '#dc2626'; // Borde España
+          return d3.color(palette.MID)?.darker(0.2)?.toString() || palette.MID;
+        }),
         borderWidth: 1,
         borderRadius: 4,
         barThickness: 18, // Barras gruesas
         barPercentage: 0.95, // Aumentado para reducir el espacio entre barras
-        categoryPercentage: 0.97, // Aumentado para reducir el espacio entre categorías
+        categoryPercentage: 0.97 // Aumentado para reducir el espacio entre categorías
       }]
     };
     

@@ -288,9 +288,13 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   const isSupranationalEntity = (name: string): boolean => {
     const normalizedName = normalizeText(name);
     return normalizedName.includes('european union') || 
+           normalizedName.includes('union europea') ||
            normalizedName.includes('euro area') ||
+           normalizedName.includes('zona euro') ||
            normalizedName.includes('oecd') ||
-           normalizedName.includes('average');
+           normalizedName.includes('ocde') ||
+           normalizedName.includes('average') ||
+           normalizedName.includes('promedio');
   };
   
   // Crear datos para el gráfico
@@ -312,21 +316,27 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   
   // Función para verificar si es España (exactamente 'Spain')
   const isSpain = (country: string): boolean => {
-    return country === 'Spain';
+    const normalizedCountry = normalizeText(country);
+    return normalizedCountry === 'spain' || normalizedCountry === 'espana' || normalizedCountry === 'españa';
   };
   
   // Crear colores - España en rojo, UE en amarillo, Zona Euro en verde, y el resto con el color del sector seleccionado
   const barColors = chartLabels.map(country => {
     // Verificar si es España usando la función exacta
-    if (isSpain(country)) {
+    if (isSpain(country) || country === 'España') {
       return CHART_PALETTE.HIGHLIGHT; // Rojo para España
     }  
     // Verificar si es exactamente la Unión Europea
-    else if (country === 'European Union' || country === 'European Union - 27 countries (from 2020)') {
+    else if (country === 'European Union' || 
+             country === 'European Union - 27 countries (from 2020)' ||
+             country === 'Unión Europea' ||
+             country === 'Unión Europea - 27 países (desde 2020)') {
       return CHART_PALETTE.YELLOW; // Amarillo para Unión Europea
     }
     // Verificar si es alguna entidad de la Zona Euro
-    else if (country.includes('Euro area')) {
+    else if (country.includes('Euro area') || 
+             country.includes('Zona Euro') ||
+             country.includes('Zona euro')) {
       return CHART_PALETTE.GREEN; // Verde para Zona Euro
     }
     
