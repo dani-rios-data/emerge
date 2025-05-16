@@ -186,6 +186,19 @@ function normalizarTexto(texto: string | undefined): string {
     .toLowerCase();
 }
 
+// Función para verificar si una entidad es UE o zona euro (no un país)
+function isSupranationalEntity(name: string | undefined): boolean {
+  if (!name) return false;
+  const normalizedName = normalizarTexto(name);
+  return normalizedName.includes('union europea') || 
+         normalizedName.includes('european union') ||
+         normalizedName.includes('zona euro') || 
+         normalizedName.includes('euro area') ||
+         normalizedName.includes('oecd') ||
+         normalizedName.includes('ocde') ||
+         normalizedName.includes('average');
+}
+
 // Función para obtener el nombre del país de las propiedades GeoJSON
 function getCountryName(feature: GeoJsonFeature): string {
   const props = feature.properties || {};
@@ -203,18 +216,35 @@ function getCountryName(feature: GeoJsonFeature): string {
 // Función para obtener el ISO3 del país
 function getCountryIso3(feature: GeoJsonFeature): string {
   const props = feature.properties || {};
+  
+  // Mapeo especial para países que podrían tener problemas con ISO3
+  const countryNameToISO3: { [key: string]: string } = {
+    'Czech Republic': 'CZE',
+    'Czechia': 'CZE',
+    'Chequia': 'CZE',
+    'República Checa': 'CZE',
+    'North Macedonia': 'MKD',
+    'Bosnia and Herzegovina': 'BIH'
+  };
+  
+  // Verificar si es un país con mapeo especial
+  const countryName = getCountryName(feature);
+  if (countryName && countryNameToISO3[countryName]) {
+    return countryNameToISO3[countryName];
+  }
+  
   // Intentar obtener el código ISO3 de diferentes propiedades posibles
-  return (props.ISO3 || props.iso_a3 || props.ADM0_A3 || '') as string;
+  const iso3 = props.ISO3 || props.iso_a3 || props.ADM0_A3 || '';
+  return iso3 as string;
 }
 
 // Función para obtener el valor de la UE
 function getEUValue(data: EuropeCSVData[], yearStr: string, sector: string, dataDisplayType: DataDisplayType = 'percent_gdp'): number | null {
   if (!data || data.length === 0) return null;
   
-  // Buscar los datos de la UE
+  // Buscar los datos de la UE usando el nombre exacto del CSV
   const euData = data.filter(item => {
-    const normalizedCountry = normalizarTexto(item.Country);
-    const isEU = normalizedCountry.includes('european union');
+    const isEU = item.Country === 'European Union - 27 countries (from 2020)';
     const yearMatch = item.Year === yearStr;
     
     // Para 'all' buscar el sector total
@@ -266,12 +296,9 @@ function getSpainValue(data: EuropeCSVData[], yearStr: string, sector: string, d
   };
   const sectorNameEn = sectorNameMapping[sector] || 'All Sectors';
 
-  // Buscar España en los datos
+  // Buscar España en los datos usando el nombre exacto
   const spainData = data.filter(item => {
-    const isSpain = (
-      (item.Country && normalizarTexto(String(item.Country)).includes('spain')) ||
-      (item.País && (normalizarTexto(String(item.País)).includes('espana') || normalizarTexto(String(item.País)).includes('españa')))
-    );
+    const isSpain = item.Country === 'Spain';
     const yearMatch = item.Year === yearStr;
     const sectorMatch = item.Sector === sectorNameEn || 
       (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
@@ -370,6 +397,15 @@ function getCountryValue(
   // Obtener nombre del país desde el feature GeoJSON (backup)
   const countryName = getCountryName(feature);
   
+  // Mapeo especial para países con nombres diferentes en GeoJSON y CSV
+  const countryNameMapping: { [key: string]: string[] } = {
+    'Czech Republic': ['Czechia', 'Czech Republic', 'Chequia', 'República Checa'],
+    'Czechia': ['Czechia', 'Czech Republic', 'Chequia', 'República Checa'],
+    'Bosnia and Herzegovina': ['Bosnia and Herzegovina', 'Bosnia y Herzegovina'],
+    'North Macedonia': ['North Macedonia', 'Republic of North Macedonia', 'Macedonia del Norte'],
+    'United Kingdom': ['United Kingdom', 'Reino Unido'],
+  };
+  
   // Verificar si es la Unión Europea
   const isEU = normalizarTexto(countryName).includes('european union');
   
@@ -444,7 +480,16 @@ function getCountryValue(
     const itemCountry = normalizarTexto(item.Country);
     const countryNameNormalized = normalizarTexto(countryName);
     
-    const countryMatches = itemCountry === countryNameNormalized;
+    // Verificar si es un país que necesita mapeo especial
+    let countryMatches = itemCountry === countryNameNormalized;
+    
+    // Si no hay coincidencia directa, verificar con el mapeo de nombres alternativos
+    if (!countryMatches && countryNameMapping[countryName]) {
+      // Buscar coincidencia con alguno de los nombres alternativos
+      countryMatches = countryNameMapping[countryName].some(name => 
+        normalizarTexto(name) === itemCountry
+      );
+    }
     
     const yearMatch = item.Year === selectedYear;
     const sectorMatch = item.Sector === selectedSector || 
@@ -697,6 +742,11 @@ function getCountryFlagUrl(countryName: string, feature?: GeoJsonFeature): strin
   if (feature) {
     const iso3 = getCountryIso3(feature);
     if (iso3) {
+      // Casos especiales para países que podrían tener problemas con ISO3
+      if (iso3 === 'CZE') {
+        return "https://flagcdn.com/cz.svg"; // Czechia/República Checa
+      }
+      
       // Buscar en countryFlags por ISO3
       const flagItem = countryFlags.find(flag => flag.iso3 === iso3);
       if (flagItem) {
@@ -732,7 +782,11 @@ function getCountryFlagUrl(countryName: string, feature?: GeoJsonFeature): strin
   } else if (normalizedName.includes('estados unidos') || normalizedName.includes('united states')) {
     return "https://flagcdn.com/us.svg";
   }
-  // Nuevos casos específicos para países que no muestran correctamente su bandera
+  // Nuevos casos específicos para Czechia
+  else if (normalizedName.includes('czech') || normalizedName.includes('chequia') || normalizedName.includes('republica checa')) {
+    return "https://flagcdn.com/cz.svg";
+  }
+  // Otros casos específicos para países que no muestran correctamente su bandera
   else if (normalizedName.includes('belgica') || normalizedName.includes('belgium')) {
     return "https://flagcdn.com/be.svg";
   } else if (normalizedName.includes('dinamarca') || normalizedName.includes('denmark')) {
@@ -1075,23 +1129,45 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
       });
       
       // Ordenar países por valor de mayor a menor (para calcular ranking)
+      // Usar función estable de comparación para garantizar consistencia
       const sortedCountries = countryValues
-        .sort((a, b) => (b.value || 0) - (a.value || 0));
+        .sort((a, b) => {
+          // Comparar primero por valor
+          const valueDiff = (b.value || 0) - (a.value || 0);
+          if (valueDiff !== 0) return valueDiff;
+          
+          // Si los valores son iguales, ordenar alfabéticamente para mantener un orden estable
+          const nameA = getCountryName(a.feature);
+          const nameB = getCountryName(b.feature);
+          return nameA.localeCompare(nameB);
+        });
       
       // Función para obtener el ranking de un país
       const getCountryRank = (feature: GeoJsonFeature): { rank: number, total: number } | null => {
         const value = getCountryValueOptimized(feature);
         if (value === null) return null;
         
-        const index = sortedCountries.findIndex(
+        // Obtener el nombre del país
+        const countryName = getCountryName(feature);
+        
+        // Si es una entidad supranacional, no mostrar ranking
+        if (isSupranationalEntity(countryName)) return null;
+        
+        // Filtrar solo los países (no entidades supranacionales) para el ranking
+        const onlyCountriesRanking = sortedCountries.filter(
+          item => !isSupranationalEntity(getCountryName(item.feature))
+        );
+        
+        // Encontrar la posición en la lista filtrada
+        const countryIndex = onlyCountriesRanking.findIndex(
           item => item.feature === feature
         );
         
-        if (index === -1) return null;
+        if (countryIndex === -1) return null;
         
         return {
-          rank: index + 1, // +1 porque los índices empiezan en 0
-          total: sortedCountries.length
+          rank: countryIndex + 1, // +1 porque los índices empiezan en 0
+          total: onlyCountriesRanking.length
         };
       };
       
@@ -1471,8 +1547,8 @@ const EuropeanRDMap: React.FC<EuropeanRDMapProps> = ({
                   </div>
                   ` : ''}
                   
-                  <!-- Ranking (si está disponible) -->
-                  ${rankInfo ? `
+                  <!-- Ranking (si está disponible y no es entidad supranacional) -->
+                  ${rankInfo && !isSupranationalEntity(String(countryName)) ? `
                   <div class="mb-4">
                     <div class="bg-yellow-50 p-2 rounded-md flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">

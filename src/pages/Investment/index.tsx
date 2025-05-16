@@ -544,38 +544,52 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                              );
                              
                              const euAvg = yearData.find(item => 
-                               (item.Country === 'European Union (27)' ||
-                                item.Country === 'European Union - 27 countries (from 2020)' ||
-                                item.Country.includes('European Union') || 
-                                (item.País && item.País.includes('Unión Europea')))
+                               item.Country === 'European Union - 27 countries (from 2020)'
                              );
                              
                              const spainData = yearData.find(item => 
-                               item.País === 'España' || item.Country === 'Spain'
+                               item.Country === 'Spain'
                              );
                              
                              // También calcular el ranking aquí
                              let ranking = 0;
                              if (yearData.length > 0) {
+                               // Función para normalizar texto (remover acentos)
+                               const normalizeText = (text: string | undefined): string => {
+                                 if (!text) return '';
+                                 return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                               };
+                              
+                               // Función para verificar si una entidad es UE, zona euro u otra entidad no país
+                               const isSupranationalEntity = (name: string): boolean => {
+                                 const normalizedName = normalizeText(name);
+                                 return normalizedName.includes('european union') || 
+                                        normalizedName.includes('euro area') ||
+                                        normalizedName.includes('oecd') ||
+                                        normalizedName.includes('average');
+                               };
+                               
                                // Filtrar solo países (no promedios ni grupos)
                                const countriesData = yearData.filter(item => 
-                                 !(item.Country.includes('Union') || 
-                                   item.Country.includes('Euro') || 
-                                   item.Country.includes('OECD') ||
-                                   item.Country.includes('Average'))
+                                 !isSupranationalEntity(item.Country)
                                );
                                
-                               // Ordenar por valor de %GDP (descendente)
-                               const sortedCountries = [...countriesData].sort((a, b) => 
-                                 parseFloat(b['%GDP']) - parseFloat(a['%GDP'])
-                               );
+                               // Ordenar por valor de %GDP (descendente) con criterio estable
+                               const sortedCountries = [...countriesData].sort((a, b) => {
+                                 // Comparar primero por valor
+                                 const valueDiff = parseFloat(b['%GDP']) - parseFloat(a['%GDP']);
+                                 if (valueDiff !== 0) return valueDiff;
+                                 
+                                 // Si los valores son iguales, ordenar alfabéticamente para mantener un orden estable
+                                 return a.Country.localeCompare(b.Country);
+                               });
                                
-                               // Encontrar la posición de España
+                               // Encontrar la posición de España usando exactamente el mismo nombre que en el CSV
                                const spainIndex = sortedCountries.findIndex(item => 
-                                 item.País === 'España' || item.Country === 'Spain'
+                                 item.Country === 'Spain'
                                );
                                
-                               ranking = spainIndex !== -1 ? spainIndex + 1 : 14;
+                               ranking = spainIndex !== -1 ? spainIndex + 1 : 0;
                              }
                              
                              if (euAvg && spainData) {

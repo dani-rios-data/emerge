@@ -273,8 +273,25 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   console.log("Países procesados:", Array.from(countryMap.entries()));
   
   // Ordenar países por valor (de mayor a menor)
+  // Usar función estable de comparación para garantizar consistencia
   const sortedCountries = Array.from(countryMap.entries())
-    .sort((a, b) => b[1].value - a[1].value); 
+    .sort((a, b) => {
+      // Comparar primero por valor
+      const valueDiff = b[1].value - a[1].value;
+      if (valueDiff !== 0) return valueDiff;
+      
+      // Si los valores son iguales, ordenar alfabéticamente para mantener un orden estable
+      return a[0].localeCompare(b[0]);
+    }); 
+  
+  // Función para verificar si una entidad es UE o zona euro (no un país)
+  const isSupranationalEntity = (name: string): boolean => {
+    const normalizedName = normalizeText(name);
+    return normalizedName.includes('european union') || 
+           normalizedName.includes('euro area') ||
+           normalizedName.includes('oecd') ||
+           normalizedName.includes('average');
+  };
   
   // Crear datos para el gráfico
   const chartLabels = sortedCountries.map(([country]) => country);
@@ -293,21 +310,23 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   // Obtener el color del sector seleccionado
   const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
   
+  // Función para verificar si es España (exactamente 'Spain')
+  const isSpain = (country: string): boolean => {
+    return country === 'Spain';
+  };
+  
   // Crear colores - España en rojo, UE en amarillo, Zona Euro en verde, y el resto con el color del sector seleccionado
   const barColors = chartLabels.map(country => {
-    // Normalizar el país para la comparación
-    const normalizedCountry = normalizeText(country);
-    
-    // Verificar si es España (tanto en español como en inglés)
-    if (normalizedCountry === 'espana' || normalizedCountry === 'spain') {
+    // Verificar si es España usando la función exacta
+    if (isSpain(country)) {
       return CHART_PALETTE.HIGHLIGHT; // Rojo para España
-    } 
-    // Verificar si es alguna entidad de la Unión Europea
-    else if (normalizedCountry.includes('union europea') || normalizedCountry.includes('european union')) {
+    }  
+    // Verificar si es exactamente la Unión Europea
+    else if (country === 'European Union' || country === 'European Union - 27 countries (from 2020)') {
       return CHART_PALETTE.YELLOW; // Amarillo para Unión Europea
     }
     // Verificar si es alguna entidad de la Zona Euro
-    else if (normalizedCountry.includes('zona euro') || normalizedCountry.includes('euro area')) {
+    else if (country.includes('Euro area')) {
       return CHART_PALETTE.GREEN; // Verde para Zona Euro
     }
     
@@ -412,9 +431,18 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         const countryName = chartLabels[index] as string || '';
         const value = values[index] as number;
         
-        // Calcular el ranking: posición + 1 porque los índices empiezan en 0
-        const rank = index + 1;
-        const totalCountries = chartLabels.length;
+                  // Calcular el ranking solo para países (excluir UE y zonas euro)
+          // Filtrar las entidades supranacionales para el cálculo del ranking
+          const onlyCountries = sortedCountries.filter(([name]) => !isSupranationalEntity(name));
+          
+          // Encontrar la posición real en la lista de solo países
+          let rank = 0;
+          if (!isSupranationalEntity(countryName)) {
+            const countryIndex = onlyCountries.findIndex(([name]) => name === countryName);
+            rank = countryIndex >= 0 ? countryIndex + 1 : 0;
+          }
+          
+          const totalCountries = onlyCountries.length;
         
         // Mostrar el tooltip
         tooltipRef.current.style.display = 'block';
@@ -813,7 +841,8 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                      </div>`
                    : ''}
                 
-                <!-- Ranking -->
+                <!-- Ranking (no mostrado para UE o zonas euro) -->
+                ${!isSupranationalEntity(displayName) ? `
                 <div class="mb-4">
                   <div class="bg-yellow-50 p-2 rounded-md flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
@@ -825,6 +854,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
                     <span class="text-gray-600">${language === 'es' ? `de ${totalCountries}` : `of ${totalCountries}`}</span>
                   </div>
                 </div>
+                ` : ''}
                 
                 <!-- Comparaciones -->
                 <div class="space-y-2 border-t border-gray-100 pt-3">
@@ -1069,7 +1099,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     }
   };
 
-  // Añadir función para obtener el valor del año anterior
+  // Añadir función para obtener el valor del año anterior con nombre exacto
   const getPreviousYearValue = (data: EuropeCSVData[], country: string, selectedYear: number, selectedSector: string): number | null => {
     if (!data || data.length === 0 || selectedYear <= 1) return null;
     
@@ -1077,10 +1107,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
     const previousYear = selectedYear - 1;
     
-    // Buscar datos del país para el año anterior
+    // Buscar datos del país para el año anterior usando nombre exacto
     const countryPrevYearData = data.filter(item => {
-      const isCountry = normalizeText(country).includes(normalizeText(item.Country)) || 
-                     (item.País && normalizeText(country).includes(normalizeText(item.País)));
+      const isCountry = item.Country === country;
       const yearMatch = parseInt(item.Year) === previousYear;
       const sectorMatch = item.Sector === sectorNameEn || 
                         (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
@@ -1126,14 +1155,9 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Modificar la lógica para obtener la etiqueta directamente del CSV principal
   const getDataLabelForCountry = (country: string, year: number): string => {
-    // Normalizar el nombre del país para comparación
-    const normalizedCountry = normalizeText(country);
-    
-    // Buscar el registro correspondiente en los datos
+    // Buscar el registro correspondiente en los datos usando el nombre exacto
     const countryData = data.find(item => {
-      const countryMatch = 
-        normalizeText(item.Country).includes(normalizedCountry) || 
-        (item.País && normalizeText(item.País).includes(normalizedCountry));
+      const countryMatch = item.Country === country;
       const yearMatch = parseInt(item.Year) === year;
       const sectorMatch = item.Sector === sectorNameEn || 
                       (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
