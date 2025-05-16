@@ -508,14 +508,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mt-8 shadow-sm hover:shadow-md transition-shadow duration-300">
-      {/* Título de subsección - Estilo similar a otras subsecciones */}
-      <div className="mb-4 mt-2">
-        <h3 className="text-md font-semibold text-blue-700 pl-2 border-l-4 border-blue-200 mx-4">
-          {language === 'es' ? "Evolución temporal del % PIB invertido en I+D" : "R&D Investment as % of GDP over time"}
-        </h3>
-      </div>
-      
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8 shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Filtros - Solo mantener el selector de sector */}
       <div className="mb-6 px-4">
         <div className="flex justify-between items-center">

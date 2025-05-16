@@ -508,15 +508,7 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
   };
   
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mt-8 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <div className="mb-4 mt-2">
-        <h3 className="text-md font-semibold text-blue-700 pl-2 border-l-4 border-blue-200 mx-4">
-          {language === 'es' 
-            ? "Evolución por sectores del % PIB invertido en I+D por comunidad autónoma" 
-            : "Evolution by sectors of R&D Investment as % of GDP by autonomous community"}
-        </h3>
-      </div>
-      
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8 shadow-sm hover:shadow-md transition-shadow duration-300">
       {/* Selector de comunidad autónoma */}
       <div className="mb-4 px-4 flex justify-end">
         <div className="relative" ref={dropdownRef}>

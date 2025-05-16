@@ -375,19 +375,19 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   );
   
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-4 text-blue-800 border-b border-blue-100 pb-2">
+    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
       {title}
     </h2>
   );
   
   const SubsectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-md font-semibold mb-3 text-blue-700 pl-2 border-l-4 border-blue-200">
+    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
       {title}
     </h3>
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6">
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <p className="text-gray-500">{t.loading}</p>
@@ -399,7 +399,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
       ) : (
         <>
           {/* Sección 1: Key Metrics */}
-          <div className="mb-10">
+          <div className="mb-12 mt-[-15px]">
             <SectionTitle title={t.keyMetricsTitle} />
             <div className="mb-4 flex items-center">
               <div className="text-gray-700 font-medium text-lg">
@@ -862,11 +862,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           </div>
           
           {/* Sección 2: Comparación entre la UE y países */}
-          <div className="mb-10">
+          <div className="mb-12">
             <SectionTitle title={t.euComparisonTitle} />
             
             {/* Subsección 2.1: Mapa y ranking de inversión en I+D */}
-            <div className="mb-8">
+            <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? 
                 `Inversión en I+D por país - ${getSectorName(selectedSector)} (${selectedYear})` : 
                 `R&D Investment by Country - ${getSectorName(selectedSector)} (${selectedYear})`} 
@@ -931,7 +931,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Primera fila: Mapa y Gráfica */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* Mapa de Europa */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
                   <EuropeanRDMap 
@@ -977,14 +977,14 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
 
               {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <ObservationFlags />
                 <SupranationalEntities />
               </div>
             </div>
             
             {/* Subsección 2.2: Distribución sectorial de la inversión en I+D */}
-            <div className="mb-8">
+            <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión en I+D" : "R&D Investment Distribution by Sectors"} />
               
               {/* Componente SectorDistribution */}
@@ -992,22 +992,25 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               
               {/* Nuevo componente RDComparisonChart */}
               {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
-                <RDComparisonChart 
-                  language={language}
-                  gdpData={mapToGDPConsolidadoData(europeData)}
-                  autonomousCommunitiesData={autonomousCommunitiesData}
-                  years={availableYears.map(year => year.toString())}
-                />
+                <>
+                  <SubsectionTitle title={language === 'es' ? "Evolución temporal del % PIB invertido en I+D" : "R&D Investment as % of GDP over time"} />
+                  <RDComparisonChart 
+                    language={language}
+                    gdpData={mapToGDPConsolidadoData(europeData)}
+                    autonomousCommunitiesData={autonomousCommunitiesData}
+                    years={availableYears.map(year => year.toString())}
+                  />
+                </>
               )}
             </div>
           </div>
           
           {/* Sección 3: Comparación por comunidades autónomas de España */}
-          <div className="mb-6">
+          <div className="mb-12">
             <SectionTitle title={t.spanishRegionsTitle} />
             
             {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
-            <div className="mb-8">
+            <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? 
                 `Inversión en I+D por Comunidad Autónoma - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})` : 
                 `R&D Investment by Autonomous Community - ${getSectorName(selectedRegionSector)} (${selectedRegionYear})`} 
@@ -1072,7 +1075,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Mapa y Ranking */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* Mapa de España */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
                   {autonomousCommunitiesData.length > 0 ? (
@@ -1112,7 +1115,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             </div>
             
             {/* Nueva Subsección 3.2: Distribución sectorial de la inversión en I+D */}
-            <div className="mb-8">
+            <div className="mb-10">
               <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión en I+D" : "R&D Investment Distribution by Sectors"} />
               
               {/* Componente CommunityDistribution */}
@@ -1120,20 +1123,26 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               
               {/* Nuevo componente CommunityRDComparisonChart */}
               {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
-                <CommunityRDComparisonChart 
-                  language={language}
-                  gdpData={mapToGDPConsolidadoData(europeData)}
-                  autonomousCommunitiesData={autonomousCommunitiesData}
-                  years={availableYears.map(year => year.toString())}
-                />
+                <>
+                  <SubsectionTitle title={language === 'es' ? "Evolución temporal del % PIB invertido en I+D por comunidades autónomas" : "R&D Investment as % of GDP over time by autonomous communities"} />
+                  <CommunityRDComparisonChart 
+                    language={language}
+                    gdpData={mapToGDPConsolidadoData(europeData)}
+                    autonomousCommunitiesData={autonomousCommunitiesData}
+                    years={availableYears.map(year => year.toString())}
+                  />
+                </>
               )}
               
               {/* Nuevo componente SectorEvolutionChart para mostrar evolución por sectores */}
               {autonomousCommunitiesData.length > 0 && (
-                <SectorEvolutionChart 
-                  language={language}
-                  autonomousCommunitiesData={autonomousCommunitiesData}
-                />
+                <>
+                  <SubsectionTitle title={language === 'es' ? "Evolución por sectores del % PIB invertido en I+D por comunidad autónoma" : "Evolution by sectors of R&D Investment as % of GDP by autonomous community"} />
+                  <SectorEvolutionChart 
+                    language={language}
+                    autonomousCommunitiesData={autonomousCommunitiesData}
+                  />
+                </>
               )}
             </div>
           </div>
