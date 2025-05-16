@@ -1182,7 +1182,41 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Función para obtener el título del gráfico basado en sector y año seleccionados
   const getChartTitle = () => {
-    return `${texts[language].countryRanking} · ${selectedYear}`;
+    // Mapeo de IDs de sector a nombres localizados
+    const sectorNames: Record<string, { es: string, en: string }> = {
+      'total': {
+        es: 'Todos los sectores',
+        en: 'All sectors'
+      },
+      'business': {
+        es: 'Empresas',
+        en: 'Business enterprise'
+      },
+      'government': {
+        es: 'Administración Pública',
+        en: 'Government'
+      },
+      'education': {
+        es: 'Enseñanza Superior',
+        en: 'Higher education'
+      },
+      'nonprofit': {
+        es: 'Instituciones sin fines de lucro',
+        en: 'Non-profit institutions'
+      }
+    };
+    
+    // Obtener nombre localizado del sector
+    const sectorName = sectorNames[selectedSector] ? 
+                       sectorNames[selectedSector][language] : 
+                       (language === 'es' ? 'Todos los sectores' : 'All sectors');
+    
+    // Construir el título con el mismo formato que los otros componentes
+    if (language === 'es') {
+      return `Ranking de países - ${sectorName} (${selectedYear})`;
+    } else {
+      return `Country Ranking - ${sectorName} (${selectedYear})`;
+    }
   };
   
   // Función para obtener el color del sector para el título

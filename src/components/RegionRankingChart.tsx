@@ -1180,44 +1180,7 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
     }
   };
 
-  // Obtener título del gráfico
-  const getChartTitle = () => {
-    // Mapeo de IDs de sector a nombres localizados
-    const sectorNames: Record<string, { es: string, en: string }> = {
-      'total': {
-        es: 'Todos los sectores',
-        en: 'All sectors'
-      },
-      'business': {
-        es: 'Empresas',
-        en: 'Business enterprise'
-      },
-      'government': {
-        es: 'Administración Pública',
-        en: 'Government'
-      },
-      'education': {
-        es: 'Enseñanza Superior',
-        en: 'Higher education'
-      },
-      'nonprofit': {
-        es: 'Instituciones sin fines de lucro',
-        en: 'Non-profit institutions'
-      }
-    };
-    
-    // Obtener nombre localizado del sector
-    const sectorName = sectorNames[selectedSector] ? 
-                       sectorNames[selectedSector][language] : 
-                       (language === 'es' ? 'Todos los sectores' : 'All sectors');
-    
-    // Construir el título
-    if (language === 'es') {
-      return `Ranking por Comunidades Autónomas - ${sectorName} (${selectedYear})`;
-    } else {
-      return `Autonomous Communities Ranking - ${sectorName} (${selectedYear})`;
-    }
-  };
+
 
   // Si no hay datos, mostrar mensaje de no disponibilidad
   if (chartData.length === 0) {
@@ -1236,10 +1199,53 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
   // Configuración del gráfico
   const chartConfig = getChartConfig();
 
+  // Función para obtener el color del sector para el título
+  const getSectorColor = () => {
+    // Obtener el color base del sector
+    const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+    // Usar d3 para obtener una versión más oscura del color
+    return d3.color(sectorColor)?.darker(0.8)?.toString() || '#333333';
+  };
+
   return (
     <div className="relative h-full" ref={containerRef}>
       <div className="mb-2 text-center">
-        <h3 className="text-base font-semibold text-gray-800 text-center">{getChartTitle()}</h3>
+        <h3 className="text-sm font-semibold text-gray-800">
+          {language === 'es' ? `Ranking de comunidades autónomas · ${selectedYear}` : `Autonomous Communities Ranking · ${selectedYear}`}
+        </h3>
+        <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+             style={{ backgroundColor: `${d3.color(getSectorColor())?.copy({ opacity: 0.15 })}` }}>
+          {(() => {
+            // Mapeo de IDs de sector a nombres localizados
+            const sectorNames: Record<string, { es: string, en: string }> = {
+              'total': {
+                es: 'Todos los sectores',
+                en: 'All sectors'
+              },
+              'business': {
+                es: 'Empresas',
+                en: 'Business enterprise'
+              },
+              'government': {
+                es: 'Administración Pública',
+                en: 'Government'
+              },
+              'education': {
+                es: 'Enseñanza Superior',
+                en: 'Higher education'
+              },
+              'nonprofit': {
+                es: 'Instituciones sin fines de lucro',
+                en: 'Non-profit institutions'
+              }
+            };
+            
+            // Obtener nombre localizado del sector
+            return sectorNames[selectedSector] ? 
+                  sectorNames[selectedSector][language] : 
+                  (language === 'es' ? 'Todos los sectores' : 'All sectors');
+          })()}
+        </div>
       </div>
       
       <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">

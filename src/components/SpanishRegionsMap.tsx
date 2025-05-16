@@ -958,44 +958,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
   // Textos según el idioma actual
   const t = mapTexts[language];
   
-  // Obtener el título del mapa
-  const getMapTitle = (): string => {
-    // Mapeo de IDs de sector a nombres localizados
-    const sectorNames: Record<string, { es: string, en: string }> = {
-      'total': {
-        es: 'Todos los sectores',
-        en: 'All sectors'
-      },
-      'business': {
-        es: 'Empresas',
-        en: 'Business enterprise'
-      },
-      'government': {
-        es: 'Administración Pública',
-        en: 'Government'
-      },
-      'education': {
-        es: 'Enseñanza Superior',
-        en: 'Higher education'
-      },
-      'nonprofit': {
-        es: 'Instituciones sin fines de lucro',
-        en: 'Non-profit institutions'
-      }
-    };
-    
-    // Obtener nombre localizado del sector
-    const sectorName = sectorNames[selectedSector] ? 
-                      sectorNames[selectedSector][language] : 
-                      (language === 'es' ? 'Todos los sectores' : 'All sectors');
-    
-    // Construir el título
-    if (language === 'es') {
-      return `Inversión I+D - ${sectorName} (${selectedYear})`;
-    } else {
-      return `R&D Investment - ${sectorName} (${selectedYear})`;
-    }
-  };
+
   
   // Efecto para cargar los datos GeoJSON
   useEffect(() => {
@@ -1858,7 +1821,42 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
       ) : (
         <>
           <div className="mb-2 text-center">
-            <h3 className="text-base font-semibold text-gray-800">{getMapTitle()}</h3>
+            <h3 className="text-sm font-semibold text-gray-800">
+              {language === 'es' ? `Mapa de comunidades autónomas · ${selectedYear}` : `Autonomous Communities Map · ${selectedYear}`}
+            </h3>
+            <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+                 style={{ backgroundColor: `${d3.color(SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total)?.copy({ opacity: 0.15 })}` }}>
+              {(() => {
+                // Mapeo de IDs de sector a nombres localizados
+                const sectorNames: Record<string, { es: string, en: string }> = {
+                  'total': {
+                    es: 'Todos los sectores',
+                    en: 'All sectors'
+                  },
+                  'business': {
+                    es: 'Empresas',
+                    en: 'Business enterprise'
+                  },
+                  'government': {
+                    es: 'Administración Pública',
+                    en: 'Government'
+                  },
+                  'education': {
+                    es: 'Enseñanza Superior',
+                    en: 'Higher education'
+                  },
+                  'nonprofit': {
+                    es: 'Instituciones sin fines de lucro',
+                    en: 'Non-profit institutions'
+                  }
+                };
+                
+                // Obtener nombre localizado del sector
+                return sectorNames[selectedSector] ? 
+                      sectorNames[selectedSector][language] : 
+                      (language === 'es' ? 'Todos los sectores' : 'All sectors');
+              })()}
+            </div>
           </div>
           <div className="h-[calc(100%-2rem)]">
             <svg ref={svgRef} className="w-full h-full"></svg>
