@@ -157,6 +157,22 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
         <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Investigadores por país" : "Researchers by Country"} />
           
+          {/* Descripción del dataset */}
+          <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <p>
+              {language === 'es' 
+                ? "Número de investigadores (profesionales dedicados a la concepción/creación de nuevos conocimientos, productos, procesos, métodos y sistemas, y en la gestión de los proyectos relacionados), por sector de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Los datos de recuento (HC) miden el número total de investigadores que trabajan principal o parcialmente en I+D."
+                : "Number of researchers (professionals engaged in the conception/creation of new knowledge, products, processes, methods and systems, and in the management of the projects concerned), by sector of performance (business, government, higher education, private non profit). Head count (HC) data measure the total number of researchers who are mainly or partly employed on R&D."
+              }
+            </p>
+            <p className="mt-2 text-xs italic">
+              {language === 'es' 
+                ? "Fuente: Eurostat"
+                : "Source: Eurostat"
+              }
+            </p>
+          </div>
+          
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
               <div className="text-center text-gray-400">
