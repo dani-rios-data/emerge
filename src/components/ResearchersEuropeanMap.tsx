@@ -309,6 +309,26 @@ function getCountryValue(
   const iso3 = getCountryIso3(feature);
   const iso2 = feature.properties?.iso_a2 as string;
   
+  // Lista de códigos de países europeos
+  const europeanCountryCodes = [
+    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
+    'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
+    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
+    'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
+    'XK', 'RU', 'EU27_2020', 'EA19', 'EA20',
+    'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
+    'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
+    'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
+    'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
+  ];
+  
+  // Verificar si el país es europeo
+  if ((iso2 && !europeanCountryCodes.includes(iso2)) || 
+      (iso3 && !europeanCountryCodes.includes(iso3))) {
+    // Si no es un país europeo, no mostrar datos
+    return null;
+  }
+  
   // Verificar si es una entidad supranacional (para manejo especial)
   const countryName = getCountryName(feature);
   if (isSupranationalEntity(countryName)) {
@@ -351,10 +371,7 @@ function getCountryValue(
     'ISL': ['IS'],
     'TUR': ['TR'],
     'MKD': ['MK'],
-    'RUS': ['RU'],
-    'USA': ['US'],
-    'JPN': ['JP'],
-    'KOR': ['KR']
+    'RUS': ['RU']
   };
   
   // Lista de posibles códigos a buscar
@@ -586,36 +603,49 @@ function positionTooltip<T extends Element>(
   event: MouseEvent, 
   tooltipNode: HTMLElement
 ): void {
-  const tooltipWidth = tooltipNode.offsetWidth;
-  const tooltipHeight = tooltipNode.offsetHeight;
+  // Obtener las dimensiones del tooltip
+  const tooltipRect = tooltipNode.getBoundingClientRect();
+  const tooltipWidth = tooltipRect.width || 300; // Usar un valor por defecto si aún no se ha renderizado
+  const tooltipHeight = tooltipRect.height || 200;
+  
+  // Obtener dimensiones de la ventana
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   
-  // Espacio mínimo desde los bordes
-  const margin = 10;
+  // Calcular la posición óptima
+  let left = event.clientX + 15;
+  let top = event.clientY - 15;
   
-  // Posición inicial (seguir al cursor)
-  let x = event.pageX + 15;
-  let y = event.pageY + 15;
-  
-  // Ajustar si el tooltip se sale por la derecha
-  if (x + tooltipWidth > windowWidth - margin) {
-    x = event.pageX - tooltipWidth - 15;
+  // Ajustar horizontalmente si se sale por la derecha
+  if (left + tooltipWidth > windowWidth - 10) {
+    left = event.clientX - tooltipWidth - 15; // Mover a la izquierda del cursor
   }
   
-  // Ajustar si el tooltip se sale por abajo
-  if (y + tooltipHeight > windowHeight - margin) {
-    y = event.pageY - tooltipHeight - 15;
+  // Ajustar verticalmente si se sale por abajo
+  if (top + tooltipHeight > windowHeight - 10) {
+    if (tooltipHeight < windowHeight - 20) {
+      // Si cabe en la pantalla, ajustar hacia arriba
+      top = windowHeight - tooltipHeight - 10;
+    } else {
+      // Si es demasiado grande, colocarlo en la parte superior con scroll
+      top = 10;
+    }
   }
   
-  // Asegurar que no se salga por la izquierda o arriba
-  x = Math.max(margin, x);
-  y = Math.max(margin, y);
+  // Asegurar que no se salga por arriba
+  if (top < 10) {
+    top = 10;
+  }
+  
+  // Asegurar que no se salga por la izquierda
+  if (left < 10) {
+    left = 10;
+  }
   
   // Aplicar la posición
   tooltip
-    .style('left', `${x}px`)
-    .style('top', `${y}px`);
+    .style('left', `${left}px`)
+    .style('top', `${top}px`);
 }
 
 // Actualizar la función para obtener nombre del país
@@ -737,7 +767,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
     fetchMap();
   }, [t.error]);
   
-  // Añadir estilos CSS para el tooltip en el useEffect
+        // Añadir estilos CSS para el tooltip en el useEffect
   useEffect(() => {
     // Crear un elemento de estilo
     const styleElement = document.createElement('style');
@@ -746,9 +776,15 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
     // Definir estilos CSS para el tooltip
     styleElement.textContent = `
       .country-tooltip {
-        transform-origin: center;
+        transform-origin: top left;
         transform: scale(0.95);
-        transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        opacity: 0;
+        z-index: 9999;
+        pointer-events: none;
+        position: fixed;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        border-radius: 8px;
       }
       .country-tooltip.visible {
         opacity: 1 !important;
@@ -839,7 +875,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
       // Crear una leyenda para el mapa
       const createLegend = () => {
         const legendGroup = svg.append('g')
-          .attr('transform', `translate(50, 500)`);
+          .attr('transform', `translate(60, 480)`);
         
         // Etiquetas de la leyenda
         const { min, max } = valueRange;
@@ -856,23 +892,23 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           
           legendGroup.append('rect')
             .attr('x', 0)
-            .attr('y', i * 25)
-            .attr('width', 20)
-            .attr('height', 20)
+            .attr('y', i * 30)
+            .attr('width', 25)
+            .attr('height', 25)
             .attr('fill', colors[i]);
           
           legendGroup.append('text')
-            .attr('x', 30)
-            .attr('y', i * 25 + 15)
-            .attr('font-size', '12px')
+            .attr('x', 35)
+            .attr('y', i * 30 + 18)
+            .attr('font-size', '14px')
             .text(`${formatNumberWithThousandSeparator(rangeStart)} - ${formatNumberWithThousandSeparator(rangeEnd)}`);
         }
         
         // Añadir título a la leyenda
         legendGroup.append('text')
           .attr('x', 0)
-          .attr('y', -10)
-          .attr('font-size', '12px')
+          .attr('y', -15)
+          .attr('font-size', '16px')
           .attr('font-weight', 'bold')
           .text(t.researchers);
       };
@@ -883,6 +919,26 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const countryIso2 = feature.properties?.iso_a2 as string;
         const countryName = getLocalizedCountryName(countryIso3 || countryIso2, language);
         const value = getCountryValue(feature, data, selectedYear, selectedSector);
+        
+        // Lista de códigos de países europeos
+        const europeanCountryCodes = [
+          'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
+          'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
+          'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
+          'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
+          'XK', 'RU', 'EU27_2020', 'EA19', 'EA20',
+          'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
+          'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
+          'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
+          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
+        ];
+        
+        // Verificar si el país es europeo
+        if ((countryIso2 && !europeanCountryCodes.includes(countryIso2)) || 
+            (countryIso3 && !europeanCountryCodes.includes(countryIso3))) {
+          // Si no es un país europeo, ignorar
+          return;
+        }
         
         // Ignorar hover en países sin datos
         if (value === null) return;
@@ -1027,21 +1083,29 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const tooltip = d3.select(tooltipRef.current!);
         tooltip
           .style('display', 'block')
-          .html(tooltipContent);
+          .html(tooltipContent)
+          .classed('visible', true);
         
-        // Posicionar tooltip con animación
-        if (tooltipRef.current) {
-          positionTooltip(tooltip, event, tooltipRef.current);
-        }
+        // Posicionar tooltip con animación - usar setTimeout para asegurar que el DOM se ha actualizado
+        setTimeout(() => {
+          if (tooltipRef.current) {
+            positionTooltip(tooltip, event, tooltipRef.current);
+          }
+        }, 10);
       };
       
-      const handleMouseMove = (event: MouseEvent) => {
-        // Solo actualizar la posición si el tooltip es visible
-        const tooltip = d3.select(tooltipRef.current!);
-        if (tooltip.style('display') !== 'none' && tooltipRef.current) {
-          positionTooltip(tooltip, event, tooltipRef.current);
-        }
-      };
+              const handleMouseMove = (event: MouseEvent) => {
+          // Solo actualizar la posición si el tooltip es visible
+          const tooltip = d3.select(tooltipRef.current!);
+          if (tooltip.style('display') !== 'none' && tooltipRef.current) {
+            // Usar setTimeout para recalcular posición después de que el DOM se actualice
+            setTimeout(() => {
+              if (tooltipRef.current) {
+                positionTooltip(tooltip, event, tooltipRef.current);
+              }
+            }, 0);
+          }
+        };
       
       const handleMouseOut = (event: MouseEvent) => {
         // Restaurar estilo original
@@ -1137,18 +1201,14 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
             viewBox="0 0 1000 700"
             preserveAspectRatio="xMidYMid meet"
           />
-          <div 
-            ref={tooltipRef}
-            className="country-tooltip absolute z-50 pointer-events-none"
-            style={{
-              display: 'none',
-              position: 'fixed',
-              opacity: 0,
-              transition: 'opacity 0.1s ease-in-out',
-              maxWidth: '350px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-              borderRadius: '4px'
-            }}
+                <div 
+        ref={tooltipRef}
+        className="country-tooltip"
+        style={{
+          display: 'none',
+          maxWidth: '350px',
+          transformOrigin: 'top left'
+        }}
           />
         </>
       )}
