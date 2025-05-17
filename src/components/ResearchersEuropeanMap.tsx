@@ -128,11 +128,11 @@ const getSectorPalette = (sectorId: string) => {
   return {
     NULL: '#f5f5f5',           // Gris claro para valores nulos
     ZERO: '#666666',           // Gris fuerte para países con 0 investigadores
-    MIN: d3.color(baseColor)?.brighter(1.8)?.toString() || '#f5f5f5',  // Muy claro
-    LOW: d3.color(baseColor)?.brighter(1.0)?.toString() || '#d0d0d0',  // Claro
+    MIN: d3.color(baseColor)?.brighter(1.9)?.toString() || '#f5f5f5',  // Muy claro
+    LOW: d3.color(baseColor)?.brighter(1.1)?.toString() || '#d0d0d0',  // Claro
     MID: baseColor,                                                    // Color base del sector
-    HIGH: d3.color(baseColor)?.darker(0.9)?.toString() || '#909090',   // Oscuro
-    MAX: d3.color(baseColor)?.darker(1.5)?.toString() || '#707070',    // Muy oscuro
+    HIGH: d3.color(baseColor)?.darker(1.0)?.toString() || '#909090',   // Oscuro
+    MAX: d3.color(baseColor)?.darker(1.8)?.toString() || '#707070',    // Muy oscuro
   };
 };
 
@@ -178,6 +178,7 @@ function normalizarTexto(texto: string | undefined): string {
 }
 
 // Función para verificar si una entidad es UE o zona euro (no un país)
+// Esta función se usa en el tooltip para mostrar información adicional
 function isSupranationalEntity(name: string | undefined): boolean {
   if (!name) return false;
   const normalizedName = normalizarTexto(name);
@@ -296,124 +297,24 @@ function getSpainValue(data: ResearchersData[], year: number, sector: string): n
   return null;
 }
 
-// Función para obtener el valor de un país
-function getCountryValue(
-  feature: GeoJsonFeature,
-  data: ResearchersData[],
-  year: number,
-  sector: string
-): number | null {
-  if (!data || data.length === 0) return null;
+// Función para verificar si el código es de una entidad supranacional
+function isSupranationalCode(code: string): boolean {
+  if (!code) return false;
   
-  // Obtener códigos del país desde el feature
-  const iso3 = getCountryIso3(feature);
-  const iso2 = feature.properties?.iso_a2 as string;
-  
-  // Lista de códigos de países europeos
-  const europeanCountryCodes = [
-    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
-    'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
-    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
-    'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-    'XK', 'RU', 'EU27_2020', 'EA19', 'EA20',
-    'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
-    'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
-    'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-    'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
+  // Lista específica de códigos supranacionales (no países)
+  const supranationalCodes = [
+    'EU27_2020', 'EA19', 'EA20',           // Códigos directos
+    'EU', 'EZ', 'EA', 'OECD', 'OCDE',      // Otros posibles códigos
+    'EU27', 'EZ19', 'EZ20', 'EU28',        // Variantes adicionales
+    'EU_27', 'EU-27', 'EA-19', 'EA-20'     // Variantes con guiones
   ];
   
-  // Verificar si el país es europeo
-  if ((iso2 && !europeanCountryCodes.includes(iso2)) || 
-      (iso3 && !europeanCountryCodes.includes(iso3))) {
-    // Si no es un país europeo, no mostrar datos
-    return null;
-  }
-  
-  // Verificar si es una entidad supranacional (para manejo especial)
-  const countryName = getCountryName(feature);
-  if (isSupranationalEntity(countryName)) {
-    // Para entidades supranacionales, podríamos tener un manejo especial
-    console.log(`Entidad supranacional detectada: ${countryName}`);
-  }
-  
-  // Mapeo especial para códigos que no coinciden directamente
-  const codeMapping: Record<string, string[]> = {
-    'GRC': ['EL'],
-    'GBR': ['UK'],
-    'DEU': ['DE'],
-    'FRA': ['FR'],
-    'ESP': ['ES'],
-    'ITA': ['IT'],
-    'CZE': ['CZ'],
-    'SWE': ['SE'],
-    'DNK': ['DK'],
-    'FIN': ['FI'],
-    'AUT': ['AT'],
-    'BEL': ['BE'],
-    'BGR': ['BG'],
-    'HRV': ['HR'],
-    'CYP': ['CY'],
-    'EST': ['EE'],
-    'HUN': ['HU'],
-    'IRL': ['IE'],
-    'LVA': ['LV'],
-    'LTU': ['LT'],
-    'LUX': ['LU'],
-    'MLT': ['MT'],
-    'NLD': ['NL'],
-    'POL': ['PL'],
-    'PRT': ['PT'],
-    'ROU': ['RO'],
-    'SVK': ['SK'],
-    'SVN': ['SI'],
-    'CHE': ['CH'],
-    'NOR': ['NO'],
-    'ISL': ['IS'],
-    'TUR': ['TR'],
-    'MKD': ['MK'],
-    'RUS': ['RU']
-  };
-  
-  // Lista de posibles códigos a buscar
-  const possibleCodes = [iso3, iso2];
-  
-  // Añadir códigos alternativos del mapeo
-  if (iso3 && iso3 in codeMapping) {
-    possibleCodes.push(...codeMapping[iso3]);
-  }
-  if (iso2 && codeMapping[iso2]) {
-    possibleCodes.push(...codeMapping[iso2]);
-  }
-  
-  // Buscar los datos para cualquiera de los posibles códigos
-  const countryData = data.filter(item => {
-    // Verificar si el código geo coincide con cualquiera de los posibles códigos
-    const geoMatch = possibleCodes.some(code => item.geo === code);
-    const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    
-    // Normalizar el sector para manejar diferentes valores
-    let sectorMatch = false;
-    if (sector === 'All Sectors' || sector === 'total') {
-      sectorMatch = item.sectperf === 'TOTAL';
-    } else if (sector === 'Business enterprise sector' || sector === 'business') {
-      sectorMatch = item.sectperf === 'BES';
-    } else if (sector === 'Government sector' || sector === 'government') {
-      sectorMatch = item.sectperf === 'GOV';
-    } else if (sector === 'Higher education sector' || sector === 'education') {
-      sectorMatch = item.sectperf === 'HES';
-    } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
-      sectorMatch = item.sectperf === 'PNP';
-    }
-    
-    return geoMatch && yearMatch && sectorMatch;
-  });
-  
-  // Usar el primer resultado que coincida
-  if (countryData.length > 0 && countryData[0].OBS_VALUE) {
-    return parseFloat(countryData[0].OBS_VALUE);
-  }
-  
-  return null;
+  // Solo usar coincidencia exacta o prefijos específicos para evitar falsos positivos
+  return supranationalCodes.includes(code) || 
+         (code.startsWith('EU') && code.length <= 5) || 
+         (code.startsWith('EA') && code.length <= 5) ||
+         code === 'European Union' ||
+         code === 'Euro area';
 }
 
 // Función para obtener rango de valores para todos los países
@@ -421,12 +322,28 @@ function getValueRange(
   data: ResearchersData[], 
   year: number, 
   sector: string
-): { min: number, max: number } {
-  if (!data || data.length === 0) return { min: 0, max: 1 };
+): { min: number, max: number, median: number, quartiles: number[] } {
+  if (!data || data.length === 0) return { min: 0, max: 1, median: 0.5, quartiles: [0, 0.33, 0.66, 1] };
   
   const values: number[] = [];
   
-  // Filtrar datos por año y sector
+  // Lista ampliada de códigos de países europeos (excluyendo entidades supranacionales)
+  const europeanCountryCodes = [
+    // Códigos ISO2
+    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
+    'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
+    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
+    'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
+    'XK', 'RU', 'GR', 'BY', 'VA',
+    // Códigos ISO3
+    'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
+    'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
+    'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
+    'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
+    'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE'
+  ];
+  
+  // Filtrar datos por año y sector, solo países europeos y excluir entidades supranacionales
   const filteredData = data.filter(item => {
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
     
@@ -444,29 +361,72 @@ function getValueRange(
       sectorMatch = item.sectperf === 'PNP';
     }
     
-    // Excluir datos de entidades supranacionales como EU, EA19, etc.
-    const isCountry = !['EU27_2020', 'EA19', 'EA20'].includes(item.geo);
+    // Verificar si es un país europeo (y no una entidad supranacional)
+    const isEuropeanCountry = europeanCountryCodes.includes(item.geo) && !isSupranationalCode(item.geo);
     
-    return yearMatch && sectorMatch && isCountry;
+    return yearMatch && sectorMatch && isEuropeanCountry;
   });
+  
+  console.log(`Datos filtrados para rango de valores: ${filteredData.length} registros`);
   
   // Extraer valores numéricos
   filteredData.forEach(item => {
     if (item.OBS_VALUE) {
       const value = parseFloat(item.OBS_VALUE);
-      if (!isNaN(value)) {
+      if (!isNaN(value) && value > 0) { // Solo incluir valores positivos
         values.push(value);
       }
     }
   });
   
   // Si no hay valores, retornar un rango por defecto
-  if (values.length === 0) return { min: 0, max: 1 };
+  if (values.length === 0) {
+    console.warn("No se encontraron valores para calcular el rango");
+    return { min: 0, max: 1, median: 0.5, quartiles: [0, 0.33, 0.66, 1] };
+  }
   
-  // Calcular min y max
+  // Ordenar valores para calcular estadísticas
+  values.sort((a, b) => a - b);
+  
+  // Calcular min, max y estadísticas
+  const min = values[0];
+  const max = values[values.length - 1];
+  
+  // Calcular la mediana
+  const midpoint = Math.floor(values.length / 2);
+  const median = values.length % 2 === 0
+    ? (values[midpoint - 1] + values[midpoint]) / 2
+    : values[midpoint];
+  
+  // Calcular cuartiles (divide los datos en 4 partes)
+  const calculateQuantile = (arr: number[], q: number) => {
+    const pos = (arr.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    if (arr[base + 1] !== undefined) {
+      return arr[base] + rest * (arr[base + 1] - arr[base]);
+    } else {
+      return arr[base];
+    }
+  };
+  
+  const quartiles = [
+    min,
+    calculateQuantile(values, 0.25),
+    calculateQuantile(values, 0.5),
+    calculateQuantile(values, 0.75),
+    max
+  ];
+  
+  console.log(`Estadísticas calculadas (${values.length} valores):`);
+  console.log(`Min: ${min}, Max: ${max}, Mediana: ${median}`);
+  console.log(`Cuartiles: ${quartiles.join(', ')}`);
+  
   return {
-    min: Math.min(...values),
-    max: Math.max(...values)
+    min,
+    max,
+    median,
+    quartiles
   };
 }
 
@@ -480,15 +440,18 @@ function getColorForValue(
   if (value === null) return getSectorPalette(selectedSector).NULL;
   if (value === 0) return getSectorPalette(selectedSector).ZERO;
   
-  // Obtener rango de valores
-  const range = getValueRange(data, year, selectedSector);
-  const { min, max } = range;
+  // Obtener estadísticas y rango de valores (solo de países europeos, sin entidades supranacionales)
+  const stats = getValueRange(data, year, selectedSector);
+  const { min, max, quartiles } = stats;
   
   // Usar una interpolación más intensa para el mapa de calor
   const palette = getSectorPalette(selectedSector);
   
+  // Calcular ratio de rango (para determinar si usar escala log o lineal)
+  const rangeRatio = max / min;
+  
   // Usar una escala logarítmica si el rango es muy grande
-  if (max > min * 10) {
+  if (rangeRatio > 15) {
     // Si hay una gran diferencia, usar escala logarítmica para mejor visualización
     const logScale = d3.scaleLog<string>()
       .domain([Math.max(min, 0.1), max]) // Evitar logaritmo de 0
@@ -497,16 +460,17 @@ function getColorForValue(
     
     return logScale(Math.max(value, 0.1)); // Evitar logaritmo de 0
   } else {
-    // Escala lineal para rango normal, pero con colores más diferenciados
+    // Escala lineal con cuartiles reales para mejor distribución de colores
     const colorScale = d3.scaleLinear<string>()
-      .domain([min, min + (max-min)*0.25, min + (max-min)*0.5, min + (max-min)*0.75, max])
+      .domain(quartiles)
       .range([
         palette.MIN,
         palette.LOW,
         palette.MID,
         palette.HIGH,
         palette.MAX
-      ]);
+      ])
+      .clamp(true);
     
     return colorScale(value);
   }
@@ -679,7 +643,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   
   // Añadir estado para almacenar el rango de valores
-  const [valueRange, setValueRange] = useState<{min: number, max: number}>({min: 0, max: 1});
+  const [valueRange, setValueRange] = useState<{min: number, max: number, median?: number, quartiles?: number[]}>({min: 0, max: 1});
   
   // Textos del idioma seleccionado
   const t = mapTexts[language];
@@ -735,13 +699,20 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
     return d3.color(baseColor)?.darker(0.8)?.toString() || '#333333';
   };
   
-  // Calcular el rango de valores cuando cambian los datos
+  // Calcular el rango de valores cuando cambian los datos, año o sector
   useEffect(() => {
     if (!data || data.length === 0) return;
     
+    // Calcular el rango de valores solo para países europeos (sin entidades supranacionales)
     const range = getValueRange(data, selectedYear, selectedSector);
     setValueRange(range);
-    console.log("Rango de valores para mapa:", range);
+    
+    console.log("Rango de valores actualizado para mapa:");
+    console.log(`- Año: ${selectedYear}`);
+    console.log(`- Sector: ${selectedSector}`);
+    console.log(`- Valor mínimo: ${range.min}`);
+    console.log(`- Valor máximo: ${range.max}`);
+    console.log(`- Cuartiles: ${range.quartiles?.join(', ')}`);
   }, [data, selectedYear, selectedSector]);
   
   // Cargar mapa de Europa
@@ -877,18 +848,28 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const legendGroup = svg.append('g')
           .attr('transform', `translate(60, 480)`);
         
-        // Etiquetas de la leyenda
+        // Obtener los valores necesarios para la leyenda
         const { min, max } = valueRange;
-        const numCategories = 5;
-        const step = (max - min) / numCategories;
+        const quartiles = valueRange.quartiles || [min, min + (max-min)*0.25, min + (max-min)*0.5, min + (max-min)*0.75, max];
         
         // Crear rectángulos para cada categoría
         const palette = getSectorPalette(selectedSector);
         const colors = [palette.MIN, palette.LOW, palette.MID, palette.HIGH, palette.MAX];
         
-        for (let i = 0; i < numCategories; i++) {
-          const rangeStart = Math.round(min + i * step);
-          const rangeEnd = i === numCategories - 1 ? Math.round(max) : Math.round(min + (i + 1) * step);
+        // Mostrar nota de leyenda con valores mínimo y máximo (sin la palabra "Rango")
+        legendGroup.append('text')
+          .attr('x', 0)
+          .attr('y', -30)
+          .attr('font-size', '12px')
+          .attr('fill', '#666')
+          .text(`${formatNumberWithThousandSeparator(min)} - ${formatNumberWithThousandSeparator(max)}`);
+        
+        // Usar los cuartiles para las etiquetas de la leyenda
+        const rangeValues = quartiles;
+        
+        for (let i = 0; i < 4; i++) {
+          const rangeStart = Math.round(rangeValues[i]);
+          const rangeEnd = Math.round(rangeValues[i + 1]);
           
           legendGroup.append('rect')
             .attr('x', 0)
@@ -913,12 +894,18 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           .text(t.researchers);
       };
       
-      // Funciones de interacción con tooltip mejorado
-      const handleMouseOver = (event: MouseEvent, feature: GeoJsonFeature) => {
-        const countryIso3 = getCountryIso3(feature);
-        const countryIso2 = feature.properties?.iso_a2 as string;
-        const countryName = getLocalizedCountryName(countryIso3 || countryIso2, language);
-        const value = getCountryValue(feature, data, selectedYear, selectedSector);
+      // Función para obtener el valor de un país
+      const getCountryValue = (
+        feature: GeoJsonFeature,
+        data: ResearchersData[],
+        year: number,
+        sector: string
+      ): number | null => {
+        if (!data || data.length === 0) return null;
+        
+        // Obtener códigos del país desde el feature
+        const iso3 = getCountryIso3(feature);
+        const iso2 = feature.properties?.iso_a2 as string;
         
         // Lista de códigos de países europeos
         const europeanCountryCodes = [
@@ -933,11 +920,133 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
         ];
         
-        // Verificar si el país es europeo
-        if ((countryIso2 && !europeanCountryCodes.includes(countryIso2)) || 
+        // Verificar si el país es europeo de forma más permisiva
+        // Solo excluir si ambos códigos (iso2 e iso3) no están en la lista
+        if (iso2 && iso3 && 
+            !europeanCountryCodes.includes(iso2) && 
+            !europeanCountryCodes.includes(iso3)) {
+          // Si claramente no es un país europeo, no mostrar datos
+          return null;
+        }
+        
+                  // Solo excluir entidades claramente supranacionales
+          if (isSupranationalCode(iso3) || isSupranationalCode(iso2)) {
+            return null;
+          }
+        
+        // Mapeo especial para códigos que no coinciden directamente
+        const codeMapping: Record<string, string[]> = {
+          'GRC': ['EL'],
+          'GBR': ['UK'],
+          'DEU': ['DE'],
+          'FRA': ['FR'],
+          'ESP': ['ES'],
+          'ITA': ['IT'],
+          'CZE': ['CZ'],
+          'SWE': ['SE'],
+          'DNK': ['DK'],
+          'FIN': ['FI'],
+          'AUT': ['AT'],
+          'BEL': ['BE'],
+          'BGR': ['BG'],
+          'HRV': ['HR'],
+          'CYP': ['CY'],
+          'EST': ['EE'],
+          'HUN': ['HU'],
+          'IRL': ['IE'],
+          'LVA': ['LV'],
+          'LTU': ['LT'],
+          'LUX': ['LU'],
+          'MLT': ['MT'],
+          'NLD': ['NL'],
+          'POL': ['PL'],
+          'PRT': ['PT'],
+          'ROU': ['RO'],
+          'SVK': ['SK'],
+          'SVN': ['SI'],
+          'CHE': ['CH'],
+          'NOR': ['NO'],
+          'ISL': ['IS'],
+          'TUR': ['TR'],
+          'MKD': ['MK'],
+          'RUS': ['RU']
+        };
+        
+        // Lista de posibles códigos a buscar
+        const possibleCodes = [iso3, iso2];
+        
+        // Añadir códigos alternativos del mapeo
+        if (iso3 && iso3 in codeMapping) {
+          possibleCodes.push(...codeMapping[iso3]);
+        }
+        if (iso2 && codeMapping[iso2]) {
+          possibleCodes.push(...codeMapping[iso2]);
+        }
+        
+        // Buscar los datos para cualquiera de los posibles códigos
+        const countryData = data.filter(item => {
+          // Verificar si el código geo coincide con cualquiera de los posibles códigos
+          const geoMatch = possibleCodes.some(code => item.geo === code);
+          const yearMatch = parseInt(item.TIME_PERIOD) === year;
+          
+          // Normalizar el sector para manejar diferentes valores
+          let sectorMatch = false;
+          if (sector === 'All Sectors' || sector === 'total') {
+            sectorMatch = item.sectperf === 'TOTAL';
+          } else if (sector === 'Business enterprise sector' || sector === 'business') {
+            sectorMatch = item.sectperf === 'BES';
+          } else if (sector === 'Government sector' || sector === 'government') {
+            sectorMatch = item.sectperf === 'GOV';
+          } else if (sector === 'Higher education sector' || sector === 'education') {
+            sectorMatch = item.sectperf === 'HES';
+          } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
+            sectorMatch = item.sectperf === 'PNP';
+          }
+          
+          return geoMatch && yearMatch && sectorMatch;
+        });
+        
+        // Usar el primer resultado que coincida
+        if (countryData.length > 0 && countryData[0].OBS_VALUE) {
+          return parseFloat(countryData[0].OBS_VALUE);
+        }
+        
+        return null;
+      };
+      
+      // Funciones de interacción con tooltip mejorado
+      const handleMouseOver = (event: MouseEvent, feature: GeoJsonFeature) => {
+        const countryIso3 = getCountryIso3(feature);
+        const countryIso2 = feature.properties?.iso_a2 as string;
+        const countryName = getLocalizedCountryName(countryIso3 || countryIso2, language);
+        const value = getCountryValue(feature, data, selectedYear, selectedSector);
+        
+        // Lista de códigos de países europeos - usar la misma que está definida en otra parte del código
+        const europeanCountryCodes = [
+          'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
+          'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
+          'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
+          'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
+          'XK', 'RU', 'GR', 'BY', 'VA',
+          'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
+          'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
+          'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
+          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
+          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE'
+        ];
+        
+        // Verificar si el país es europeo de forma más flexible
+        if ((countryIso2 && !europeanCountryCodes.includes(countryIso2)) && 
             (countryIso3 && !europeanCountryCodes.includes(countryIso3))) {
           // Si no es un país europeo, ignorar
           return;
+        }
+        
+        // Verificar si es una entidad supranacional para personalizar el tooltip
+        const countryNameAlt = getCountryName(feature);
+        if (isSupranationalEntity(countryNameAlt)) {
+          // Si es una entidad supranacional podríamos mostrar información adicional
+          console.log(`Tooltip para entidad supranacional: ${countryNameAlt}`);
         }
         
         // Ignorar hover en países sin datos
