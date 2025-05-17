@@ -1,9 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
 import * as d3 from 'd3';
 import { Feature, Geometry } from 'geojson';
-import { SECTOR_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
+
+// Definir colores específicos para los componentes de investigadores
+const RESEARCHER_SECTOR_COLORS = {
+  total: '#607D8B',        // Azul grisáceo (antes para organizaciones sin fines de lucro)
+  business: '#546E7A',     // Azul grisáceo más sobrio para empresas
+  government: '#795548',   // Marrón para gobierno
+  education: '#7E57C2',    // Morado para educación (intercambiado)
+  nonprofit: '#5C6BC0'     // Azul índigo (antes para todos los sectores)
+};
 
 // Interfaz para los elementos del archivo country_flags.json
 interface CountryFlag {
@@ -120,9 +128,9 @@ const getSectorPalette = (sectorId: string) => {
   if (normalizedId === 'higher education sector' || normalizedId === 'hes') normalizedId = 'education';
   if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') normalizedId = 'nonprofit';
   
-  // Asegurar que usamos una clave válida para SECTOR_COLORS
-  const validSectorId = (normalizedId in SECTOR_COLORS) ? normalizedId : 'total';
-  const baseColor = SECTOR_COLORS[validSectorId as keyof typeof SECTOR_COLORS];
+  // Asegurar que usamos una clave válida para RESEARCHER_SECTOR_COLORS
+  const validSectorId = (normalizedId in RESEARCHER_SECTOR_COLORS) ? normalizedId : 'total';
+  const baseColor = RESEARCHER_SECTOR_COLORS[validSectorId as keyof typeof RESEARCHER_SECTOR_COLORS];
   
   // Crear un contraste más fuerte para el mapa de calor
   return {
@@ -693,8 +701,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
     if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') 
       normalizedId = 'nonprofit';
     
-    // Obtener color del sector
-    const baseColor = SECTOR_COLORS[normalizedId as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+    // Obtener color del sector usando los nuevos colores de investigadores
+    const baseColor = RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
     // Usar d3 para obtener una versión más oscura del color
     return d3.color(baseColor)?.darker(0.8)?.toString() || '#333333';
   };
@@ -856,13 +864,35 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const palette = getSectorPalette(selectedSector);
         const colors = [palette.MIN, palette.LOW, palette.MID, palette.HIGH, palette.MAX];
         
-        // Mostrar nota de leyenda con valores mínimo y máximo (sin la palabra "Rango")
+        // No mostrar el rango numerico encima del título como pidió el usuario
+        
+        // Añadir primero la etiqueta "Sin datos" a la leyenda
+        legendGroup.append('rect')
+          .attr('x', 0)
+          .attr('y', -60)
+          .attr('width', 25)
+          .attr('height', 25)
+          .attr('fill', palette.NULL);
+          
         legendGroup.append('text')
+          .attr('x', 35)
+          .attr('y', -42)
+          .attr('font-size', '14px')
+          .text(language === 'es' ? 'Sin datos' : 'No data');
+          
+        // Añadir etiqueta para valores cero
+        legendGroup.append('rect')
           .attr('x', 0)
           .attr('y', -30)
-          .attr('font-size', '12px')
-          .attr('fill', '#666')
-          .text(`${formatNumberWithThousandSeparator(min)} - ${formatNumberWithThousandSeparator(max)}`);
+          .attr('width', 25)
+          .attr('height', 25)
+          .attr('fill', palette.ZERO);
+          
+        legendGroup.append('text')
+          .attr('x', 35)
+          .attr('y', -12)
+          .attr('font-size', '14px')
+          .text('0');
         
         // Usar los cuartiles para las etiquetas de la leyenda
         const rangeValues = quartiles;

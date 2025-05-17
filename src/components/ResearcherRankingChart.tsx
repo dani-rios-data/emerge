@@ -11,9 +11,18 @@ import {
   Legend,
   ChartOptions
 } from 'chart.js';
-import { EU_COLORS, SECTOR_COLORS } from '../utils/colors';
+import { EU_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
+
+// Definir colores específicos para los componentes de investigadores
+const RESEARCHER_SECTOR_COLORS = {
+  total: '#607D8B',        // Azul grisáceo (antes para organizaciones sin fines de lucro)
+  business: '#546E7A',     // Azul grisáceo más sobrio para empresas
+  government: '#795548',   // Marrón para gobierno
+  education: '#7E57C2',    // Morado para educación (intercambiado)
+  nonprofit: '#5C6BC0'     // Azul índigo (antes para todos los sectores)
+};
 
 // Interfaz para los elementos del archivo country_flags.json
 interface CountryFlag {
@@ -632,8 +641,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') 
       normalizedId = 'nonprofit';
     
-    // Obtener color del sector
-    return SECTOR_COLORS[normalizedId as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+    // Obtener color del sector usando los nuevos colores de investigadores
+    return RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
   };
 
   // Obtener título del gráfico
@@ -660,8 +669,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
 
   // Función para obtener el color del sector para el título
   const getSectorTitleColor = () => {
-    // Obtener el color base del sector
-    const sectorColor = SECTOR_COLORS[selectedSector as keyof typeof SECTOR_COLORS] || SECTOR_COLORS.total;
+    // Obtener el color base del sector usando los nuevos colores de investigadores
+    const sectorColor = RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
     // Usar d3 para obtener una versión más oscura del color
     return d3.color(sectorColor)?.darker(0.8)?.toString() || '#333333';
   };
