@@ -1020,6 +1020,16 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
     };
   }, []);
   
+  // Diagnóstico inicial para ver la estructura de datos
+  useEffect(() => {
+    if (data && data.length > 0) {
+      console.log("[Data Structure Debug] Ejemplo de estructura de datos:", data[0]);
+      // Verificar si OBS_FLAG está presente en algunos registros
+      const flagSamples = data.filter(item => item.OBS_FLAG).slice(0, 5);
+      console.log("[Data Structure Debug] Ejemplos con OBS_FLAG:", flagSamples);
+    }
+  }, [data]);
+  
   // Renderizar el mapa cuando cambian los datos
   useEffect(() => {
     if (!svgRef.current || !europeanMapData || isLoading) return;
@@ -1037,6 +1047,44 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
       
       // Crear generador de paths
       const pathGenerator = d3.geoPath().projection(projection);
+      
+      // Función para obtener el ranking de un país (se usará después de dibujar los países)
+      const getCountryRank = (feature: GeoJsonFeature, countryValuesMap: Map<string, number>): { rank: number, total: number } | null => {
+        const countryName = getCountryName(feature);
+        
+        // Si es una entidad supranacional, no mostrar ranking
+        if (isSupranationalEntity(countryName)) return null;
+        
+        // Obtener el valor usando el mapa de valores
+        const featureId = feature.properties?.iso_a3 || countryName;
+        if (!countryValuesMap.has(featureId)) return null;
+        
+        // Crear lista ordenada excluyendo entidades supranacionales
+        const sortedValues: [string, number][] = [];
+        countryValuesMap.forEach((val, id) => {
+          // Verificar si es un país (no una entidad supranacional)
+          const featureForId = europeanMapData!.features.find(f => 
+            f.properties?.iso_a3 === id || getCountryName(f) === id
+          );
+          
+          if (featureForId && !isSupranationalEntity(getCountryName(featureForId))) {
+            sortedValues.push([id, val]);
+          }
+        });
+        
+        // Ordenar por valor (mayor a menor)
+        sortedValues.sort((a, b) => b[1] - a[1]);
+        
+        // Buscar la posición en el ranking
+        const position = sortedValues.findIndex(([id]) => id === featureId);
+        
+        if (position === -1) return null;
+        
+        return {
+          rank: position + 1, // +1 porque los índices empiezan en 0
+          total: sortedValues.length
+        };
+      };
       
       // Crear una leyenda para el mapa
       const createLegend = () => {
@@ -1271,6 +1319,22 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const countryName = getLocalizedCountryName(countryIso3 || countryIso2, language);
         const value = getCountryValue(feature, data, selectedYear, selectedSector);
         
+        // Recopilar todos los valores primero en un Map para calcular el ranking
+        const countryValuesMap = new Map<string, number>();
+        
+        // Primero recopilamos los valores para todos los países
+        europeanMapData!.features.forEach(f => {
+          const val = getCountryValue(f, data, selectedYear, selectedSector);
+          if (val !== null) {
+            const featureId = f.properties?.iso_a3 || getCountryName(f);
+            countryValuesMap.set(featureId, val);
+          }
+        });
+        
+        // Ahora podemos obtener el ranking usando el mapa de valores
+        const rankInfo = !isSupranationalEntity(countryName) ? 
+          getCountryRank(feature, countryValuesMap) : null;
+        
         // Lista de códigos de países europeos - usar la misma que está definida en otra parte del código
         const europeanCountryCodes = [
           'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
@@ -1309,13 +1373,106 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           // Lista de posibles códigos a buscar
           const possibleCodes = [countryIso3, countryIso2];
           
-          // Verificar mapeo especial para códigos
-          if (countryIso3 && countryCodeMapping[countryIso3]) {
-            possibleCodes.push(countryIso3);
+          // Mapeo especial para códigos que no coinciden directamente
+          const codeMapping: Record<string, string[]> = {
+            'GRC': ['EL'],
+            'GBR': ['UK'],
+            'DEU': ['DE'],
+            'FRA': ['FR'],
+            'ESP': ['ES'],
+            'ITA': ['IT'],
+            'CZE': ['CZ'],
+            'SWE': ['SE'],
+            'DNK': ['DK'],
+            'FIN': ['FI'],
+            'AUT': ['AT'],
+            'BEL': ['BE'],
+            'BGR': ['BG'],
+            'HRV': ['HR'],
+            'CYP': ['CY'],
+            'EST': ['EE'],
+            'HUN': ['HU'],
+            'IRL': ['IE'],
+            'LVA': ['LV'],
+            'LTU': ['LT'],
+            'LUX': ['LU'],
+            'MLT': ['MT'],
+            'NLD': ['NL'],
+            'POL': ['PL'],
+            'PRT': ['PT'],
+            'ROU': ['RO'],
+            'SVK': ['SK'],
+            'SVN': ['SI'],
+            'CHE': ['CH'],
+            'NOR': ['NO'],
+            'ISL': ['IS'],
+            'TUR': ['TR'],
+            'MKD': ['MK'],
+            'UA': ['UKR'],
+            'RS': ['SRB'],
+            'ME': ['MNE'],
+            'AL': ['ALB'],
+            'BA': ['BIH'],
+            'XK': ['XKX'],
+            'RU': ['RUS']
+          };
+          
+          // Mapeo inverso - ISO2 a ISO3
+          const codeMapping2to3: Record<string, string> = {
+            'EL': 'GRC',
+            'UK': 'GBR',
+            'GB': 'GBR',
+            'DE': 'DEU',
+            'FR': 'FRA',
+            'ES': 'ESP',
+            'IT': 'ITA',
+            'CZ': 'CZE',
+            'SE': 'SWE',
+            'DK': 'DNK',
+            'FI': 'FIN',
+            'AT': 'AUT',
+            'BE': 'BEL',
+            'BG': 'BGR',
+            'HR': 'HRV',
+            'CY': 'CYP',
+            'EE': 'EST',
+            'HU': 'HUN',
+            'IE': 'IRL',
+            'LV': 'LVA',
+            'LT': 'LTU',
+            'LU': 'LUX',
+            'MT': 'MLT',
+            'NL': 'NLD',
+            'PL': 'POL',
+            'PT': 'PRT',
+            'RO': 'ROU',
+            'SK': 'SVK',
+            'SI': 'SVN',
+            'CH': 'CHE',
+            'NO': 'NOR',
+            'IS': 'ISL',
+            'TR': 'TUR',
+            'MK': 'MKD',
+            'UA': 'UKR',
+            'RS': 'SRB',
+            'ME': 'MNE',
+            'AL': 'ALB',
+            'BA': 'BIH',
+            'RU': 'RUS'
+          };
+          
+          // Añadir códigos alternativos desde los mapeos
+          if (countryIso3 && countryIso3.length === 3 && codeMapping[countryIso3]) {
+            possibleCodes.push(...codeMapping[countryIso3]);
           }
-          if (countryIso2 && countryCodeMapping[countryIso2]) {
-            possibleCodes.push(countryIso2);
+          if (countryIso2 && countryIso2.length === 2) {
+            if (codeMapping2to3[countryIso2]) {
+              possibleCodes.push(codeMapping2to3[countryIso2]);
+            }
           }
+          
+          // Depurar los códigos alternativos
+          console.log(`[Codes Debug] País: ${countryName}, Códigos alternativos: ${possibleCodes.join(', ')}`);
           
           // Comprobar si el código geo coincide con cualquiera de los posibles códigos
           const geoMatch = possibleCodes.some(code => item.geo === code);
@@ -1328,22 +1485,18 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           else if (selectedSector === 'education' && item.sectperf === 'HES') sectorMatch = true;
           else if (selectedSector === 'nonprofit' && item.sectperf === 'PNP') sectorMatch = true;
           
+          // Depurar si hay un match
+          if (geoMatch) {
+            console.log(`[Match Debug] Encontrado para ${item.geo}: yearMatch=${yearMatch}, sectorMatch=${sectorMatch}, TIME_PERIOD=${item.TIME_PERIOD}, sectperf=${item.sectperf}, OBS_FLAG=${item.OBS_FLAG}`);
+          }
+          
           return geoMatch && yearMatch && sectorMatch;
         });
         
-        console.log(`[Tooltip Debug] País: ${countryName}, ISO3: ${countryIso3}, geo data: ${countryData?.geo}`);
+        console.log(`[Tooltip Debug] País: ${countryName}, ISO3: ${countryIso3}, geo data: ${countryData?.geo}, OBS_FLAG: ${countryData?.OBS_FLAG}, Objeto completo:`, countryData);
         
         // Obtener la bandera del país
         const flagUrl = getCountryFlagUrl(countryName, feature);
-        
-        // Obtener descripción de flag si existe
-        let flagDescription = '';
-        if (countryData?.OBS_FLAG) {
-          const description = getLabelDescription(countryData.OBS_FLAG, language);
-          if (description) {
-            flagDescription = `<div class="text-xs text-gray-500 mt-1">(${description})</div>`;
-          }
-        }
         
         // Verificar si es España o la UE para la visualización del tooltip
         const isSpain = countryIso2 === 'ES' || countryIso3 === 'ESP';
@@ -1351,6 +1504,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         
         // Obtener valores para comparativas
         const euValue = !isEU ? getEUValue(data, selectedYear, selectedSector) : null;
+        const euAverageValue = euValue !== null ? euValue / 27 : null;
         const spainValue = !isSpain ? getSpainValue(data, selectedYear, selectedSector) : null;
         
         // Obtener el valor del año anterior para la comparación YoY - mejorar búsqueda
@@ -1422,17 +1576,17 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         // Solo mostrar comparaciones si el país actual tiene datos
         if (value !== null) {
           // Comparación con la UE
-          if (!isEU && euValue !== null) {
-            const difference = value - euValue;
-            const percentDiff = (difference / euValue) * 100;
+          if (!isEU && euAverageValue !== null) {
+            const difference = value - euAverageValue;
+            const percentDiff = (difference / euAverageValue) * 100;
             const formattedDiff = percentDiff.toFixed(1);
             const isPositive = difference > 0;
             
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Unión Europea (${formatNumberComplete(euValue, 0, language)}):` : 
-                  `vs European Union (${formatNumberComplete(euValue, 0, language)}):`}</span>
+                  `vs Media UE (${formatNumberComplete(euAverageValue, 0, language)}):` : 
+                  `vs Avg UE (${formatNumberComplete(euAverageValue, 0, language)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1476,16 +1630,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         } else {
           // Seguro que value no es null en este punto
           const safeValue = value; // Asignar a una constante para satisfacer TypeScript
-          // Añadir indicador de porcentaje sobre el máximo
-          const percentOfMax = valueRange.max > 0 ? (safeValue / valueRange.max) * 100 : 0;
-          const rankIndicator = `
-            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentOfMax}%"></div>
-            </div>
-            <div class="text-xs text-gray-500 text-right mt-1">${percentOfMax.toFixed(1)}% del máximo</div>
-          `;
           
-          // Construir contenido del tooltip con estilo mejorado
+          // Construir contenido del tooltip con estilo mejorado y ranking
           tooltipContent = `
             <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con el nombre del país -->
@@ -1506,11 +1652,25 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
                   </div>
                   <div class="flex items-center">
                     <span class="text-xl font-bold text-blue-700">${formatNumberComplete(safeValue, 0, language)}</span>
+                    ${countryData && countryData.OBS_FLAG ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${countryData.OBS_FLAG}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
-                  ${rankIndicator}
-                  ${flagDescription}
                 </div>
+                
+                <!-- Ranking (si está disponible y no es entidad supranacional) -->
+                ${rankInfo ? `
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
+                    <span class="font-bold text-lg mx-1">${rankInfo.rank}</span>
+                    <span class="text-gray-600">${language === 'es' ? `de ${rankInfo.total}` : `of ${rankInfo.total}`}</span>
+                  </div>
+                </div>
+                ` : ''}
                 
                 <!-- Si hay comparaciones, mostrarlas -->
                 ${comparisonsHtml ? `
@@ -1520,6 +1680,14 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
                 </div>
                 ` : ''}
               </div>
+              
+              <!-- Footer con información de la bandera de observación -->
+              ${countryData && countryData.OBS_FLAG && getLabelDescription(countryData.OBS_FLAG, language) ? `
+                <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                  <span>${countryData.OBS_FLAG} - ${getLabelDescription(countryData.OBS_FLAG, language)}</span>
+                </div>
+              ` : ''}
             </div>
           `;
         }
