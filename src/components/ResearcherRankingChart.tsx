@@ -144,6 +144,55 @@ const labelDescriptions: Record<string, { es: string, en: string }> = {
   }
 };
 
+// Función para obtener la URL de la bandera del país (similar a ResearchersEuropeanMap)
+function getCountryFlagUrl(countryCode: string): string {  
+  // Intentar diferentes enfoques para encontrar la bandera correcta
+  
+  // 1. Intentar directamente por ISO3
+  let foundFlag = countryFlags.find(flag => flag.iso3 === countryCode);
+  
+  // 2. Si no se encontró, buscar por ISO2
+  if (!foundFlag) {
+    // Mapeo de ISO3 a ISO2 para códigos comunes
+    const iso3ToIso2: Record<string, string> = {
+      'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'CYP': 'CY', 'CZE': 'CZ',
+      'DEU': 'DE', 'DNK': 'DK', 'EST': 'EE', 'GRC': 'EL', 'ESP': 'ES',
+      'FIN': 'FI', 'FRA': 'FR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE',
+      'ITA': 'IT', 'LTU': 'LT', 'LUX': 'LU', 'LVA': 'LV', 'MLT': 'MT',
+      'NLD': 'NL', 'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'SWE': 'SE',
+      'SVN': 'SI', 'SVK': 'SK', 'GBR': 'UK'
+    };
+    
+    if (iso3ToIso2[countryCode]) {
+      foundFlag = countryFlags.find(flag => flag.code === iso3ToIso2[countryCode]);
+    }
+  }
+  
+  // 3. Si sigue sin encontrarse, buscar por código ISO2 directo
+  if (!foundFlag && countryCode.length === 2) {
+    foundFlag = countryFlags.find(flag => flag.code === countryCode);
+  }
+  
+  // 4. Si nada funciona, verificar casos especiales
+  if (!foundFlag) {
+    if (countryCode === 'EU27_2020') {
+      // Bandera de la UE - usar la misma URL que en EuropeanRDMap
+      return "https://flagcdn.com/eu.svg";
+    } else if (countryCode === 'EA19' || countryCode === 'EA20') {
+      // Bandera del Euro - usar la misma URL que en EuropeanRDMap
+      return "https://flagcdn.com/eu.svg";
+    }
+  }
+  
+  // Si se encontró la bandera, devolver la URL
+  if (foundFlag?.flag) {
+    return foundFlag.flag;
+  }
+  
+  // Si no se encontró ninguna bandera, devolver un placeholder
+  return '/data/flags/placeholder.svg';
+}
+
 const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({ 
   data, 
   selectedYear, 
@@ -419,20 +468,30 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           const flagCode = chartItem.obsFlag;
           const isAverage = chartItem.isAverage;
           const numCountries = chartItem.numCountries;
+          const rank = index + 1; // El índice ya indica la posición en el ranking
           
           if (tooltipRef.current) {
+            // Obtener la URL de la bandera usando la nueva función
+            const flagUrl = getCountryFlagUrl(country);
+            
             let flagElement = '';
-            const countryFlag = countryFlags.find(flag => flag.iso3 === country);
-            if (countryFlag?.flag) {
-              flagElement = `<img src="${countryFlag.flag}" alt="${country}" class="w-6 h-4 mr-2 object-cover border border-gray-200" />`;
+            if (flagUrl) {
+              flagElement = `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                <img src="${flagUrl}" alt="${country}" class="w-full h-full object-cover" />
+              </div>`;
             }
             
             const countryName = getCountryNameFromCode(country, language);
-            let flagDescription = '';
+            
+            // Preparar etiqueta OBS_FLAG
+            let obsTagHtml = '';
             if (flagCode) {
-              const description = labelDescriptions[flagCode]?.[language] || '';
-              flagDescription = description ? `<div class="text-xs text-gray-500 mt-1">(${description})</div>` : '';
+              obsTagHtml = `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>`;
             }
+            
+            // Preparar comparación YoY (año anterior) si tuviéramos los datos
+            // (Esto se dejaría para una implementación futura)
+            const yoyComparisonHtml = getYoyComparison(country, value);
             
             // Preparar nota sobre promedio si aplica
             let averageNote = '';
@@ -447,36 +506,148 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
               `;
             }
             
+            // Preparar comparaciones con UE y España
+            // Calculamos valores de la UE y España para comparar
+            const euItem = chartData.sortedItems.find(item => item.code === 'EU27_2020');
+            const spainItem = chartData.sortedItems.find(item => item.code === 'ES');
+            let comparisonsHtml = '';
+            
+            // Comparativa con la UE (media)
+            if (euItem && !chartItem.isSupranational) {
+              const euValue = euItem.isAverage ? euItem.value : (euItem.value / 27);
+              const difference = value - euValue;
+              const percentDiff = (difference / euValue) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              
+              comparisonsHtml += `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs Media UE (${formatValue(euValue)}):` : 
+                    `vs Avg UE (${formatValue(euValue)}):`}</span>
+                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            }
+            
+            // Comparativa con España
+            if (spainItem && country !== 'ES' && !chartItem.isSupranational) {
+              const difference = value - spainItem.value;
+              const percentDiff = (difference / spainItem.value) * 100;
+              const formattedDiff = percentDiff.toFixed(1);
+              const isPositive = difference > 0;
+              
+              comparisonsHtml += `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs España (${formatValue(spainItem.value)}):` : 
+                    `vs Spain (${formatValue(spainItem.value)}):`}</span>
+                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                </div>
+              `;
+            }
+            
+            // Descripción de flag si existe
+            let flagDescription = '';
+            if (flagCode && labelDescriptions[flagCode]?.[language]) {
+              flagDescription = labelDescriptions[flagCode][language];
+            }
+            
+            // Construir el tooltip usando el mismo formato que en ResearchersEuropeanMap.tsx
             tooltipRef.current.style.display = 'block';
-            tooltipRef.current.style.left = tooltip.caretX + 'px';
-            tooltipRef.current.style.top = tooltip.caretY + 'px';
-            tooltipRef.current.style.padding = '8px 12px';
-            tooltipRef.current.style.borderRadius = '4px';
+            tooltipRef.current.style.left = (tooltip.caretX + 15) + 'px';
+            tooltipRef.current.style.top = (tooltip.caretY - 10) + 'px';
+            tooltipRef.current.style.transform = 'none';
+            tooltipRef.current.style.padding = '0';
+            tooltipRef.current.style.borderRadius = '8px';
             tooltipRef.current.style.backgroundColor = '#fff';
-            tooltipRef.current.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.15)';
+            tooltipRef.current.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
             tooltipRef.current.style.border = '1px solid rgba(0, 0, 0, 0.1)';
             tooltipRef.current.style.color = '#333';
             tooltipRef.current.style.fontSize = '13px';
             tooltipRef.current.style.pointerEvents = 'none';
             tooltipRef.current.style.zIndex = '9999';
-            tooltipRef.current.style.transformOrigin = 'center';
-            tooltipRef.current.style.transform = 'translate(-50%, -100%) translateY(-8px)';
+            tooltipRef.current.style.width = 'auto';
+            tooltipRef.current.style.maxWidth = '350px';
             
             tooltipRef.current.innerHTML = `
-              <div class="flex items-center">
-                ${flagElement}
-                <span class="font-semibold">${countryName}</span>
+              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <!-- Header con el nombre del país -->
+                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                  ${flagElement}
+                  <h3 class="text-lg font-bold text-gray-800">${countryName}</h3>
+                </div>
+                
+                <!-- Resto del tooltip igual que antes -->
+                <div class="p-4">
+                  <!-- Métrica principal -->
+                  <div class="mb-3">
+                    <div class="flex items-center text-gray-500 text-sm mb-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                      <span>${t.researchers}:</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="text-xl font-bold text-blue-700">
+                        ${formatValue(value)}
+                      </span>
+                      ${isAverage ? `<span class="text-xs ml-1 text-gray-600">${language === 'es' ? '(promedio)' : '(average)'}</span>` : ''}
+                      ${obsTagHtml}
+                    </div>
+                    ${yoyComparisonHtml}
+                  </div>
+                  
+                  ${averageNote}
+                  
+                  <!-- Ranking (si está disponible y no es entidad supranacional) -->
+                  ${!chartItem.isSupranational ? `
+                  <div class="mb-4">
+                    <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                        <circle cx="12" cy="8" r="6" />
+                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                      </svg>
+                      <span class="font-medium">Rank </span>
+                      <span class="font-bold text-lg mx-1">${rank}</span>
+                      <span class="text-gray-600">${language === 'es' ? `de ${chartData.sortedItems.filter(i => !i.isSupranational).length}` : `of ${chartData.sortedItems.filter(i => !i.isSupranational).length}`}</span>
+                    </div>
+                  </div>
+                  ` : ''}
+                  
+                  <!-- Comparativas -->
+                  ${comparisonsHtml ? `
+                  <div class="space-y-2 border-t border-gray-100 pt-3">
+                    <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+                    ${comparisonsHtml}
+                  </div>
+                  ` : ''}
+                </div>
+                
+                <!-- Footer con información de la bandera de observación -->
+                ${flagCode && flagDescription ? `
+                  <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                    <span>${flagCode} - ${flagDescription}</span>
+                  </div>
+                ` : ''}
               </div>
-              <div class="flex items-baseline mt-1">
-                <span class="font-medium">
-                  ${formatValue(value)}
-                </span>
-                <span class="text-xs ml-1 text-gray-600">${t.fte}</span>
-                ${isAverage ? `<span class="text-xs ml-1 text-gray-600">${language === 'es' ? '(promedio)' : '(average)'}</span>` : ''}
-              </div>
-              ${flagDescription}
-              ${averageNote}
             `;
+            
+            // Ajustar posición para que no se salga de la pantalla
+            const tooltipElement = tooltipRef.current;
+            const tooltipRect = tooltipElement.getBoundingClientRect();
+            // Acceso seguro a la referencia del gráfico
+            const chartElement = chartRef.current as unknown as { canvas?: HTMLCanvasElement } | null;
+            const chartRect = chartElement?.canvas?.getBoundingClientRect() || { left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight };
+            
+            // Ajuste horizontal
+            if (parseFloat(tooltipElement.style.left) + tooltipRect.width > chartRect.right) {
+              tooltipElement.style.left = `${chartRect.right - tooltipRect.width - 10}px`;
+            }
+            
+            // Ajuste vertical
+            if (parseFloat(tooltipElement.style.top) + tooltipRect.height > chartRect.bottom) {
+              tooltipElement.style.top = `${chartRect.bottom - tooltipRect.height - 10}px`;
+            }
           }
         }
       }
@@ -753,6 +924,57 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     scrollbarColor: '#d1d5db #f3f4f6',
     msOverflowStyle: 'none',
   } as React.CSSProperties;
+
+  // Añadir YoY comparison por país
+  // Para poder añadir la funcionalidad YoY, debemos añadir una función que busque los datos del año anterior
+  // Esto se podría implementar como una función que busque en el dataset el mismo país pero del año anterior
+  const getYoyComparison = (country: string, value: number): string => {
+    // Buscar en chartData.sortedItems si hay datos de años anteriores
+    // Como enfoque simplificado, podríamos verificar si tenemos datos adicionales en las propiedades
+    const yearValue = selectedYear - 1;
+    const previousYearData = data.filter(item => {
+      const isCountry = item.geo === country;
+      const isLastYear = parseInt(item.TIME_PERIOD) === yearValue;
+      
+      // Normalizar el sector para manejar diferentes valores
+      let sectorMatch = false;
+      if (selectedSector === 'total') {
+        sectorMatch = item.sectperf === 'TOTAL';
+      } else if (selectedSector === 'business') {
+        sectorMatch = item.sectperf === 'BES';
+      } else if (selectedSector === 'government') {
+        sectorMatch = item.sectperf === 'GOV';
+      } else if (selectedSector === 'education') {
+        sectorMatch = item.sectperf === 'HES';
+      } else if (selectedSector === 'nonprofit') {
+        sectorMatch = item.sectperf === 'PNP';
+      }
+      
+      return isCountry && isLastYear && sectorMatch;
+    });
+    
+    // Si encontramos datos del año anterior
+    if (previousYearData.length > 0 && previousYearData[0].OBS_VALUE) {
+      const prevValue = parseFloat(previousYearData[0].OBS_VALUE);
+      if (!isNaN(prevValue) && prevValue > 0) {
+        const difference = value - prevValue;
+        const percentDiff = (difference / prevValue) * 100;
+        const formattedDiff = percentDiff.toFixed(1);
+        const isPositive = difference > 0;
+        
+        return `
+          <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+              <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+            </svg>
+            <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${yearValue}</span>
+          </div>
+        `;
+      }
+    }
+    
+    return '';
+  };
 
   return (
     <div ref={containerRef} className="relative h-full w-full">
