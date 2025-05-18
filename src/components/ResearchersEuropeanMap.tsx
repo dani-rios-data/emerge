@@ -1342,9 +1342,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
           handleClick(event, d);
         })
-        .style('cursor', onClick ? 'pointer' : 'default')
-        .append('title')
-        .text(feature => getCountryName(feature));
+        .style('cursor', onClick ? 'pointer' : 'default');
       
       // Añadir leyenda
       createLegend();

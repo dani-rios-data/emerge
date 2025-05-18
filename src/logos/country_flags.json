@@ -1156,5 +1156,11 @@
     "code": "EU",
     "iso3": "EMU",
     "flag": "https://flagcdn.com/eu.svg"
+  },
+  {
+    "country": "Macedonia del Norte",
+    "code": "MK",
+    "iso3": "MKD",
+    "flag": "https://flagcdn.com/mk.svg"
   }
 ]
