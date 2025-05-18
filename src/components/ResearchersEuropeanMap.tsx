@@ -558,7 +558,7 @@ function getCountryFlagUrl(countryName: string, feature?: GeoJsonFeature): strin
   return '/data/flags/placeholder.svg';
 }
 
-// Formatear valores numéricos con separador de miles
+// Formatear valores numéricos con separador de miles (versión abreviada)
 function formatNumberWithThousandSeparator(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
   // Verificar si el valor es muy grande y formatearlo adecuadamente
   if (value >= 1000000) {
@@ -574,6 +574,14 @@ function formatNumberWithThousandSeparator(value: number, decimals: number = 0, 
       maximumFractionDigits: decimals
     }).format(value);
   }
+}
+
+// Formatear números siempre completos con separador de miles (sin abreviar)
+function formatNumberComplete(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
+  return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(value);
 }
 
 // Corregir los tipos para la función positionTooltip usando un tipo genérico más amplio
@@ -641,6 +649,178 @@ function getLocalizedCountryName(countryCode: string, language: 'es' | 'en'): st
   
   // Si no se encuentra, devolver el código como fallback
   return countryCode;
+}
+
+// Función para obtener el valor del año anterior con mejor manejo del sector y búsqueda más exhaustiva
+function getPreviousYearValue(
+  data: ResearchersData[],
+  countryCode: string | undefined,
+  year: number,
+  sector: string
+): number | null {
+  if (!data || data.length === 0 || !countryCode || year <= 1) {
+    console.log(`[YoY Debug] Retornando null - Condiciones iniciales no cumplidas: data=${!!data}, countryCode=${countryCode}, year=${year}`);
+    return null;
+  }
+  
+  const previousYear = year - 1;
+  console.log(`[YoY Debug] Buscando datos para país=${countryCode}, año anterior=${previousYear}, sector=${sector}`);
+  
+  // Normalizar el sector seleccionado para mejorar las coincidencias
+  let normalizedSector = sector.toLowerCase();
+  if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+    normalizedSector = 'total';
+  } else if (normalizedSector === 'business enterprise sector' || normalizedSector === 'bes') {
+    normalizedSector = 'business';
+  } else if (normalizedSector === 'government sector' || normalizedSector === 'gov') {
+    normalizedSector = 'government';
+  } else if (normalizedSector === 'higher education sector' || normalizedSector === 'hes') {
+    normalizedSector = 'education';
+  } else if (normalizedSector === 'private non-profit sector' || normalizedSector === 'pnp') {
+    normalizedSector = 'nonprofit';
+  }
+  
+  // Crear un array de posibles códigos alternativos para el país
+  const possibleCodes = [countryCode];
+  
+  // Códigos ISO mapeados más comunes
+  const codeMapping: Record<string, string[]> = {
+    'GRC': ['EL', 'GR'],
+    'GBR': ['UK', 'GB'],
+    'DEU': ['DE'],
+    'FRA': ['FR'],
+    'ESP': ['ES'],
+    'ITA': ['IT'],
+    'CZE': ['CZ'],
+    'SWE': ['SE'],
+    'DNK': ['DK'],
+    'FIN': ['FI'],
+    'AUT': ['AT'],
+    'BEL': ['BE'],
+    'BGR': ['BG'],
+    'HRV': ['HR'],
+    'CYP': ['CY'],
+    'EST': ['EE'],
+    'HUN': ['HU'],
+    'IRL': ['IE'],
+    'LVA': ['LV'],
+    'LTU': ['LT'],
+    'LUX': ['LU'],
+    'MLT': ['MT'],
+    'NLD': ['NL'],
+    'POL': ['PL'],
+    'PRT': ['PT'],
+    'ROU': ['RO'],
+    'SVK': ['SK'],
+    'SVN': ['SI'],
+    'CHE': ['CH'],
+    'NOR': ['NO'],
+    'ISL': ['IS'],
+    'TUR': ['TR'],
+    'MKD': ['MK'],
+    'SRB': ['RS'],
+    'MNE': ['ME'],
+    'ALB': ['AL'],
+    'BIH': ['BA'],
+    'UKR': ['UA'],
+    'RUS': ['RU']
+  };
+
+  // Mapeo inverso - ISO2 a ISO3
+  const codeMapping2to3: Record<string, string> = {
+    'EL': 'GRC',
+    'UK': 'GBR',
+    'GB': 'GBR',
+    'DE': 'DEU',
+    'FR': 'FRA',
+    'ES': 'ESP',
+    'IT': 'ITA',
+    'CZ': 'CZE',
+    'SE': 'SWE',
+    'DK': 'DNK',
+    'FI': 'FIN',
+    'AT': 'AUT',
+    'BE': 'BEL',
+    'BG': 'BGR',
+    'HR': 'HRV',
+    'CY': 'CYP',
+    'EE': 'EST',
+    'HU': 'HUN',
+    'IE': 'IRL',
+    'LV': 'LVA',
+    'LT': 'LTU',
+    'LU': 'LUX',
+    'MT': 'MLT',
+    'NL': 'NLD',
+    'PL': 'POL',
+    'PT': 'PRT',
+    'RO': 'ROU',
+    'SK': 'SVK',
+    'SI': 'SVN',
+    'CH': 'CHE',
+    'NO': 'NOR',
+    'IS': 'ISL',
+    'TR': 'TUR',
+    'MK': 'MKD',
+    'RS': 'SRB',
+    'ME': 'MNE',
+    'AL': 'ALB',
+    'BA': 'BIH',
+    'UA': 'UKR',
+    'RU': 'RUS'
+  };
+  
+  // Añadir códigos alternativos del mapeo
+  if (countryCode.length === 3 && countryCode in codeMapping) {
+    possibleCodes.push(...codeMapping[countryCode]);
+  } else if (countryCode.length === 2 && countryCode in codeMapping2to3) {
+    possibleCodes.push(codeMapping2to3[countryCode]);
+  }
+  
+  console.log(`[YoY Debug] Códigos de país a buscar: ${possibleCodes.join(', ')}`);
+  
+  // Buscar datos del año anterior utilizando todos los códigos alternativos
+  for (const code of possibleCodes) {
+    // Buscar los datos del país para el año anterior
+    const prevYearData = data.filter(item => {
+      // Comprobar si el código geo coincide
+      const geoMatch = item.geo === code;
+      const yearMatch = parseInt(item.TIME_PERIOD) === previousYear;
+      
+      // Normalizar el sector para manejar diferentes valores
+      let sectorMatch = false;
+      if (normalizedSector === 'total') {
+        sectorMatch = item.sectperf === 'TOTAL';
+      } else if (normalizedSector === 'business') {
+        sectorMatch = item.sectperf === 'BES';
+      } else if (normalizedSector === 'government') {
+        sectorMatch = item.sectperf === 'GOV';
+      } else if (normalizedSector === 'education') {
+        sectorMatch = item.sectperf === 'HES';
+      } else if (normalizedSector === 'nonprofit') {
+        sectorMatch = item.sectperf === 'PNP';
+      }
+      
+      // Depuración detallada para diagnóstico
+      if (geoMatch) {
+        console.log(`[YoY Debug] Encontrada coincidencia geo=${item.geo}, año=${item.TIME_PERIOD}, sector=${item.sectperf}, yearMatch=${yearMatch}, sectorMatch=${sectorMatch}`);
+      }
+      
+      return geoMatch && yearMatch && sectorMatch;
+    });
+    
+    console.log(`[YoY Debug] Resultados encontrados para código ${code}: ${prevYearData.length}`);
+    
+    // Usar el primer resultado que coincida
+    if (prevYearData.length > 0 && prevYearData[0].OBS_VALUE) {
+      const prevValue = parseFloat(prevYearData[0].OBS_VALUE);
+      console.log(`[YoY Debug] Valor del año anterior encontrado: ${prevValue}`);
+      return prevValue;
+    }
+  }
+  
+  console.log('[YoY Debug] No se encontró valor para el año anterior');
+  return null;
 }
 
 const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({ 
@@ -985,6 +1165,20 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           return null;
         }
         
+        // Normalizar el sector seleccionado para mejorar las coincidencias
+        let normalizedSector = sector.toLowerCase();
+        if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+          normalizedSector = 'total';
+        } else if (normalizedSector === 'business enterprise sector' || normalizedSector === 'bes') {
+          normalizedSector = 'business';
+        } else if (normalizedSector === 'government sector' || normalizedSector === 'gov') {
+          normalizedSector = 'government';
+        } else if (normalizedSector === 'higher education sector' || normalizedSector === 'hes') {
+          normalizedSector = 'education';
+        } else if (normalizedSector === 'private non-profit sector' || normalizedSector === 'pnp') {
+          normalizedSector = 'nonprofit';
+        }
+        
         // Mapeo especial para códigos que no coinciden directamente
         const codeMapping: Record<string, string[]> = {
           'GRC': ['EL'],
@@ -1047,15 +1241,15 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           
           // Normalizar el sector para manejar diferentes valores
           let sectorMatch = false;
-          if (sector === 'All Sectors' || sector === 'total') {
+          if (normalizedSector === 'total') {
             sectorMatch = item.sectperf === 'TOTAL';
-          } else if (sector === 'Business enterprise sector' || sector === 'business') {
+          } else if (normalizedSector === 'business') {
             sectorMatch = item.sectperf === 'BES';
-          } else if (sector === 'Government sector' || sector === 'government') {
+          } else if (normalizedSector === 'government') {
             sectorMatch = item.sectperf === 'GOV';
-          } else if (sector === 'Higher education sector' || sector === 'education') {
+          } else if (normalizedSector === 'education') {
             sectorMatch = item.sectperf === 'HES';
-          } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
+          } else if (normalizedSector === 'nonprofit') {
             sectorMatch = item.sectperf === 'PNP';
           }
           
@@ -1137,6 +1331,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           return geoMatch && yearMatch && sectorMatch;
         });
         
+        console.log(`[Tooltip Debug] País: ${countryName}, ISO3: ${countryIso3}, geo data: ${countryData?.geo}`);
+        
         // Obtener la bandera del país
         const flagUrl = getCountryFlagUrl(countryName, feature);
         
@@ -1157,6 +1353,69 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const euValue = !isEU ? getEUValue(data, selectedYear, selectedSector) : null;
         const spainValue = !isSpain ? getSpainValue(data, selectedYear, selectedSector) : null;
         
+        // Obtener el valor del año anterior para la comparación YoY - mejorar búsqueda
+        let previousYearValue = null;
+        
+        // Intentar primero con códigos más específicos
+        if (value !== null) {
+          // Si tenemos datos de countryData, ese es el mejor código a usar
+          if (countryData?.geo) {
+            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear, selectedSector);
+          }
+          
+          // Si no se encontró, intentar con ISO3 e ISO2
+          if (previousYearValue === null && countryIso3) {
+            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear, selectedSector);
+          }
+          
+          if (previousYearValue === null && countryIso2) {
+            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear, selectedSector);
+          }
+          
+          // Búsqueda adicional en los datos directamente
+          if (previousYearValue === null) {
+            // Intentar buscar en los datos del año anterior por el nombre normalizado del país
+            const normalizedCountryName = normalizarTexto(countryName);
+            console.log(`[YoY Debug] Intentando búsqueda por nombre: ${normalizedCountryName}`);
+            
+            const prevYearDirectData = data.filter(item => {
+              const itemCountry = normalizarTexto(item.geo);
+              const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear - 1;
+              
+              // Verificar si contiene parte del nombre del país
+              return itemCountry.includes(normalizedCountryName) && yearMatch;
+            });
+            
+            if (prevYearDirectData.length > 0 && prevYearDirectData[0].OBS_VALUE) {
+              previousYearValue = parseFloat(prevYearDirectData[0].OBS_VALUE);
+              console.log(`[YoY Debug] Valor encontrado por coincidencia de nombre: ${previousYearValue}`);
+            }
+          }
+        }
+        
+        console.log(`[Tooltip Debug] Valor actual: ${value}, Valor año anterior: ${previousYearValue}`);
+        
+        // Preparar HTML para la comparación YoY
+        let yoyComparisonHtml = '';
+        if (value !== null && previousYearValue !== null && previousYearValue !== 0) {
+          const difference = value - previousYearValue;
+          const percentDiff = (difference / previousYearValue) * 100;
+          const formattedDiff = percentDiff.toFixed(1);
+          const isPositive = difference > 0;
+          console.log(`[Tooltip Debug] Generando HTML de comparación YoY: diff=${difference}, percentDiff=${percentDiff}%`);
+          yoyComparisonHtml = `
+            <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+              </svg>
+              <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
+            </div>
+          `;
+        } else {
+          console.log(`[Tooltip Debug] No se puede generar comparación YoY: value=${value}, previousYearValue=${previousYearValue}`);
+          yoyComparisonHtml = `<div class="text-gray-400 flex items-center mt-1 text-xs">--</div>`;
+        }
+        
         // Construir comparaciones HTML
         let comparisonsHtml = '';
         
@@ -1172,8 +1431,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Unión Europea (${formatNumberWithThousandSeparator(euValue, 0)}):` : 
-                  `vs European Union (${formatNumberWithThousandSeparator(euValue, 0)}):`}</span>
+                  `vs Unión Europea (${formatNumberComplete(euValue, 0, language)}):` : 
+                  `vs European Union (${formatNumberComplete(euValue, 0, language)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1189,8 +1448,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs España (${formatNumberWithThousandSeparator(spainValue, 0)}):` : 
-                  `vs Spain (${formatNumberWithThousandSeparator(spainValue, 0)}):`}</span>
+                  `vs España (${formatNumberComplete(spainValue, 0, language)}):` : 
+                  `vs Spain (${formatNumberComplete(spainValue, 0, language)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1246,9 +1505,9 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
                     <span>${t.researchers}:</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-blue-700">${formatNumberWithThousandSeparator(safeValue, 0)}</span>
-                    <span class="ml-1 text-gray-600 text-sm">${t.fullTimeEquivalent}</span>
+                    <span class="text-xl font-bold text-blue-700">${formatNumberComplete(safeValue, 0, language)}</span>
                   </div>
+                  ${yoyComparisonHtml}
                   ${rankIndicator}
                   ${flagDescription}
                 </div>

@@ -26,7 +26,7 @@ const App: React.FC = () => {
       patentsDescription: "Número de patentes registradas en Canarias por año, con desglose por sector.",
       overviewDescription: "Resumen general de la actividad de I+D en Canarias, principales indicadores y tendencias.",
       investmentDescription: "Inversión total en I+D en Canarias, desglosada por sectores público y privado.",
-      researchersDescription: "Profesionales dedicados a la I+D en diferentes sectores (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Datos comparativos entre Europa, España y Canarias.",
+      researchersDescription: "Profesionales dedicados a la I+D en diferentes sectores (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Datos comparativos entre Europa, España y Canarias. ETC (Equivalente Tiempo Completo).",
       sources: "Fuentes de Datos",
       footerText: "Desarrollado por EMERGE - Asociación Canaria de Startups"
     },
@@ -40,7 +40,7 @@ const App: React.FC = () => {
       patentsDescription: "Number of patents registered in the Canary Islands per year, with sector breakdown.",
       overviewDescription: "General summary of R&D activity in the Canary Islands, main indicators and trends.",
       investmentDescription: "Total R&D investment in the Canary Islands, broken down by public and private sectors.",
-      researchersDescription: "Professionals engaged in R&D across different sectors (business, government, higher education, private non-profit). Comparative data between Europe, Spain, and the Canary Islands.",
+      researchersDescription: "Professionals engaged in R&D across different sectors (business, government, higher education, private non-profit). Comparative data between Europe, Spain, and the Canary Islands. FTE (Full-Time Equivalent).",
       sources: "Data Sources",
       footerText: "Developed by EMERGE - Canary Islands Startup Association"
     }
