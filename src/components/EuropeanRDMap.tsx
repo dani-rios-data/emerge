@@ -5,6 +5,8 @@ import { SECTOR_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
 import { DataDisplayType } from './DataTypeSelector';
+// Importar las funciones de mapeo de países
+import { getIso3FromCountryName, isSupranationalEntity as isSupranationalFromMapping } from '../utils/countryMapping';
 // Para usar las banderas SVG, debes importarlas del archivo logos/country-flags.tsx
 // import { FlagSpain, FlagEU, FlagCanaryIslands, FlagSweden, FlagFinland } from '../logos/country-flags';
 
@@ -187,14 +189,9 @@ function normalizarTexto(texto: string | undefined): string {
 // Función para verificar si una entidad es UE o zona euro (no un país)
 function isSupranationalEntity(name: string | undefined): boolean {
   if (!name) return false;
-  const normalizedName = normalizarTexto(name);
-  return normalizedName.includes('union europea') || 
-         normalizedName.includes('european union') ||
-         normalizedName.includes('zona euro') || 
-         normalizedName.includes('euro area') ||
-         normalizedName.includes('oecd') ||
-         normalizedName.includes('ocde') ||
-         normalizedName.includes('average');
+  
+  // Usar el nuevo sistema de mapeo
+  return isSupranationalFromMapping(name);
 }
 
 // Función para obtener el nombre del país de las propiedades GeoJSON
@@ -215,25 +212,17 @@ function getCountryName(feature: GeoJsonFeature): string {
 function getCountryIso3(feature: GeoJsonFeature): string {
   const props = feature.properties || {};
   
-  // Mapeo especial para países que podrían tener problemas con ISO3
-  const countryNameToISO3: { [key: string]: string } = {
-    'Czech Republic': 'CZE',
-    'Czechia': 'CZE',
-    'Chequia': 'CZE',
-    'República Checa': 'CZE',
-    'North Macedonia': 'MKD',
-    'Bosnia and Herzegovina': 'BIH'
-  };
-  
-  // Verificar si es un país con mapeo especial
+  // Obtener el nombre del país
   const countryName = getCountryName(feature);
-  if (countryName && countryNameToISO3[countryName]) {
-    return countryNameToISO3[countryName];
+  
+  // Usar el nuevo sistema de mapeo para obtener el ISO3
+  const iso3FromMapping = getIso3FromCountryName(countryName);
+  if (iso3FromMapping) {
+    return iso3FromMapping;
   }
   
-  // Intentar obtener el código ISO3 de diferentes propiedades posibles
-  const iso3 = props.ISO3 || props.iso_a3 || props.ADM0_A3 || '';
-  return iso3 as string;
+  // Como fallback, intentar obtener el código ISO3 de diferentes propiedades posibles
+  return (props.ISO3 || props.iso_a3 || props.ADM0_A3 || '') as string;
 }
 
 // Función para obtener el valor de la UE

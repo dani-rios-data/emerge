@@ -3,6 +3,8 @@ import * as d3 from 'd3';
 import { Feature, Geometry } from 'geojson';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
+// Importar las funciones de mapeo de países
+import { getIso3FromCountryName, isSupranationalEntity as isSupranationalFromMapping } from '../utils/countryMapping';
 
 // Definir colores específicos para los componentes de investigadores
 const RESEARCHER_SECTOR_COLORS = {
@@ -104,17 +106,25 @@ const countryCodeMapping: Record<string, {es: string, en: string}> = {
   'TR': {es: 'Turquía', en: 'Turkey'},
   'ME': {es: 'Montenegro', en: 'Montenegro'},
   'MK': {es: 'Macedonia del Norte', en: 'North Macedonia'},
+  'MKD': {es: 'Macedonia del Norte', en: 'North Macedonia'},
   'AL': {es: 'Albania', en: 'Albania'},
   'RS': {es: 'Serbia', en: 'Serbia'},
+  'SRB': {es: 'Serbia', en: 'Serbia'},
   'BA': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
+  'BIH': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
   'MD': {es: 'Moldavia', en: 'Moldova'},
+  'MDA': {es: 'Moldavia', en: 'Moldova'},
   'UA': {es: 'Ucrania', en: 'Ukraine'},
+  'UKR': {es: 'Ucrania', en: 'Ukraine'},
   'XK': {es: 'Kosovo', en: 'Kosovo'},
+  'XKX': {es: 'Kosovo', en: 'Kosovo'},
   'RU': {es: 'Rusia', en: 'Russia'},
+  'RUS': {es: 'Rusia', en: 'Russia'},
   'JP': {es: 'Japón', en: 'Japan'},
   'US': {es: 'Estados Unidos', en: 'United States'},
   'CN_X_HK': {es: 'China (exc. Hong Kong)', en: 'China (exc. Hong Kong)'},
-  'KR': {es: 'Corea del Sur', en: 'South Korea'}
+  'KR': {es: 'Corea del Sur', en: 'South Korea'},
+  'MNE': {es: 'Montenegro', en: 'Montenegro'}
 };
 
 // Paleta de colores para el mapa
@@ -189,14 +199,9 @@ function normalizarTexto(texto: string | undefined): string {
 // Esta función se usa en el tooltip para mostrar información adicional
 function isSupranationalEntity(name: string | undefined): boolean {
   if (!name) return false;
-  const normalizedName = normalizarTexto(name);
-  return normalizedName.includes('union europea') || 
-         normalizedName.includes('european union') ||
-         normalizedName.includes('zona euro') || 
-         normalizedName.includes('euro area') ||
-         normalizedName.includes('oecd') ||
-         normalizedName.includes('ocde') ||
-         normalizedName.includes('average');
+  
+  // Usar el nuevo sistema de mapeo
+  return isSupranationalFromMapping(name);
 }
 
 // Función para obtener el nombre del país de las propiedades GeoJSON
@@ -212,29 +217,21 @@ function getCountryName(feature: GeoJsonFeature): string {
   ) as string;
 }
 
-// Función para obtener el ISO3 del país
+// Función para obtener el código ISO3 del país
 function getCountryIso3(feature: GeoJsonFeature): string {
   const props = feature.properties || {};
   
-  // Mapeo especial para países que podrían tener problemas con ISO3
-  const countryNameToISO3: { [key: string]: string } = {
-    'Czech Republic': 'CZE',
-    'Czechia': 'CZE',
-    'Chequia': 'CZE',
-    'República Checa': 'CZE',
-    'North Macedonia': 'MKD',
-    'Bosnia and Herzegovina': 'BIH'
-  };
-  
-  // Verificar si es un país con mapeo especial
+  // Obtener el nombre del país
   const countryName = getCountryName(feature);
-  if (countryName && countryNameToISO3[countryName]) {
-    return countryNameToISO3[countryName];
+  
+  // Usar el nuevo sistema de mapeo para obtener el ISO3
+  const iso3FromMapping = getIso3FromCountryName(countryName);
+  if (iso3FromMapping) {
+    return iso3FromMapping;
   }
   
-  // Intentar obtener el código ISO3 de diferentes propiedades posibles
-  const iso3 = props.ISO3 || props.iso_a3 || props.ADM0_A3 || '';
-  return iso3 as string;
+  // Como fallback, intentar obtener el código ISO3 de diferentes propiedades posibles
+  return (props.ISO3 || props.iso_a3 || props.ADM0_A3 || '') as string;
 }
 
 // Función para obtener el valor de la UE
@@ -342,13 +339,13 @@ function getValueRange(
     'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
     'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
     'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-    'XK', 'RU', 'GR', 'BY', 'VA',
+    'XK', 'RU', 'EU27_2020', 'EA19', 'EA20', 'GR', 'BY', 'VA',
     // Códigos ISO3
     'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
     'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
     'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
     'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
-    'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE'
+    'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
   ];
   
   // Filtrar datos por año y sector, solo países europeos y excluir entidades supranacionales
@@ -561,12 +558,22 @@ function getCountryFlagUrl(countryName: string, feature?: GeoJsonFeature): strin
   return '/data/flags/placeholder.svg';
 }
 
-// Función para formatear números con separadores de miles
-function formatNumberWithThousandSeparator(value: number, decimals: number = 0): string {
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(value);
+// Formatear valores numéricos con separador de miles
+function formatNumberWithThousandSeparator(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
+  // Verificar si el valor es muy grande y formatearlo adecuadamente
+  if (value >= 1000000) {
+    // Para valores de millones o más, mostrar en formato abreviado
+    return (value / 1000000).toFixed(1) + 'M';
+  } else if (value >= 1000) {
+    // Para valores de miles, mostrar en formato abreviado
+    return (value / 1000).toFixed(1) + 'K';
+  } else {
+    // Para valores menores a mil, usar formato normal
+    return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(value);
+  }
 }
 
 // Corregir los tipos para la función positionTooltip usando un tipo genérico más amplio
@@ -864,7 +871,13 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const palette = getSectorPalette(selectedSector);
         const colors = [palette.MIN, palette.LOW, palette.MID, palette.HIGH, palette.MAX];
         
-        // No mostrar el rango numerico encima del título como pidió el usuario
+        // Añadir título a la leyenda
+        legendGroup.append('text')
+          .attr('x', 0)
+          .attr('y', -80)
+          .attr('font-size', '16px')
+          .attr('font-weight', 'bold')
+          .text(t.researchers);
         
         // Añadir primero la etiqueta "Sin datos" a la leyenda
         legendGroup.append('rect')
@@ -872,7 +885,9 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           .attr('y', -60)
           .attr('width', 25)
           .attr('height', 25)
-          .attr('fill', palette.NULL);
+          .attr('fill', palette.NULL)
+          .attr('stroke', '#666')
+          .attr('stroke-width', 0.5);
           
         legendGroup.append('text')
           .attr('x', 35)
@@ -886,7 +901,9 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           .attr('y', -30)
           .attr('width', 25)
           .attr('height', 25)
-          .attr('fill', palette.ZERO);
+          .attr('fill', palette.ZERO)
+          .attr('stroke', '#666')
+          .attr('stroke-width', 0.5);
           
         legendGroup.append('text')
           .attr('x', 35)
@@ -901,27 +918,30 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           const rangeStart = Math.round(rangeValues[i]);
           const rangeEnd = Math.round(rangeValues[i + 1]);
           
+          // Asegurar que no haya rangos duplicados
+          if (i > 0 && rangeStart === Math.round(rangeValues[i-1])) {
+            continue;
+          }
+          
           legendGroup.append('rect')
             .attr('x', 0)
             .attr('y', i * 30)
             .attr('width', 25)
             .attr('height', 25)
-            .attr('fill', colors[i]);
+            .attr('fill', colors[i])
+            .attr('stroke', '#666')
+            .attr('stroke-width', 0.5);
+          
+          // Formatear los valores con separadores de miles
+          const formattedStart = formatNumberWithThousandSeparator(rangeStart, 0, language);
+          const formattedEnd = formatNumberWithThousandSeparator(rangeEnd, 0, language);
           
           legendGroup.append('text')
             .attr('x', 35)
             .attr('y', i * 30 + 18)
             .attr('font-size', '14px')
-            .text(`${formatNumberWithThousandSeparator(rangeStart)} - ${formatNumberWithThousandSeparator(rangeEnd)}`);
+            .text(`${formattedStart} - ${formattedEnd}`);
         }
-        
-        // Añadir título a la leyenda
-        legendGroup.append('text')
-          .attr('x', 0)
-          .attr('y', -15)
-          .attr('font-size', '16px')
-          .attr('font-weight', 'bold')
-          .text(t.researchers);
       };
       
       // Función para obtener el valor de un país
@@ -943,11 +963,12 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
           'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
           'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-          'XK', 'RU', 'EU27_2020', 'EA19', 'EA20',
+          'XK', 'RU', 'GR', 'BY', 'VA',
           'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
           'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
           'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
+          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
+          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
         ];
         
         // Verificar si el país es europeo de forma más permisiva
@@ -959,10 +980,10 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           return null;
         }
         
-                  // Solo excluir entidades claramente supranacionales
-          if (isSupranationalCode(iso3) || isSupranationalCode(iso2)) {
-            return null;
-          }
+        // Solo excluir entidades claramente supranacionales
+        if (isSupranationalCode(iso3) || isSupranationalCode(iso2)) {
+          return null;
+        }
         
         // Mapeo especial para códigos que no coinciden directamente
         const codeMapping: Record<string, string[]> = {
@@ -999,7 +1020,12 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           'ISL': ['IS'],
           'TUR': ['TR'],
           'MKD': ['MK'],
-          'RUS': ['RU']
+          'RUS': ['RU'],
+          'SRB': ['RS'],     // Serbia
+          'MNE': ['ME'],     // Montenegro
+          'ALB': ['AL'],     // Albania
+          'BIH': ['BA'],     // Bosnia y Herzegovina
+          'XKX': ['XK']      // Kosovo
         };
         
         // Lista de posibles códigos a buscar
@@ -1062,7 +1088,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
           'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
           'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
-          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE'
+          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
         ];
         
         // Verificar si el país es europeo de forma más flexible
@@ -1078,9 +1104,6 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           // Si es una entidad supranacional podríamos mostrar información adicional
           console.log(`Tooltip para entidad supranacional: ${countryNameAlt}`);
         }
-        
-        // Ignorar hover en países sin datos
-        if (value === null) return;
         
         // Destacar país seleccionado
         d3.select(event.currentTarget as SVGPathElement)
@@ -1137,86 +1160,110 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         // Construir comparaciones HTML
         let comparisonsHtml = '';
         
-        // Comparación con la UE
-        if (!isEU && euValue !== null) {
-          const difference = value - euValue;
-          const percentDiff = (difference / euValue) * 100;
-          const formattedDiff = percentDiff.toFixed(1);
-          const isPositive = difference > 0;
+        // Solo mostrar comparaciones si el país actual tiene datos
+        if (value !== null) {
+          // Comparación con la UE
+          if (!isEU && euValue !== null) {
+            const difference = value - euValue;
+            const percentDiff = (difference / euValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs Unión Europea (${formatNumberWithThousandSeparator(euValue, 0)}):` : 
+                  `vs European Union (${formatNumberWithThousandSeparator(euValue, 0)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+              </div>
+            `;
+          }
           
-          comparisonsHtml += `
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                `vs Unión Europea (${formatNumberWithThousandSeparator(euValue, 0)}):` : 
-                `vs European Union (${formatNumberWithThousandSeparator(euValue, 0)}):`}</span>
-              <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-            </div>
-          `;
-        }
-        
-        // Comparación con España
-        if (!isSpain && spainValue !== null) {
-          const difference = value - spainValue;
-          const percentDiff = (difference / spainValue) * 100;
-          const formattedDiff = percentDiff.toFixed(1);
-          const isPositive = difference > 0;
-          
-          comparisonsHtml += `
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                `vs España (${formatNumberWithThousandSeparator(spainValue, 0)}):` : 
-                `vs Spain (${formatNumberWithThousandSeparator(spainValue, 0)}):`}</span>
-              <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-            </div>
-          `;
+          // Comparación con España
+          if (!isSpain && spainValue !== null) {
+            const difference = value - spainValue;
+            const percentDiff = (difference / spainValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs España (${formatNumberWithThousandSeparator(spainValue, 0)}):` : 
+                  `vs Spain (${formatNumberWithThousandSeparator(spainValue, 0)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+              </div>
+            `;
+          }
         }
 
-        // Añadir indicador de porcentaje sobre el máximo
-        const percentOfMax = valueRange.max > 0 ? (value / valueRange.max) * 100 : 0;
-        const rankIndicator = `
-          <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentOfMax}%"></div>
-          </div>
-          <div class="text-xs text-gray-500 text-right mt-1">${percentOfMax.toFixed(1)}% del máximo</div>
-        `;
+        let tooltipContent = '';
         
-        // Construir contenido del tooltip con estilo mejorado
-        const tooltipContent = `
-          <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-            <!-- Header con el nombre del país -->
-            <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-              <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
+        // Si no hay datos, mostrar un tooltip simple
+        if (value === null) {
+          tooltipContent = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
               </div>
-              <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
+              <div class="p-4">
+                <p class="text-gray-500">${t.noData}</p>
+              </div>
             </div>
-            
-            <!-- Contenido principal -->
-            <div class="p-4">
-              <!-- Métrica principal -->
-              <div class="mb-3">
-                <div class="flex items-center text-gray-500 text-sm mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                  <span>${t.researchers}:</span>
+          `;
+        } else {
+          // Seguro que value no es null en este punto
+          const safeValue = value; // Asignar a una constante para satisfacer TypeScript
+          // Añadir indicador de porcentaje sobre el máximo
+          const percentOfMax = valueRange.max > 0 ? (safeValue / valueRange.max) * 100 : 0;
+          const rankIndicator = `
+            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentOfMax}%"></div>
+            </div>
+            <div class="text-xs text-gray-500 text-right mt-1">${percentOfMax.toFixed(1)}% del máximo</div>
+          `;
+          
+          // Construir contenido del tooltip con estilo mejorado
+          tooltipContent = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+              <!-- Header con el nombre del país -->
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
                 </div>
-                <div class="flex items-center">
-                  <span class="text-xl font-bold text-blue-700">${formatNumberWithThousandSeparator(value, 0)}</span>
-                  <span class="ml-1 text-gray-600 text-sm">${t.fullTimeEquivalent}</span>
-                </div>
-                ${rankIndicator}
-                ${flagDescription}
+                <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
               </div>
               
-              <!-- Si hay comparaciones, mostrarlas -->
-              ${comparisonsHtml ? `
-              <div class="space-y-2 border-t border-gray-100 pt-3">
-                <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
-                ${comparisonsHtml}
+              <!-- Contenido principal -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-3">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <span>${t.researchers}:</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="text-xl font-bold text-blue-700">${formatNumberWithThousandSeparator(safeValue, 0)}</span>
+                    <span class="ml-1 text-gray-600 text-sm">${t.fullTimeEquivalent}</span>
+                  </div>
+                  ${rankIndicator}
+                  ${flagDescription}
+                </div>
+                
+                <!-- Si hay comparaciones, mostrarlas -->
+                ${comparisonsHtml ? `
+                <div class="space-y-2 border-t border-gray-100 pt-3">
+                  <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+                  ${comparisonsHtml}
+                </div>
+                ` : ''}
               </div>
-              ` : ''}
             </div>
-          </div>
-        `;
+          `;
+        }
         
         // Mostrar tooltip
         const tooltip = d3.select(tooltipRef.current!);
