@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import * as d3 from 'd3';
 import { 
@@ -9,7 +9,9 @@ import {
   Title, 
   Tooltip, 
   Legend,
-  ChartOptions
+  ChartOptions,
+  ChartEvent,
+  Element
 } from 'chart.js';
 import { EU_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json
@@ -200,8 +202,293 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
   selectedSector = 'total'
 }) => {
   const chartRef = useRef(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const tooltipTimeoutRef = useRef<number | null>(null);
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  
+  // Funciones para manejar el tooltip global con implementación mejorada
+  const createGlobalTooltip = (): HTMLElement => {
+    // Verificar si ya existe un tooltip global
+    let tooltipElement = document.getElementById('researcher-chart-tooltip');
+    
+    if (!tooltipElement) {
+      // Crear nuevo tooltip y agregarlo al body
+      tooltipElement = document.createElement('div');
+      tooltipElement.id = 'researcher-chart-tooltip';
+      tooltipElement.className = 'researcher-tooltip';
+      
+      // Aplicar estilos base manualmente
+      Object.assign(tooltipElement.style, {
+        position: 'fixed',
+        display: 'none',
+        opacity: '0',
+        zIndex: '999999',
+        pointerEvents: 'none',
+        backgroundColor: 'white',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+        borderRadius: '8px',
+        padding: '0',
+        minWidth: '150px',
+        maxWidth: '350px',
+        border: '1px solid #e2e8f0',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+        fontSize: '14px',
+        lineHeight: '1.5',
+        color: '#333',
+        transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+      });
+      
+      document.body.appendChild(tooltipElement);
+      
+      // Crear hoja de estilo inline para las clases de Tailwind
+      const styleSheet = document.createElement('style');
+      styleSheet.id = 'researcher-tooltip-styles';
+      styleSheet.textContent = `
+        #researcher-chart-tooltip {
+          transform-origin: center;
+          transform: scale(0.95);
+          transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+          pointer-events: none;
+        }
+        #researcher-chart-tooltip.visible {
+          opacity: 1 !important;
+          transform: scale(1);
+        }
+        #researcher-chart-tooltip .text-green-600 { color: #059669; }
+        #researcher-chart-tooltip .text-red-600 { color: #DC2626; }
+        #researcher-chart-tooltip .bg-blue-50 { background-color: #EFF6FF; }
+        #researcher-chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+        #researcher-chart-tooltip .border-blue-100 { border-color: #DBEAFE; }
+        #researcher-chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
+        #researcher-chart-tooltip .text-gray-500 { color: #6B7280; }
+        #researcher-chart-tooltip .text-blue-700 { color: #1D4ED8; }
+        #researcher-chart-tooltip .text-gray-800 { color: #1F2937; }
+        #researcher-chart-tooltip .text-gray-600 { color: #4B5563; }
+        #researcher-chart-tooltip .text-yellow-500 { color: #F59E0B; }
+        #researcher-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
+        #researcher-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        #researcher-chart-tooltip .p-3 { padding: 0.75rem; }
+        #researcher-chart-tooltip .p-4 { padding: 1rem; }
+        #researcher-chart-tooltip .p-2 { padding: 0.5rem; }
+        #researcher-chart-tooltip .pt-3 { padding-top: 0.75rem; }
+        #researcher-chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
+        #researcher-chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
+        #researcher-chart-tooltip .mb-4 { margin-bottom: 1rem; }
+        #researcher-chart-tooltip .mr-1 { margin-right: 0.25rem; }
+        #researcher-chart-tooltip .mr-2 { margin-right: 0.5rem; }
+        #researcher-chart-tooltip .mt-1 { margin-top: 0.25rem; }
+        #researcher-chart-tooltip .mt-2 { margin-top: 0.5rem; }
+        #researcher-chart-tooltip .text-xs { font-size: 0.75rem; }
+        #researcher-chart-tooltip .text-sm { font-size: 0.875rem; }
+        #researcher-chart-tooltip .text-lg { font-size: 1.125rem; }
+        #researcher-chart-tooltip .text-xl { font-size: 1.25rem; }
+        #researcher-chart-tooltip .font-bold { font-weight: 700; }
+        #researcher-chart-tooltip .font-medium { font-weight: 500; }
+        #researcher-chart-tooltip .flex { display: flex; }
+        #researcher-chart-tooltip .items-center { align-items: center; }
+        #researcher-chart-tooltip .justify-between { justify-content: space-between; }
+        #researcher-chart-tooltip .w-8 { width: 2rem; }
+        #researcher-chart-tooltip .h-6 { height: 1.5rem; }
+        #researcher-chart-tooltip .w-44 { width: 11rem; }
+        #researcher-chart-tooltip .w-full { width: 100%; }
+        #researcher-chart-tooltip .rounded { border-radius: 0.25rem; }
+        #researcher-chart-tooltip .rounded-md { border-radius: 0.375rem; }
+        #researcher-chart-tooltip .overflow-hidden { overflow: hidden; }
+        #researcher-chart-tooltip .border-t { border-top-width: 1px; }
+        #researcher-chart-tooltip .border-b { border-bottom-width: 1px; }
+        #researcher-chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+        #researcher-chart-tooltip .max-w-xs { max-width: 20rem; }
+        #researcher-chart-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+        #researcher-chart-tooltip .inline-block { display: inline-block; }
+      `;
+      document.head.appendChild(styleSheet);
+    }
+    
+    return tooltipElement;
+  };
+
+  // Posicionar el tooltip global
+  const positionGlobalTooltip = (event: MouseEvent, content: string): void => {
+    const tooltipEl = createGlobalTooltip();
+    
+    // Actualizar contenido
+    tooltipEl.innerHTML = content;
+    
+    // Aplicar estilos base
+    Object.assign(tooltipEl.style, {
+      position: 'fixed',
+      display: 'block',
+      opacity: '0',
+      zIndex: '999999',
+      pointerEvents: 'none',
+      backgroundColor: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      borderRadius: '8px',
+      padding: '0',
+      minWidth: '150px',
+      maxWidth: '350px',
+      border: '1px solid #e2e8f0',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+      fontSize: '14px',
+      lineHeight: '1.5',
+      color: '#333',
+      transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+    });
+    
+    // Cancelar cualquier temporizador pendiente
+    if (tooltipTimeoutRef.current !== null) {
+      window.clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    
+    // Actualizar estado de visibilidad
+    setIsTooltipVisible(true);
+    
+    const tooltipWidth = tooltipEl.offsetWidth;
+    const tooltipHeight = tooltipEl.offsetHeight;
+    
+    // Obtener posición del mouse
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    
+    // Obtener tamaño de la ventana
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    // Posicionar más cerca del elemento - similar a RegionRankingChart
+    let left = mouseX + 10;
+    let top = mouseY - (tooltipHeight / 2); // Centrar verticalmente respecto al cursor
+    
+    // Ajustar horizontal si se sale por la derecha
+    if (left + tooltipWidth > windowWidth) {
+      // Si no cabe a la derecha, colocar a la izquierda del cursor
+      left = mouseX - tooltipWidth - 10;
+    }
+    
+    // Ajustar vertical si se sale por abajo o arriba
+    if (top + tooltipHeight > windowHeight) {
+      top = windowHeight - tooltipHeight - 10;
+    }
+    
+    if (top < 10) {
+      top = 10;
+    }
+    
+    // Establecer posición y visibilidad con precisión
+    tooltipEl.style.left = `${Math.floor(left)}px`;
+    tooltipEl.style.top = `${Math.floor(top)}px`;
+    
+    // Agregar clase visible tras un pequeño delay para activar la animación
+    setTimeout(() => {
+      tooltipEl.classList.add('visible');
+    }, 10);
+  };
+
+  // Ocultar el tooltip global
+  const hideGlobalTooltip = (immediately: boolean = false): void => {
+    // Si el tooltip no está visible según el estado, no hacemos nada
+    if (!isTooltipVisible) return;
+    
+    const tooltipEl = document.getElementById('researcher-chart-tooltip');
+    if (!tooltipEl) return;
+    
+    // Limpiar cualquier temporizador pendiente
+    if (tooltipTimeoutRef.current !== null) {
+      window.clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    
+    if (immediately) {
+      // Ocultar inmediatamente si se solicita
+      tooltipEl.style.display = 'none';
+      tooltipEl.style.opacity = '0';
+      tooltipEl.classList.remove('visible');
+      setIsTooltipVisible(false);
+    } else {
+      // Quitar la clase visible primero para la animación
+      tooltipEl.classList.remove('visible');
+      
+      // Después de la transición, ocultar el tooltip
+      tooltipTimeoutRef.current = window.setTimeout(() => {
+        if (tooltipEl) {
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.opacity = '0';
+          setIsTooltipVisible(false);
+          tooltipTimeoutRef.current = null;
+        }
+      }, 150); // Tiempo suficiente para la animación
+    }
+  };
+
+  // Añadir escuchadores para eventos del contenedor
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    // Ocultar tooltip cuando el ratón sale del contenedor
+    const handleMouseLeave = () => {
+      hideGlobalTooltip();
+    };
+    
+    // Ocultar tooltip al hacer scroll
+    const handleScroll = () => {
+      hideGlobalTooltip(true); // Ocultar inmediatamente en scroll
+    };
+    
+    container.addEventListener('mouseleave', handleMouseLeave);
+    
+    // Obtener el contenedor de scroll si existe
+    const scrollContainer = container.querySelector('.custom-scrollbar');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+    
+    // Añadir un detector global para clicks fuera
+    const handleDocumentClick = (e: MouseEvent) => {
+      // Si el click es fuera del contenedor, ocultar el tooltip
+      if (container && !container.contains(e.target as Node)) {
+        hideGlobalTooltip(true);
+      }
+    };
+    
+    document.addEventListener('click', handleDocumentClick);
+    
+    // Ocultar tooltip al cambiar de pestaña
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        hideGlobalTooltip(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+      
+      document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Limpiar el tooltip al desmontar el componente
+      if (tooltipTimeoutRef.current !== null) {
+        window.clearTimeout(tooltipTimeoutRef.current);
+      }
+      
+      const tooltipEl = document.getElementById('researcher-chart-tooltip');
+      const styleSheet = document.getElementById('researcher-tooltip-styles');
+      
+      if (tooltipEl && tooltipEl.parentNode) {
+        tooltipEl.parentNode.removeChild(tooltipEl);
+      }
+      
+      if (styleSheet && styleSheet.parentNode) {
+        styleSheet.parentNode.removeChild(styleSheet);
+      }
+    };
+  }, [isTooltipVisible]);
 
   // Textos traducidos
   const texts = {
@@ -451,17 +738,20 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
         enabled: false,
         external: (context) => {
           const tooltip = context.tooltip;
+          
+          // Determinar si el tooltip debe estar visible
           if (!tooltip.opacity) {
-            if (tooltipRef.current) {
-              tooltipRef.current.style.display = 'none';
-            }
+            hideGlobalTooltip();
             return;
           }
-
+          
+          // Resto del código para generar el tooltip
           const index = tooltip.dataPoints[0].dataIndex;
           // Usar los datos ordenados almacenados en chartData
           const chartItem = chartData.sortedItems[index];
-          if (!chartItem) return;
+          if (!chartItem) {
+            return;
+          }
           
           const country = chartItem.code;
           const value = chartItem.value;
@@ -470,185 +760,191 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           const numCountries = chartItem.numCountries;
           const rank = index + 1; // El índice ya indica la posición en el ranking
           
-          if (tooltipRef.current) {
-            // Obtener la URL de la bandera usando la nueva función
-            const flagUrl = getCountryFlagUrl(country);
-            
-            let flagElement = '';
-            if (flagUrl) {
-              flagElement = `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                <img src="${flagUrl}" alt="${country}" class="w-full h-full object-cover" />
-              </div>`;
-            }
-            
-            const countryName = getCountryNameFromCode(country, language);
-            
-            // Preparar etiqueta OBS_FLAG
-            let obsTagHtml = '';
-            if (flagCode) {
-              obsTagHtml = `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>`;
-            }
-            
-            // Preparar comparación YoY (año anterior) si tuviéramos los datos
-            // (Esto se dejaría para una implementación futura)
-            const yoyComparisonHtml = getYoyComparison(country, value);
-            
-            // Preparar nota sobre promedio si aplica
-            let averageNote = '';
-            if (isAverage && numCountries) {
-              averageNote = `
-                <div class="text-xs text-gray-500 mt-2 bg-blue-50 p-2 rounded">
-                  <span class="font-medium">${language === 'es' ? 'Promedio' : 'Average'}</span>: 
-                  ${language === 'es' 
-                    ? `Valor calculado dividiendo el total por ${numCountries} países` 
-                    : `Value calculated by dividing the total by ${numCountries} countries`}
-                </div>
-              `;
-            }
-            
-            // Preparar comparaciones con UE y España
-            // Calculamos valores de la UE y España para comparar
-            const euItem = chartData.sortedItems.find(item => item.code === 'EU27_2020');
-            const spainItem = chartData.sortedItems.find(item => item.code === 'ES');
-            let comparisonsHtml = '';
-            
-            // Comparativa con la UE (media)
-            if (euItem && !chartItem.isSupranational) {
-              const euValue = euItem.isAverage ? euItem.value : (euItem.value / 27);
-              const difference = value - euValue;
-              const percentDiff = (difference / euValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              
-              comparisonsHtml += `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs Media UE (${formatValue(euValue)}):` : 
-                    `vs Avg UE (${formatValue(euValue)}):`}</span>
-                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
-            }
-            
-            // Comparativa con España
-            if (spainItem && country !== 'ES' && !chartItem.isSupranational) {
-              const difference = value - spainItem.value;
-              const percentDiff = (difference / spainItem.value) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              
-              comparisonsHtml += `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs España (${formatValue(spainItem.value)}):` : 
-                    `vs Spain (${formatValue(spainItem.value)}):`}</span>
-                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
-            }
-            
-            // Descripción de flag si existe
-            let flagDescription = '';
-            if (flagCode && labelDescriptions[flagCode]?.[language]) {
-              flagDescription = labelDescriptions[flagCode][language];
-            }
-            
-            // Construir el tooltip usando el mismo formato que en ResearchersEuropeanMap.tsx
-            tooltipRef.current.style.display = 'block';
-            tooltipRef.current.style.left = (tooltip.caretX + 15) + 'px';
-            tooltipRef.current.style.top = (tooltip.caretY - 10) + 'px';
-            tooltipRef.current.style.transform = 'none';
-            tooltipRef.current.style.padding = '0';
-            tooltipRef.current.style.borderRadius = '8px';
-            tooltipRef.current.style.backgroundColor = '#fff';
-            tooltipRef.current.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
-            tooltipRef.current.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-            tooltipRef.current.style.color = '#333';
-            tooltipRef.current.style.fontSize = '13px';
-            tooltipRef.current.style.pointerEvents = 'none';
-            tooltipRef.current.style.zIndex = '9999';
-            tooltipRef.current.style.width = 'auto';
-            tooltipRef.current.style.maxWidth = '350px';
-            
-            tooltipRef.current.innerHTML = `
-              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <!-- Header con el nombre del país -->
-                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                  ${flagElement}
-                  <h3 class="text-lg font-bold text-gray-800">${countryName}</h3>
-                </div>
-                
-                <!-- Resto del tooltip igual que antes -->
-                <div class="p-4">
-                  <!-- Métrica principal -->
-                  <div class="mb-3">
-                    <div class="flex items-center text-gray-500 text-sm mb-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                      <span>${t.researchers}:</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xl font-bold text-blue-700">
-                        ${formatValue(value)}
-                      </span>
-                      ${isAverage ? `<span class="text-xs ml-1 text-gray-600">${language === 'es' ? '(promedio)' : '(average)'}</span>` : ''}
-                      ${obsTagHtml}
-                    </div>
-                    ${yoyComparisonHtml}
-                  </div>
-                  
-                  ${averageNote}
-                  
-                  <!-- Ranking (si está disponible y no es entidad supranacional) -->
-                  ${!chartItem.isSupranational ? `
-                  <div class="mb-4">
-                    <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                        <circle cx="12" cy="8" r="6" />
-                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                      </svg>
-                      <span class="font-medium">Rank </span>
-                      <span class="font-bold text-lg mx-1">${rank}</span>
-                      <span class="text-gray-600">${language === 'es' ? `de ${chartData.sortedItems.filter(i => !i.isSupranational).length}` : `of ${chartData.sortedItems.filter(i => !i.isSupranational).length}`}</span>
-                    </div>
-                  </div>
-                  ` : ''}
-                  
-                  <!-- Comparativas -->
-                  ${comparisonsHtml ? `
-                  <div class="space-y-2 border-t border-gray-100 pt-3">
-                    <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
-                    ${comparisonsHtml}
-                  </div>
-                  ` : ''}
-                </div>
-                
-                <!-- Footer con información de la bandera de observación -->
-                ${flagCode && flagDescription ? `
-                  <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                    <span>${flagCode} - ${flagDescription}</span>
-                  </div>
-                ` : ''}
+          // Construir el contenido del tooltip
+          const flagUrl = getCountryFlagUrl(country);
+          const countryName = getCountryNameFromCode(country, language);
+          
+          // Preparar etiqueta OBS_FLAG
+          let obsTagHtml = '';
+          if (flagCode) {
+            obsTagHtml = `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>`;
+          }
+          
+          // Preparar comparación YoY
+          const yoyComparisonHtml = getYoyComparison(country, value);
+          
+          // Preparar nota sobre promedio si aplica
+          let averageNote = '';
+          if (isAverage && numCountries) {
+            averageNote = `
+              <div class="text-xs text-gray-500 mt-2 bg-blue-50 p-2 rounded">
+                <span class="font-medium">${language === 'es' ? 'Promedio' : 'Average'}</span>: 
+                ${language === 'es' 
+                  ? `Valor calculado dividiendo el total por ${numCountries} países` 
+                  : `Value calculated by dividing the total by ${numCountries} countries`}
               </div>
             `;
+          }
+          
+          // Preparar comparaciones con UE y España
+          const euItem = chartData.sortedItems.find(item => item.code === 'EU27_2020');
+          const spainItem = chartData.sortedItems.find(item => item.code === 'ES');
+          let comparisonsHtml = '';
+          
+          // Comparativa con la UE (media)
+          if (euItem && !chartItem.isSupranational) {
+            const euValue = euItem.isAverage ? euItem.value : (euItem.value / 27);
+            const difference = value - euValue;
+            const percentDiff = (difference / euValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
             
-            // Ajustar posición para que no se salga de la pantalla
-            const tooltipElement = tooltipRef.current;
-            const tooltipRect = tooltipElement.getBoundingClientRect();
-            // Acceso seguro a la referencia del gráfico
-            const chartElement = chartRef.current as unknown as { canvas?: HTMLCanvasElement } | null;
-            const chartRect = chartElement?.canvas?.getBoundingClientRect() || { left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight };
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs Media UE (${formatValue(euValue)}):` : 
+                  `vs Avg UE (${formatValue(euValue)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+              </div>
+            `;
+          }
+          
+          // Comparativa con España
+          if (spainItem && country !== 'ES' && !chartItem.isSupranational) {
+            const difference = value - spainItem.value;
+            const percentDiff = (difference / spainItem.value) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
             
-            // Ajuste horizontal
-            if (parseFloat(tooltipElement.style.left) + tooltipRect.width > chartRect.right) {
-              tooltipElement.style.left = `${chartRect.right - tooltipRect.width - 10}px`;
-            }
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs España (${formatValue(spainItem.value)}):` : 
+                  `vs Spain (${formatValue(spainItem.value)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+              </div>
+            `;
+          }
+          
+          // Descripción de flag si existe
+          let flagDescription = '';
+          if (flagCode && labelDescriptions[flagCode]?.[language]) {
+            flagDescription = labelDescriptions[flagCode][language];
+          }
+          
+          const tooltipContent = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+              <!-- Header con el nombre del país -->
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                ${flagUrl ? `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  <img src="${flagUrl}" alt="${country}" class="w-full h-full object-cover" />
+                </div>` : ''}
+                <h3 class="text-lg font-bold text-gray-800">${countryName}</h3>
+              </div>
+              
+              <!-- Resto del tooltip igual que antes -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-3">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <span>${t.researchers}:</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="text-xl font-bold text-blue-700">
+                      ${formatValue(value)}
+                    </span>
+                    ${isAverage ? `<span class="text-xs ml-1 text-gray-600">${language === 'es' ? '(promedio)' : '(average)'}</span>` : ''}
+                    ${obsTagHtml}
+                  </div>
+                  ${yoyComparisonHtml}
+                </div>
+                
+                ${averageNote}
+                
+                <!-- Ranking (si está disponible y no es entidad supranacional) -->
+                ${!chartItem.isSupranational ? `
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
+                    <span class="font-bold text-lg mx-1">${rank}</span>
+                    <span class="text-gray-600">${language === 'es' ? `de ${chartData.sortedItems.filter(i => !i.isSupranational).length}` : `of ${chartData.sortedItems.filter(i => !i.isSupranational).length}`}</span>
+                  </div>
+                </div>
+                ` : ''}
+                
+                <!-- Comparativas -->
+                ${comparisonsHtml ? `
+                <div class="space-y-2 border-t border-gray-100 pt-3">
+                  <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+                  ${comparisonsHtml}
+                </div>
+                ` : ''}
+              </div>
+              
+              <!-- Footer con información de la bandera de observación -->
+              ${flagCode && flagDescription ? `
+                <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                  <span>${flagCode} - ${flagDescription}</span>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          
+          // Obtener evento de mouse nativo si está disponible
+          const chart = context.chart;
+          const nativeEvent = chart.canvas.ownerDocument.defaultView?.event as MouseEvent | undefined;
+          
+          // Si tenemos un evento nativo, usar sus coordenadas exactas
+          if (nativeEvent && nativeEvent.clientX && nativeEvent.clientY) {
+            positionGlobalTooltip(nativeEvent, tooltipContent);
+          } else {
+            // Crear un evento sintético basado en la posición exacta del cursor sobre la barra
+            const chartRect = chart.canvas.getBoundingClientRect();
             
-            // Ajuste vertical
-            if (parseFloat(tooltipElement.style.top) + tooltipRect.height > chartRect.bottom) {
-              tooltipElement.style.top = `${chartRect.bottom - tooltipRect.height - 10}px`;
+            // Obtener la posición exacta de la barra en el gráfico
+            const meta = chart.getDatasetMeta(0);
+            const bar = meta.data[index] as Element & { x: number; y: number; };
+            
+            // Verificar que el elemento de barra existe
+            if (bar && bar.x !== undefined && bar.y !== undefined) {
+              // Usar la posición exacta de la barra para colocar el tooltip
+              const barCenterX = bar.x;
+              const barCenterY = bar.y;
+              
+              const fakeEvent = {
+                clientX: chartRect.left + barCenterX,
+                clientY: chartRect.top + barCenterY
+              } as MouseEvent;
+              
+              positionGlobalTooltip(fakeEvent, tooltipContent);
+            } else {
+              // Fallback si no podemos obtener la posición exacta de la barra
+              const fakeEvent = {
+                clientX: chartRect.left + tooltip.caretX,
+                clientY: chartRect.top + tooltip.caretY
+              } as MouseEvent;
+              
+              positionGlobalTooltip(fakeEvent, tooltipContent);
             }
           }
+        }
+      }
+    },
+    onHover: (event: ChartEvent, elements: Array<unknown>) => {
+      // Actualizar el estilo del cursor 
+      const chartCanvas = event.native?.target as HTMLElement;
+      if (chartCanvas) {
+        chartCanvas.style.cursor = elements?.length ? 'pointer' : 'default';
+        
+        // Si no hay elementos activos, ocultar el tooltip
+        if (!elements?.length) {
+          hideGlobalTooltip();
         }
       }
     }
@@ -1022,11 +1318,7 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
       
       {hasData ? (
         <>
-          <div className="custom-scrollbar" style={scrollContainerStyle} onMouseLeave={() => {
-            if (tooltipRef.current) {
-              tooltipRef.current.style.display = 'none';
-            }
-          }}>
+          <div className="custom-scrollbar" style={scrollContainerStyle}>
             <div className="w-full" style={{ minHeight: `${chartHeight}px` }}>
               <Bar ref={chartRef} data={chartData} options={chartOptions} />
             </div>
@@ -1036,13 +1328,6 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           <div className="text-center mt-2 mb-2 text-sm font-medium text-gray-700">
             {t.axisLabel}
           </div>
-          
-          {/* Tooltip personalizado */}
-          <div 
-            ref={tooltipRef} 
-            className="absolute hidden pointer-events-none" 
-            style={{ maxWidth: '220px', width: 'auto' }}
-          />
         </>
       ) : (
         <div className="flex items-center justify-center h-[450px] bg-gray-50 border border-gray-200 rounded-lg">
