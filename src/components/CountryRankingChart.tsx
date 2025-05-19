@@ -1118,13 +1118,20 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
     const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
     const previousYear = selectedYear - 1;
     
-    // Buscar datos del país para el año anterior usando nombre exacto
+    // Normalizar el nombre del país para hacer comparaciones más flexibles
+    const normalizedCountry = normalizeText(country);
+    
+    // Buscar datos del país para el año anterior
     const countryPrevYearData = data.filter(item => {
-      const isCountry = item.Country === country;
+      // Verificar si coincide con el nombre del país en cualquier idioma
+      const countryMatchEs = item.País && normalizeText(item.País).includes(normalizedCountry);
+      const countryMatchEn = normalizeText(item.Country).includes(normalizedCountry);
+      
       const yearMatch = parseInt(item.Year) === previousYear;
       const sectorMatch = item.Sector === sectorNameEn || 
                         (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
-      return isCountry && yearMatch && sectorMatch;
+      
+      return (countryMatchEs || countryMatchEn) && yearMatch && sectorMatch;
     });
     
     if (countryPrevYearData.length === 0) return null;
