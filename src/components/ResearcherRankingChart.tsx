@@ -10,8 +10,7 @@ import {
   Tooltip, 
   Legend,
   ChartOptions,
-  ChartEvent,
-  Element
+  ChartEvent
 } from 'chart.js';
 import { EU_COLORS } from '../utils/colors';
 // Importando datos de country_flags.json
@@ -735,18 +734,26 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
         display: false
       },
       tooltip: {
-        enabled: false,
-        external: (context) => {
-          const tooltip = context.tooltip;
+        enabled: false // Desactivamos el tooltip nativo de Chart.js
+      }
+    },
+    onHover: (event: ChartEvent, elements: Array<unknown>) => {
+      // Actualizar el estilo del cursor 
+      const chartCanvas = event.native?.target as HTMLElement;
+      if (chartCanvas) {
+        chartCanvas.style.cursor = elements?.length ? 'pointer' : 'default';
+        
+        // Si no hay elementos activos, ocultar el tooltip
+        if (!elements?.length) {
+          hideGlobalTooltip();
+          return;
+        }
+
+        // Procesar el tooltip solo si hay un elemento activo
+        if (elements.length > 0 && event.native) {
+          const mouse = event.native as MouseEvent;
+          const index = (elements[0] as { index: number }).index;
           
-          // Determinar si el tooltip debe estar visible
-          if (!tooltip.opacity) {
-            hideGlobalTooltip();
-            return;
-          }
-          
-          // Resto del código para generar el tooltip
-          const index = tooltip.dataPoints[0].dataIndex;
           // Usar los datos ordenados almacenados en chartData
           const chartItem = chartData.sortedItems[index];
           if (!chartItem) {
@@ -896,55 +903,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
             </div>
           `;
           
-          // Obtener evento de mouse nativo si está disponible
-          const chart = context.chart;
-          const nativeEvent = chart.canvas.ownerDocument.defaultView?.event as MouseEvent | undefined;
-          
-          // Si tenemos un evento nativo, usar sus coordenadas exactas
-          if (nativeEvent && nativeEvent.clientX && nativeEvent.clientY) {
-            positionGlobalTooltip(nativeEvent, tooltipContent);
-          } else {
-            // Crear un evento sintético basado en la posición exacta del cursor sobre la barra
-            const chartRect = chart.canvas.getBoundingClientRect();
-            
-            // Obtener la posición exacta de la barra en el gráfico
-            const meta = chart.getDatasetMeta(0);
-            const bar = meta.data[index] as Element & { x: number; y: number; };
-            
-            // Verificar que el elemento de barra existe
-            if (bar && bar.x !== undefined && bar.y !== undefined) {
-              // Usar la posición exacta de la barra para colocar el tooltip
-              const barCenterX = bar.x;
-              const barCenterY = bar.y;
-              
-              const fakeEvent = {
-                clientX: chartRect.left + barCenterX,
-                clientY: chartRect.top + barCenterY
-              } as MouseEvent;
-              
-              positionGlobalTooltip(fakeEvent, tooltipContent);
-            } else {
-              // Fallback si no podemos obtener la posición exacta de la barra
-              const fakeEvent = {
-                clientX: chartRect.left + tooltip.caretX,
-                clientY: chartRect.top + tooltip.caretY
-              } as MouseEvent;
-              
-              positionGlobalTooltip(fakeEvent, tooltipContent);
-            }
-          }
-        }
-      }
-    },
-    onHover: (event: ChartEvent, elements: Array<unknown>) => {
-      // Actualizar el estilo del cursor 
-      const chartCanvas = event.native?.target as HTMLElement;
-      if (chartCanvas) {
-        chartCanvas.style.cursor = elements?.length ? 'pointer' : 'default';
-        
-        // Si no hay elementos activos, ocultar el tooltip
-        if (!elements?.length) {
-          hideGlobalTooltip();
+          // Posicionar el tooltip usando el evento del mouse
+          positionGlobalTooltip(mouse, tooltipContent);
         }
       }
     }
