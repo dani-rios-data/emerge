@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface OverviewProps {
@@ -10,11 +10,37 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const contextLanguage = useLanguage();
   const language = props.language || contextLanguage.language;
 
+  // Efecto para animación de entrada
+  useEffect(() => {
+    const sections = document.querySelectorAll('.animate-section');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    return () => {
+      sections.forEach(section => {
+        observer.unobserve(section);
+      });
+    };
+  }, []);
+
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-5 mt-2 text-blue-800 pb-3 border-b border-blue-100 flex items-center">
-      <span className="inline-block w-2 h-8 bg-blue-600 rounded-sm mr-3"></span>
-      {title}
+    <h2 className="text-xl font-bold mb-6 mt-3 text-blue-800 pb-3 border-b-2 border-blue-200 flex items-center group">
+      <span className="inline-block w-2 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-md mr-3 group-hover:w-3 transition-all duration-300"></span>
+      <span className="relative">
+        {title}
+        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
+      </span>
     </h2>
   );
 
@@ -48,7 +74,22 @@ const Overview: React.FC<OverviewProps> = (props) => {
       patentsTitle: "Producción de patentes",
       patentsDescription: "Como indicador de resultados de la actividad innovadora, se presenta la evolución del registro de patentes, con análisis por sectores y comparativas territoriales. Estos datos permiten evaluar la capacidad de transformar la inversión en I+D en propiedad intelectual e industrial con potencial comercial.",
       additionalFeatures: "Para facilitar la exploración de estos datos, el reporte ofrece opciones para personalizar la visualización mediante filtros de selección de territorios, rangos temporales y cambio de idioma entre español e inglés. Todas las visualizaciones son interactivas, permitiendo profundizar en los aspectos de mayor interés.",
-      updateInfo: "La información presentada se actualiza periódicamente para mantener la relevancia y precisión de los análisis ofrecidos."
+      updateInfo: "La información presentada se actualiza periódicamente para mantener la relevancia y precisión de los análisis ofrecidos.",
+      dataSources: "Fuentes de Datos", 
+      eurostat: "Eurostat",
+      eurodescription: "Oficina Europea de Estadística, que proporciona datos oficiales a nivel europeo.",
+      ine: "INE",
+      inedescription: "Instituto Nacional de Estadística de España, fuente oficial de datos estadísticos a nivel nacional.",
+      istac: "ISTAC",
+      istacdescription: "Instituto Canario de Estadística, que ofrece datos específicos para las Islas Canarias.",
+      wipo: "WIPO",
+      wipodescription: "Organización Mundial de la Propiedad Intelectual, que proporciona datos sobre patentes y propiedad intelectual.",
+      oecd: "OCDE",
+      oecddescription: "Organización para la Cooperación y el Desarrollo Económicos, que ofrece análisis comparativos entre países.",
+      exploreData: "Explorar Datos",
+      investmentLink: "Ver análisis de inversión en I+D",
+      researchersLink: "Explorar datos sobre investigadores",
+      patentsLink: "Analizar registros de patentes"
     },
     en: {
       pageTitle: "R&D Metrics Report for EMERGE",
@@ -78,7 +119,22 @@ const Overview: React.FC<OverviewProps> = (props) => {
       patentsTitle: "Patent Production",
       patentsDescription: "As an indicator of the results of innovative activity, the evolution of patent registration is presented, with analysis by sectors and territorial comparisons. These data allow the evaluation of the capacity to transform R&D investment into intellectual and industrial property with commercial potential.",
       additionalFeatures: "To facilitate the exploration of these data, the report offers options to customize the visualization through filters for territory selection, time ranges, and language change between Spanish and English. All visualizations are interactive, allowing users to explore aspects of greater interest.",
-      updateInfo: "The presented information is periodically updated to maintain the relevance and accuracy of the analyses offered."
+      updateInfo: "The presented information is periodically updated to maintain the relevance and accuracy of the analyses offered.",
+      dataSources: "Data Sources", 
+      eurostat: "Eurostat",
+      eurodescription: "European Statistical Office, which provides official data at the European level.",
+      ine: "INE",
+      inedescription: "National Institute of Statistics of Spain, official source of statistical data at the national level.",
+      istac: "ISTAC",
+      istacdescription: "Canary Islands Institute of Statistics, which offers specific data for the Canary Islands.",
+      wipo: "WIPO",
+      wipodescription: "World Intellectual Property Organization, which provides data on patents and intellectual property.",
+      oecd: "OECD",
+      oecddescription: "Organization for Economic Cooperation and Development, which offers comparative analysis between countries.",
+      exploreData: "Explore Data",
+      investmentLink: "View R&D investment analysis",
+      researchersLink: "Explore researcher data",
+      patentsLink: "Analyze patent records"
     }
   };
 
@@ -91,78 +147,79 @@ const Overview: React.FC<OverviewProps> = (props) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 pt-4 pb-8 w-full min-h-[700px] overflow-y-auto">
+    <div className="bg-gradient-to-br from-white via-blue-50 to-white rounded-lg shadow-lg p-6 pt-4 pb-8 w-full min-h-[700px] overflow-y-auto">
       {/* Contenedor principal con efecto de tarjeta */}
       <div className="max-w-full mx-auto">
         {/* Sección Sobre EMERGE con diseño moderno */}
-        <div className="mb-10 bg-white p-6 rounded-xl shadow-sm border border-blue-200">
+        <div className="mb-12 bg-white p-7 rounded-xl shadow-md border border-blue-200 animate-section opacity-0 translate-y-4 transition-all duration-700 hover:shadow-lg">
           <SectionTitle title={t('aboutEmerge')} />
           
           <div className="prose prose-blue max-w-none">
             <div className="mb-6 text-gray-700 leading-relaxed">
-              <p className="mb-4">{t('emergeDescription1')}</p>
-              <p>{t('emergeDescription2')}</p>
+              <p className="mb-4 text-lg">{t('emergeDescription1')}</p>
+              <p className="text-lg">{t('emergeDescription2')}</p>
             </div>
             
-            <div className="mb-4 text-gray-700 leading-relaxed">
-              <p className="mb-4">{t('emergeTeam')}</p>
-              <div className="flex items-center my-3 text-blue-800">
-                <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-                <span className="font-semibold">{t('emergeSpaces')}</span>
+            <div className="mb-6 text-gray-700 leading-relaxed">
+              <p className="mb-4 text-lg">{t('emergeTeam')}</p>
+              <div className="flex items-center my-3 text-blue-800 ml-2">
+                <span className="inline-block w-2 h-2 bg-gradient-to-r from-blue-600 to-blue-800 rounded-full mr-2"></span>
+                <span className="font-semibold text-lg">{t('emergeSpaces')}</span>
               </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-4">
-            <div className="bg-blue-50 p-5 rounded-lg shadow-sm border border-blue-200 hover:shadow-md transition-shadow">
-              <div className="font-semibold text-blue-800 mb-2 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+            <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-200 hover:shadow-md hover:translate-y-[-2px] transition-all duration-300 group">
+              <div className="font-semibold text-blue-800 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600 group-hover:text-blue-700 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
-                {t('marineTitle')}
+                <span className="text-lg group-hover:text-blue-900 transition-colors">{t('marineTitle')}</span>
               </div>
-              <p className="text-gray-700">{t('marineDesc')}</p>
+              <p className="text-gray-700 group-hover:text-gray-800 transition-colors">{t('marineDesc')}</p>
             </div>
             
-            <div className="bg-blue-50 p-5 rounded-lg shadow-sm border border-blue-200 hover:shadow-md transition-shadow">
-              <div className="font-semibold text-blue-800 mb-2 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl shadow-sm border border-blue-200 hover:shadow-md hover:translate-y-[-2px] transition-all duration-300 group">
+              <div className="font-semibold text-blue-800 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600 group-hover:text-blue-700 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h6v4H7V5zm8 8v2h1v1H4v-1h1v-2H4v-1h16v1h-1z" clipRule="evenodd" />
                 </svg>
-                {t('paletexpressTitle')}
+                <span className="text-lg group-hover:text-blue-900 transition-colors">{t('paletexpressTitle')}</span>
               </div>
-              <p className="text-gray-700">{t('paletexpressDesc')}</p>
+              <p className="text-gray-700 group-hover:text-gray-800 transition-colors">{t('paletexpressDesc')}</p>
             </div>
           </div>
           
-          <div className="mt-4 mb-2 text-gray-700 leading-relaxed">
+          <div className="mt-4 mb-2 text-gray-700 leading-relaxed text-lg backdrop-blur-sm p-4 rounded-lg bg-white/60 border border-blue-50">
             <p>{t('emergeObjectives')}</p>
           </div>
         </div>
 
         {/* Propósito del reporte con efectos visuales */}
-        <div className="mb-10 relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -z-10 opacity-70 blur-2xl"></div>
+        <div className="mb-12 relative animate-section opacity-0 translate-y-4 transition-all duration-700">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -z-10 opacity-70 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-36 h-36 bg-indigo-50 rounded-full -z-10 opacity-60 blur-3xl"></div>
           <SectionTitle title={t('reportPurpose')} />
           
-          <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm">
-            <p className="mb-4 text-gray-700 leading-relaxed">{t('purposeDescription1')}</p>
-            <p className="mb-5 text-gray-700 leading-relaxed">{t('purposeDescription2')}</p>
+          <div className="bg-gradient-to-br from-blue-50 via-white to-blue-100 p-7 rounded-xl border border-blue-100 shadow-md hover:shadow-lg transition-all duration-300">
+            <p className="mb-4 text-gray-700 leading-relaxed text-lg">{t('purposeDescription1')}</p>
+            <p className="mb-5 text-gray-700 leading-relaxed text-lg">{t('purposeDescription2')}</p>
             
-            <ul className="space-y-3 text-gray-700 mb-4">
+            <ul className="space-y-4 text-gray-700 mb-4">
               {[
                 t('purposeList1'),
                 t('purposeList2'),
                 t('purposeList3'),
                 t('purposeList4')
               ].map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <div className="flex-shrink-0 flex h-6 items-center">
-                    <svg className="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                <li key={index} className="flex items-start transition-transform duration-300 hover:translate-x-1">
+                  <div className="flex-shrink-0 flex h-7 items-center">
+                    <svg className="h-6 w-6 text-blue-600 hover:text-blue-700 transition-colors" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                     </svg>
                   </div>
-                  <span className="ml-3">{item}</span>
+                  <span className="ml-3 text-lg group-hover:text-gray-900 transition-colors">{item}</span>
                 </li>
               ))}
             </ul>
@@ -170,77 +227,144 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
 
         {/* Contenido del reporte con diseño de tarjetas */}
-        <div className="mb-4 relative">
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-50 rounded-full -z-10 opacity-70 blur-2xl"></div>
+        <div className="mb-6 relative animate-section opacity-0 translate-y-4 transition-all duration-700">
+          <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-50 rounded-full -z-10 opacity-70 blur-3xl"></div>
           <SectionTitle title={t('reportContent')} />
           
-          <div className="mb-5 p-5 bg-white rounded-lg shadow-sm border border-blue-100">
-            <p className="mb-6 text-gray-700 leading-relaxed">{t('contentDescription')}</p>
+          <div className="mb-7 p-7 bg-white backdrop-blur-lg bg-opacity-90 rounded-xl shadow-md border border-blue-100 hover:shadow-lg transition-all duration-300">
+            <p className="mb-8 text-gray-700 leading-relaxed text-lg">{t('contentDescription')}</p>
             
             <div className="space-y-8">
               {/* Inversión en I+D Card */}
-              <div className="group p-0 rounded-xl shadow-sm overflow-hidden border border-blue-100 transition-all hover:shadow-md">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4">
-                  <h3 className="text-lg font-bold text-white flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {t('investmentTitle')}
-                  </h3>
-                </div>
-                <div className="p-5 bg-white">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 hover:shadow-lg hover:translate-y-[-3px] transition-all duration-300 overflow-hidden group">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 h-2"></div>
+                <div className="p-5">
+                  <div className="flex items-start mb-3">
+                    <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4 group-hover:bg-blue-200 transition-all duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600 transform group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold text-blue-800">Inversión en I+D</h4>
+                  </div>
                   <p className="text-gray-700 leading-relaxed">{t('investmentDescription')}</p>
                 </div>
               </div>
               
               {/* Actividad investigadora Card */}
-              <div className="group p-0 rounded-xl shadow-sm overflow-hidden border border-blue-100 transition-all hover:shadow-md">
-                <div className="bg-gradient-to-r from-blue-700 to-blue-800 px-5 py-4">
-                  <h3 className="text-lg font-bold text-white flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    {t('researchersTitle')}
-                  </h3>
-                </div>
-                <div className="p-5 bg-white">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 hover:shadow-lg hover:translate-y-[-3px] transition-all duration-300 overflow-hidden group">
+                <div className="bg-gradient-to-r from-blue-700 to-blue-800 h-2"></div>
+                <div className="p-5">
+                  <div className="flex items-start mb-3">
+                    <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4 group-hover:bg-blue-200 transition-all duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-700 transform group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold text-blue-800">{t('researchersTitle')}</h4>
+                  </div>
                   <p className="text-gray-700 leading-relaxed">{t('researchersDescription')}</p>
                 </div>
               </div>
               
               {/* Producción de patentes Card */}
-              <div className="group p-0 rounded-xl shadow-sm overflow-hidden border border-blue-100 transition-all hover:shadow-md">
-                <div className="bg-gradient-to-r from-blue-800 to-blue-900 px-5 py-4">
-                  <h3 className="text-lg font-bold text-white flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {t('patentsTitle')}
-                  </h3>
-                </div>
-                <div className="p-5 bg-white">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 hover:shadow-lg hover:translate-y-[-3px] transition-all duration-300 overflow-hidden group">
+                <div className="bg-gradient-to-r from-blue-800 to-blue-900 h-2"></div>
+                <div className="p-5">
+                  <div className="flex items-start mb-3">
+                    <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4 group-hover:bg-blue-200 transition-all duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-800 transform group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold text-blue-800">{t('patentsTitle')}</h4>
+                  </div>
                   <p className="text-gray-700 leading-relaxed">{t('patentsDescription')}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Sección de fuentes de datos */}
+            <div className="mt-12">
+              <h3 className="text-lg font-semibold mb-5 text-blue-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+                {t('dataSources')}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                {/* Eurostat */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
+                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                    {t('eurostat')}
+                  </h4>
+                  <p className="text-gray-700 text-sm">{t('eurodescription')}</p>
+                </div>
+                
+                {/* INE */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
+                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                    {t('ine')}
+                  </h4>
+                  <p className="text-gray-700 text-sm">{t('inedescription')}</p>
+                </div>
+                
+                {/* ISTAC */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
+                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                    {t('istac')}
+                  </h4>
+                  <p className="text-gray-700 text-sm">{t('istacdescription')}</p>
+                </div>
+                
+                {/* WIPO */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
+                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                    {t('wipo')}
+                  </h4>
+                  <p className="text-gray-700 text-sm">{t('wipodescription')}</p>
+                </div>
+                
+                {/* OECD */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
+                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
+                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                    {t('oecd')}
+                  </h4>
+                  <p className="text-gray-700 text-sm">{t('oecddescription')}</p>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-8 bg-blue-50 p-5 rounded-lg border border-blue-100 shadow-inner">
-            <div className="flex items-start mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-8 bg-gradient-to-r from-blue-50 via-blue-100/30 to-blue-50 p-6 rounded-xl border border-blue-100 shadow-inner">
+            <div className="flex items-start mb-4 hover:translate-x-1 transition-transform duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-gray-700">{t('additionalFeatures')}</p>
+              <p className="text-gray-700 text-lg">{t('additionalFeatures')}</p>
             </div>
-            <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex items-start hover:translate-x-1 transition-transform duration-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <p className="text-gray-700">{t('updateInfo')}</p>
+              <p className="text-gray-700 text-lg">{t('updateInfo')}</p>
             </div>
           </div>
         </div>
       </div>
+      
+      <style>{`
+        .animate-section.animated {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      `}</style>
     </div>
   );
 };
