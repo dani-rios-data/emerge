@@ -122,8 +122,13 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
   return (
     <div className="space-y-6 w-full min-h-[700px]">
       {/* Introducción */}
-      <div className="p-6 rounded-lg border border-gray-200 w-full">
-        <p className="text-sm text-gray-700 leading-relaxed">{t('description')}</p>
+      <div className="p-6 bg-blue-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 w-full">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <p className="text-sm font-medium text-gray-700 leading-relaxed">{t('description')}</p>
+        </div>
       </div>
 
       {/* Lista de fuentes */}

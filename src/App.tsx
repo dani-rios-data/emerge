@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css'; // Asegúrate de que este archivo importa correctamente los estilos de Tailwind
 import OverviewPage from './pages/Overview'; // Importar el componente de la página Overview
 import Investment from './pages/Investment';
@@ -50,6 +50,16 @@ const App: React.FC = () => {
 
   // Referencia para el contenido principal
   const contentRef = React.useRef<HTMLDivElement>(null);
+  
+  // Efecto para desplazarse al inicio cuando cambie la pestaña activa
+  useEffect(() => {
+    if (contentRef.current) {
+      // Desplazar el contenido al inicio
+      contentRef.current.scrollTop = 0;
+      // También desplazar la ventana al inicio
+      window.scrollTo(0, 0);
+    }
+  }, [activeTab]); // Ejecutar este efecto cuando cambie activeTab
   
   // Usar useEffect para detectar cambios de idioma y mantener la experiencia fluida
   React.useEffect(() => {
@@ -245,47 +255,97 @@ const App: React.FC = () => {
       {/* Content - con margen superior para evitar que quede debajo de los elementos fijos */}
       <div ref={contentRef} className="pt-32 max-w-7xl mx-auto px-6 pb-6 flex-grow w-full">
         {activeTab === 'overview' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
-            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('overview')}</h2>
+          <div className="bg-gradient-to-br from-white via-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col transition-all duration-300" style={{ width: "100%", minWidth: "100%" }}>
+            <div className="flex items-center mb-6">
+              <svg className="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+                {t('overview')}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+              </h2>
+            </div>
             
-            {/* Componente de la página Overview */}
-            <OverviewPage language={language} />
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              {/* Componente de la página Overview */}
+              <OverviewPage language={language} />
+            </div>
           </div>
         )}
         
         {activeTab === 'investment' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
-            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('investment')}</h2>
+          <div className="bg-gradient-to-br from-white via-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col transition-all duration-300" style={{ width: "100%", minWidth: "100%" }}>
+            <div className="flex items-center mb-6">
+              <svg className="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+                {t('investment')}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+              </h2>
+            </div>
             
-            {/* Componente modular para la sección de Inversión */}
-            <Investment language={language} />
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              {/* Componente modular para la sección de Inversión */}
+              <Investment language={language} />
+            </div>
           </div>
         )}
         
         {activeTab === 'researchers' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
-            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('researchers')}</h2>
+          <div className="bg-gradient-to-br from-white via-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col transition-all duration-300" style={{ width: "100%", minWidth: "100%" }}>
+            <div className="flex items-center mb-6">
+              <svg className="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+                {t('researchers')}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+              </h2>
+            </div>
             
-            {/* Componente de la página Researchers */}
-            <Researchers language={language} />
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              {/* Componente de la página Researchers */}
+              <Researchers language={language} />
+            </div>
           </div>
         )}
         
         {activeTab === 'patents' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
-            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('patents')}</h2>
+          <div className="bg-gradient-to-br from-white via-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col transition-all duration-300" style={{ width: "100%", minWidth: "100%" }}>
+            <div className="flex items-center mb-6">
+              <svg className="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+                {t('patents')}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+              </h2>
+            </div>
             
-            {/* Componente de la página Patents */}
-            <Patents language={language} />
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              {/* Componente de la página Patents */}
+              <Patents language={language} />
+            </div>
           </div>
         )}
         
         {activeTab === 'sources' && (
-          <div className="bg-white rounded shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col" style={{ width: "100%", minWidth: "100%" }}>
-            <h2 className="text-base font-bold mb-4 text-gray-800 border-b pb-2">{t('sources')}</h2>
+          <div className="bg-gradient-to-br from-white via-white to-gray-50 rounded-lg shadow-md p-6 border border-gray-100 min-h-[700px] w-full flex-grow flex flex-col transition-all duration-300" style={{ width: "100%", minWidth: "100%" }}>
+            <div className="flex items-center mb-6">
+              <svg className="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+                {t('sources')}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+              </h2>
+            </div>
             
-            {/* Componente modular para la sección de Fuentes de Datos */}
-            <SourcesSection language={language} />
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+              {/* Componente modular para la sección de Fuentes de Datos */}
+              <SourcesSection language={language} />
+            </div>
           </div>
         )}
       </div>
