@@ -94,7 +94,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
       euAverage: "Media UE",
       spain: "España",
       country: "País seleccionado",
-      researchersPerMillionPeople: "Investigadores por millón de habitantes",
+      researchersPerMillionPeople: "Número de investigadores",
       year: "Año",
       loading: "Cargando datos...",
       noData: "No hay datos disponibles",
@@ -111,7 +111,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
       euAverage: "EU Average",
       spain: "Spain",
       country: "Selected Country",
-      researchersPerMillionPeople: "Researchers per million people",
+      researchersPerMillionPeople: "Number of researchers",
       year: "Year",
       loading: "Loading data...",
       noData: "No data available",
@@ -575,14 +575,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
 
   return (
     <div ref={chartRef} className="w-full h-full">
-      <div className="mb-4 flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold mb-1">{t.title}</h3>
-          <p className="text-sm text-gray-500">
-            {t[selectedSector as keyof typeof t] || t.total}
-          </p>
-        </div>
-        
+      <div className="mb-4 flex justify-end items-center">
         {/* Selector de país estilo bandera */}
         <div className="flex-shrink-0 relative" ref={dropdownRef}>
           <div 
