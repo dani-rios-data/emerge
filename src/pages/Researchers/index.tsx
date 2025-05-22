@@ -4,6 +4,8 @@ import ResearchersEuropeanMap from '../../components/ResearchersEuropeanMap';
 import ResearcherRankingChart from '../../components/ResearcherRankingChart';
 import ResearchersTimelineChart from '../../components/ResearchersTimelineChart';
 import ResearchersBySectorChart from '../../components/ResearchersBySectorChart';
+import ResearchersSpanishRegionsMap from '../../components/ResearchersSpanishRegionsMap';
+import ResearchersCommunityRankingChart from '../../components/ResearchersCommunityRankingChart';
 import Papa from 'papaparse';
 
 interface ResearchersProps {
@@ -21,6 +23,22 @@ interface ResearchersData {
   [key: string]: string | undefined;
 }
 
+// Interfaz para los datos de investigadores por comunidades autónomas
+interface ResearchersCommunityData {
+  TERRITORIO: string;
+  TERRITORIO_CODE: string;
+  TIME_PERIOD: string;
+  TIME_PERIOD_CODE: string;
+  SEXO: string;
+  SEXO_CODE: string;
+  SECTOR_EJECUCION: string;
+  SECTOR_EJECUCION_CODE: string;
+  MEDIDAS: string;
+  MEDIDAS_CODE: string;
+  OBS_VALUE: string;
+  [key: string]: string;
+}
+
 const Researchers: React.FC<ResearchersProps> = (props) => {
   // Usar el language de props si está disponible, o del contexto si no
   const contextLanguage = useLanguage();
@@ -28,17 +46,23 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
   // Estado para los datos de investigadores
   const [researchersData, setResearchersData] = useState<ResearchersData[]>([]);
+  const [researchersCommunityData, setResearchersCommunityData] = useState<ResearchersCommunityData[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [availableCommunityYears, setAvailableCommunityYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(2023);
+  const [selectedCommunityYear, setSelectedCommunityYear] = useState<number>(2021); // Año por defecto para comunidades
   
   // Estados separados para cada sección
   const [mapSector, setMapSector] = useState<string>('total');
   const [timelineSector, setTimelineSector] = useState<string>('total');
+  const [communitySector, setCommunitySector] = useState<string>('total');
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isCommunityLoading, setIsCommunityLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [communityError, setCommunityError] = useState<string | null>(null);
 
-  // Cargar datos desde el archivo CSV
+  // Cargar datos desde el archivo CSV de Europa
   useEffect(() => {
     const loadResearchersData = async () => {
       setIsLoading(true);
@@ -87,6 +111,75 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     loadResearchersData();
   }, [language]);
 
+  // Cargar datos de comunidades autónomas
+  useEffect(() => {
+    const loadCommunityData = async () => {
+      setIsCommunityLoading(true);
+      try {
+        const response = await fetch('./data/researchers/researchers_comunidades_autonomas.csv');
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const csvText = await response.text();
+        const result = Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true
+        });
+
+        // Convertir los datos parseados al formato que necesitamos
+        const parsedData = result.data as ResearchersCommunityData[];
+        
+        // Depuración: imprimir en consola información sobre los datos cargados
+        console.log("Datos de comunidades autónomas cargados:", parsedData.length, "registros");
+        
+        // Mostrar ejemplo de los primeros registros
+        if (parsedData.length > 0) {
+          console.log("Ejemplo de datos:", parsedData.slice(0, 3));
+          
+          // Extraer y mostrar todos los nombres de territorios únicos para facilitar la depuración
+          const uniqueTerritories = Array.from(new Set(parsedData.map(item => item.TERRITORIO)));
+          console.log("Territorios disponibles:", uniqueTerritories);
+          
+          // Mostrar los códigos de territorios
+          const territoryCodes = Array.from(new Set(parsedData.map(item => ({
+            code: item.TERRITORIO_CODE,
+            name: item.TERRITORIO
+          }))));
+          console.log("Códigos de territorios:", territoryCodes);
+        }
+        
+        setResearchersCommunityData(parsedData);
+
+        // Extraer años disponibles y ordenar de más reciente a más antiguo
+        const years = Array.from(new Set(parsedData.map(item => 
+          parseInt(item.TIME_PERIOD)
+        )))
+        .filter(year => !isNaN(year))
+        .sort((a, b) => b - a);
+
+        setAvailableCommunityYears(years);
+        
+        // Establecer el año más reciente como predeterminado
+        if (years.length > 0) {
+          setSelectedCommunityYear(years[0]);
+        }
+
+        setCommunityError(null);
+      } catch (err) {
+        console.error('Error loading community researchers data:', err);
+        setCommunityError(language === 'es' ? 
+          'Error al cargar los datos de investigadores por comunidades' : 
+          'Error loading researchers data by communities'
+        );
+      } finally {
+        setIsCommunityLoading(false);
+      }
+    };
+
+    loadCommunityData();
+  }, [language]);
+
   // Función para mapear el valor del sector al código utilizado en los datos
   const mapSectorToCode = (sector: string): string => {
     switch(sector) {
@@ -110,6 +203,11 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     setSelectedYear(parseInt(e.target.value));
   };
 
+  // Manejador de cambio de año para comunidades
+  const handleCommunityYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCommunityYear(parseInt(e.target.value));
+  };
+
   // Manejadores de cambio de sector separados
   const handleMapSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setMapSector(e.target.value);
@@ -117,6 +215,10 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
   
   const handleTimelineSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setTimelineSector(e.target.value);
+  };
+
+  const handleCommunitySectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCommunitySector(e.target.value);
   };
 
   // Componente para título de sección
@@ -373,17 +475,82 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
       
       {/* Sección 3: Comparación por comunidades autónomas de España */}
       <div className="mb-6">
-        <SectionTitle title={language === 'es' ? "Comparación por comunidades autónomas de España" : "Spanish Autonomous Communities Comparison"} />
+        <SectionTitle title={language === 'es' ? "Análisis por comunidades autónomas" : "Analysis by Autonomous Communities"} />
         <div className="mb-8">
-          <SubsectionTitle title={language === 'es' ? "Distribución regional de investigadores" : "Regional Researchers Distribution"} />
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
-            <div className="text-center text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-lg">{language === 'es' ? "En desarrollo" : "In development"}</p>
+          <SubsectionTitle title={language === 'es' ? "Distribución regional de investigadores" : "Regional Distribution of Researchers"} />
+          
+          {isCommunityLoading ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
+              <div className="text-center text-gray-600">
+                <div className="w-12 h-12 border-2 border-t-4 border-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <p>{t.loadingData}</p>
+              </div>
             </div>
-          </div>
+          ) : communityError ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
+              <div className="text-center text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg">{communityError}</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Controles para filtrar datos */}
+              <div className="flex flex-wrap gap-4 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center">
+                  <label className="mr-2 text-sm font-medium text-gray-700">{t.yearLabel}</label>
+                  <select 
+                    value={selectedCommunityYear}
+                    onChange={handleCommunityYearChange}
+                    className="rounded-md border border-gray-300 shadow-sm py-1 px-3 bg-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {availableCommunityYears.map((year) => (
+                      <option key={`community-year-${year}`} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center">
+                  <label className="mr-2 text-sm font-medium text-gray-700">{t.sectorLabel}</label>
+                  <select 
+                    value={communitySector}
+                    onChange={handleCommunitySectorChange}
+                    className="rounded-md border border-gray-300 shadow-sm py-1 px-3 bg-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="total">{t.totalSector}</option>
+                    <option value="business">{t.businessSector}</option>
+                    <option value="government">{t.governmentSector}</option>
+                    <option value="education">{t.educationSector}</option>
+                    <option value="nonprofit">{t.nonprofitSector}</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Contenedor flexible para el mapa y el ranking */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Mapa de Comunidades Autónomas */}
+                <div className="w-full lg:w-1/2 min-h-[450px] bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                  <ResearchersSpanishRegionsMap
+                    data={researchersCommunityData}
+                    selectedYear={selectedCommunityYear}
+                    selectedSector={mapSectorToCode(communitySector)}
+                    language={language}
+                  />
+                </div>
+                
+                {/* Ranking de Comunidades Autónomas */}
+                <div className="w-full lg:w-1/2 min-h-[450px] bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                  <ResearchersCommunityRankingChart
+                    data={researchersCommunityData}
+                    selectedYear={selectedCommunityYear}
+                    selectedSector={mapSectorToCode(communitySector)}
+                    language={language}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
