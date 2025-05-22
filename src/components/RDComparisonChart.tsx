@@ -64,15 +64,6 @@ interface TimeSeriesDataPoint {
   [key: string]: string | number | null; // Para poder agregar dinámicamente el país seleccionado
 }
 
-// Interfaz para representar un sector
-interface SectorOption {
-  id: string;
-  name: {
-    es: string;
-    en: string;
-  };
-}
-
 // Componente principal de la gráfica de comparación
 const RDComparisonChart: React.FC<RDComparisonChartProps> = ({ 
   language, 
@@ -305,23 +296,6 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
     };
   }, []);
   
-  // Función para generar las opciones del selector de sectores
-  const getSectorOptions = (): SectorOption[] => {
-    return [
-      { id: 'total', name: { es: 'Todos los sectores', en: 'All sectors' } },
-      { id: 'business', name: { es: 'Sector empresarial', en: 'Business enterprise' } },
-      { id: 'government', name: { es: 'Administración Pública', en: 'Government' } },
-      { id: 'education', name: { es: 'Enseñanza Superior', en: 'Higher education' } },
-      { id: 'nonprofit', name: { es: 'Instituciones Privadas sin Fines de Lucro', en: 'Private non-profit' } }
-    ];
-  };
-  
-  // Función para obtener el nombre localizado del sector seleccionado
-  const getSelectedSectorName = (): string => {
-    const sectorOption = getSectorOptions().find(option => option.id === selectedSector);
-    return sectorOption ? sectorOption.name[language] : t.allSectors;
-  };
-  
   // Formateador para el eje Y para agregar símbolo de porcentaje
   const formatYAxis = (value: number) => {
     return `${value}%`;
@@ -514,9 +488,6 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
       <div className="mb-4 flex justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold mb-1">{t.title}</h3>
-          <p className="text-sm text-gray-500">
-            {getSelectedSectorName()}
-          </p>
         </div>
         
         {/* Selector de país estilo bandera */}
@@ -677,16 +648,6 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
                 {language === 'es' ? selectedCountry.localName : selectedCountry.name}
               </span>
             </div>
-          </div>
-          
-          {/* Nota inferior */}
-          <div className="mt-4 text-xs text-gray-500 text-center">
-            <p>
-              {language === 'es' 
-                ? `Sector visualizado: ${getSelectedSectorName()}`
-                : `Visualized sector: ${getSelectedSectorName()}`
-              }
-            </p>
           </div>
         </div>
       )}

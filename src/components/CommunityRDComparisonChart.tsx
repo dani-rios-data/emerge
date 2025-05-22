@@ -8,7 +8,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { 
-  TrendingUp,
   ChevronDown
 } from 'lucide-react';
 import country_flags from '../logos/country_flags.json';
@@ -53,6 +52,7 @@ interface CommunityRDComparisonChartProps {
   gdpData: GDPConsolidadoData[];
   autonomousCommunitiesData: GastoIDComunidadesData[];
   years: string[];
+  selectedSector: string;
 }
 
 // Interfaz para un punto de datos en la serie temporal
@@ -137,11 +137,9 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
   language, 
   gdpData,
   autonomousCommunitiesData,
-  years 
+  years,
+  selectedSector
 }) => {
-  // Estado para el sector seleccionado (por defecto "total" - todos los sectores)
-  const [selectedSector, setSelectedSector] = useState<string>("total");
-  
   // Estado para la comunidad seleccionada (por defecto Madrid)
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityOption>({
     name: 'Madrid',
@@ -686,30 +684,9 @@ const CommunityRDComparisonChart: React.FC<CommunityRDComparisonChartProps> = ({
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8 shadow-sm hover:shadow-md transition-shadow duration-300">
-      {/* Filtros - Solo mantener el selector de sector */}
+      {/* Filtros - Selector de comunidad autónoma más visible */}
       <div className="mb-6 px-4 pt-4">
         <div className="flex justify-between items-center">
-          {/* Selector de sector - Ahora más angosto */}
-          <div className="flex items-center bg-blue-50 rounded-md border border-blue-100 shadow-sm p-1 pr-3">
-            <div className="flex items-center pl-2 pr-1">
-              <TrendingUp size={18} className="text-blue-600 mr-2 flex-shrink-0" />
-              <span className="text-sm font-semibold text-gray-700 mr-2 whitespace-nowrap">
-                {t.selectSector}:
-              </span>
-            </div>
-            <select 
-              value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
-              className="px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm rounded-md"
-            >
-              {getSectorOptions().map(option => (
-                <option key={option.id} value={option.id}>
-                  {option.name[language]}
-                </option>
-              ))}
-            </select>
-          </div>
-          
           {/* Selector de comunidad autónoma */}
           <div className="flex-shrink-0 relative" ref={dropdownRef}>
             <div 
