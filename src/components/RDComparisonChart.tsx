@@ -485,11 +485,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
 
   return (
     <div className="w-full h-full">
-      <div className="mb-4 flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold mb-1">{t.title}</h3>
-        </div>
-        
+      <div className="mb-4 flex justify-end items-center">
         {/* Selector de país estilo bandera */}
         <div className="flex-shrink-0 relative" ref={dropdownRef}>
           <div 
