@@ -417,15 +417,156 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     // Normalizar el nombre de la comunidad
     const normalizedName = normalizarTexto(communityName);
     
-    // Caso especial para Comunidad Valenciana
-    if (normalizedName.includes('valenciana') || 
-        normalizedName.includes('valencia') || 
-        normalizedName.includes('com valenciana')) {
-      // URL directa para la bandera de la Comunidad Valenciana
-      return "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
+    console.log(`Buscando bandera para: "${communityName}" (normalizado: "${normalizedName}")`);
+    
+    // CORRECCIÓN DIRECTA: detectar manualmente las comunidades problemáticas
+    // Esto se ejecuta primero para garantizar que estos casos específicos se manejen correctamente
+    if (normalizedName.includes('extrem') || communityName.includes('Extrem')) {
+      console.log('CORRECCIÓN DIRECTA: Extremadura detectada');
+      return 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg';
     }
     
-    // Mapeo específico para nombres problemáticos
+    if (normalizedName.includes('rioja') || communityName.includes('Rioja')) {
+      console.log('CORRECCIÓN DIRECTA: La Rioja detectada');
+      return 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg';
+    }
+    
+    if (normalizedName.includes('mancha') || 
+        normalizedName.includes('castilla-la') || 
+        normalizedName.includes('castilla la') ||
+        communityName.includes('Mancha') || 
+        communityName.includes('Castilla-La') || 
+        communityName.includes('Castilla La')) {
+      console.log('CORRECCIÓN DIRECTA: Castilla-La Mancha detectada');
+      return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg';
+    }
+    
+    if (normalizedName.includes('cantabr') || communityName.includes('Cantabr')) {
+      console.log('CORRECCIÓN DIRECTA: Cantabria detectada');
+      return 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg';
+    }
+    
+    // Mapa definitivo de banderas para todas las CCAA con URLs directas
+    // Esta es nuestra fuente de verdad para todas las banderas
+    const definitiveFlagMap: Record<string, string> = {
+      'andalucía': 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Andaluc%C3%ADa.svg',
+      'aragón': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg',
+      'asturias': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg',
+      'cantabria': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg',
+      'castilla-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+      'castilla y león': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
+      'cataluña': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg',
+      'extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
+      'galicia': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Flag_of_Galicia.svg',
+      'islas baleares': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg',
+      'canarias': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Flag_of_the_Canary_Islands.svg',
+      'la rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
+      'madrid': 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_the_Community_of_Madrid.svg',
+      'murcia': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Murcia.svg',
+      'navarra': 'https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Navarre.svg',
+      'país vasco': 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg',
+      'comunidad valenciana': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
+      'ceuta': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Flag_of_Ceuta.svg',
+      'melilla': 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Flag_of_Melilla.svg'
+    };
+    
+    // Búsqueda rápida: comprobar si ya tenemos el nombre en nuestro mapa definitivo
+    if (definitiveFlagMap[normalizedName]) {
+      console.log(`Bandera encontrada directamente para "${normalizedName}": ${definitiveFlagMap[normalizedName]}`);
+      return definitiveFlagMap[normalizedName];
+    }
+    
+    // Mapa completo de todos los posibles nombres para cada comunidad autónoma
+    const communityVariants: Record<string, string[]> = {
+      'andalucía': ['andalucía', 'andalucia', 'andalusia'],
+      'aragón': ['aragón', 'aragon'],
+      'asturias': ['asturias', 'principado de asturias', 'asturias principality'],
+      'cantabria': ['cantabria', 'cantabr'],
+      'castilla-la mancha': ['castilla-la mancha', 'castilla la mancha', 'castillalamancha', 'castilla–la mancha', 'mancha'],
+      'castilla y león': ['castilla y león', 'castilla y leon', 'castilla leon', 'castile and león', 'castile and leon'],
+      'cataluña': ['cataluña', 'cataluna', 'catalunya', 'catalonia'],
+      'extremadura': ['extremadura', 'extrem', 'extrema', 'extremad'],
+      'galicia': ['galicia'],
+      'islas baleares': ['islas baleares', 'illes balears', 'baleares', 'balearic islands'],
+      'canarias': ['canarias', 'islas canarias', 'canary islands'],
+      'la rioja': ['la rioja', 'rioja'],
+      'madrid': ['madrid', 'comunidad de madrid', 'community of madrid'],
+      'murcia': ['murcia', 'región de murcia', 'region de murcia'],
+      'navarra': ['navarra', 'comunidad foral de navarra', 'navarre'],
+      'país vasco': ['país vasco', 'pais vasco', 'euskadi', 'basque country'],
+      'comunidad valenciana': ['comunidad valenciana', 'com. valenciana', 'c. valenciana', 'valencia', 'valencian community'],
+      'ceuta': ['ceuta', 'ciudad autónoma de ceuta', 'ciudad autonoma de ceuta'],
+      'melilla': ['melilla', 'ciudad autónoma de melilla', 'ciudad autonoma de melilla']
+    };
+    
+    // Detectar a qué comunidad corresponde el nombre
+    let matchedCommunity = '';
+    
+    // 1. Intentar coincidencia directa con el nombre normalizado
+    for (const [community, variants] of Object.entries(communityVariants)) {
+      if (variants.some(variant => normalizarTexto(variant) === normalizedName)) {
+        matchedCommunity = community;
+        console.log(`Coincidencia directa encontrada: "${communityName}" -> "${community}"`);
+        break;
+      }
+    }
+    
+    // 2. Si no hay coincidencia directa, intentar coincidencia parcial
+    if (!matchedCommunity) {
+      for (const [community, variants] of Object.entries(communityVariants)) {
+        if (variants.some(variant => 
+          normalizarTexto(variant).includes(normalizedName) || 
+          normalizedName.includes(normalizarTexto(variant)))) {
+          matchedCommunity = community;
+          console.log(`Coincidencia parcial encontrada: "${communityName}" -> "${community}"`);
+          break;
+        }
+      }
+    }
+    
+    // 3. Si aún no hay coincidencia, buscar por fragmentos clave
+    if (!matchedCommunity) {
+      const keywordMap: Record<string, string> = {
+        'andalu': 'andalucía',
+        'arag': 'aragón',
+        'astur': 'asturias',
+        'cantab': 'cantabria',
+        'mancha': 'castilla-la mancha',
+        'castilla': 'castilla y león', // Por defecto, si solo menciona Castilla
+        'leon': 'castilla y león',
+        'catal': 'cataluña',
+        'extrem': 'extremadura',
+        'galic': 'galicia',
+        'balear': 'islas baleares',
+        'canar': 'canarias',
+        'rioja': 'la rioja',
+        'madrid': 'madrid',
+        'murc': 'murcia',
+        'navarr': 'navarra',
+        'vasco': 'país vasco',
+        'basque': 'país vasco',
+        'valen': 'comunidad valenciana',
+        'ceuta': 'ceuta',
+        'melill': 'melilla'
+      };
+      
+      for (const [keyword, community] of Object.entries(keywordMap)) {
+        if (normalizedName.includes(keyword)) {
+          matchedCommunity = community;
+          console.log(`Coincidencia por palabra clave "${keyword}": "${communityName}" -> "${community}"`);
+          break;
+        }
+      }
+    }
+    
+    // 4. Si encontramos una comunidad, devolver su bandera desde nuestro mapa definitivo
+    if (matchedCommunity && definitiveFlagMap[matchedCommunity]) {
+      console.log(`Bandera encontrada para ${matchedCommunity}: ${definitiveFlagMap[matchedCommunity]}`);
+      return definitiveFlagMap[matchedCommunity];
+    }
+    
+    // 5. Si todo lo anterior falla, intentar encontrar la bandera desde communityFlags
+    // (Este es un último recurso, pero mantenemos la compatibilidad)
     const specificNameMapping: Record<string, string> = {
       'extremadura': 'extremadura',
       'castilla y leon': 'castilla y leon',
@@ -434,7 +575,10 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
       'navarra': 'comunidad foral de navarra',
       'asturias': 'principado de asturias',
       'ceuta': 'ciudad autonoma de ceuta',
-      'melilla': 'ciudad autonoma de melilla'
+      'melilla': 'ciudad autonoma de melilla',
+      'la rioja': 'la rioja',
+      'rioja': 'la rioja',
+      'cantabria': 'cantabria'
     };
     
     // Si el nombre normalizado está en el mapa de conversión específico, usar ese nombre
@@ -453,7 +597,87 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
       });
     }
     
-    return matchingFlag ? matchingFlag.flag : '';
+    // Si encontramos una bandera en communityFlags, usarla
+    if (matchingFlag) {
+      console.log(`Bandera encontrada en communityFlags: ${matchingFlag.flag}`);
+      return matchingFlag.flag;
+    }
+    
+    // 6. FALLBACK ABSOLUTO: Hacer una aproximación forzada basada en el nombre
+    // Intentamos adivinar la comunidad autónoma analizando fragmentos del nombre
+    // Esto solo debe ocurrir en casos muy extraños donde todo lo anterior falló
+    
+    console.log(`No se encontró coincidencia para "${communityName}" con métodos estándar, aplicando fallback forzado`);
+    
+    // FALLBACK DIRECTO para las comunidades problemáticas
+    if (normalizedName.includes('extrem')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg';
+    }
+    if (normalizedName.includes('rioja')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg';
+    }
+    if (normalizedName.includes('mancha') || normalizedName.includes('castilla-la') || normalizedName.includes('castilla la')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg';
+    }
+    if (normalizedName.includes('cantabr')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg';
+    }
+    
+    // Tabla de decisión final basada en fragmentos de texto
+    // Ordenados de más específicos a más generales
+    const fallbackDecisionTable: [string, string][] = [
+      ['rioja', 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg'],
+      ['mancha', 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg'],
+      ['castilla', 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg'],
+      ['leon', 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg'],
+      ['valen', 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg'],
+      ['vasco', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
+      ['basque', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
+      ['euskadi', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
+      ['madrid', 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_the_Community_of_Madrid.svg'],
+      ['andalu', 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Andaluc%C3%ADa.svg'],
+      ['astur', 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg'],
+      ['cantabr', 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg'],
+      ['aragon', 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg'],
+      ['catal', 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg'],
+      ['galicia', 'https://upload.wikimedia.org/wikipedia/commons/6/64/Flag_of_Galicia.svg'],
+      ['extrem', 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg'],
+      ['balear', 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg'],
+      ['canar', 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Flag_of_the_Canary_Islands.svg'],
+      ['navarr', 'https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Navarre.svg'],
+      ['murcia', 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Murcia.svg'],
+      ['ceuta', 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Flag_of_Ceuta.svg'],
+      ['melilla', 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Flag_of_Melilla.svg']
+    ];
+    
+    for (const [fragment, flagUrl] of fallbackDecisionTable) {
+      if (normalizedName.includes(fragment)) {
+        console.log(`FALLBACK: Coincidencia forzada por fragmento "${fragment}" -> ${flagUrl}`);
+        return flagUrl;
+      }
+    }
+    
+    // SOLUCIÓN FINAL: Mapeo directo de nombres más comunes (incluso con errores de escritura)
+    const directFlagUrlsForProblematicNames: Record<string, string> = {
+      'extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
+      'extramadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
+      'castila-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+      'castilla-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+      'la rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
+      'rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
+      'cantabria': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg'
+    };
+    
+    // Verificar si el nombre original (sin normalizar) está en este mapa especial
+    if (directFlagUrlsForProblematicNames[communityName.toLowerCase()]) {
+      console.log(`ÚLTIMA SOLUCIÓN: Encontrada bandera directa para "${communityName.toLowerCase()}"`);
+      return directFlagUrlsForProblematicNames[communityName.toLowerCase()];
+    }
+    
+    console.log(`¡ATENCIÓN! No se pudo encontrar bandera para: "${communityName}" a pesar de todos los intentos.`);
+    
+    // Si nada funciona, devolver una URL de bandera de España genérica
+    return "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Spain.svg";
   };
 
   // Función para formatear números con separador de miles

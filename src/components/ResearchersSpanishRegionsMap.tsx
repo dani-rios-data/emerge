@@ -283,73 +283,73 @@ function getCommunityValue(
   language: 'es' | 'en'
 ): number | null {
   try {
-    // Obtener el nombre de la comunidad del feature
-    const communityName = getCommunityName(feature, language);
-    if (!communityName) return null;
-    
-    // Para debugging
-    console.log(`Buscando valor para comunidad: "${communityName}"`);
-    
-    // Convertir a normalizado para comparar
-    const normalizedCommunityName = normalizarTexto(communityName);
-    
-    // Mapear el sector seleccionado al código del sector en el CSV
-    let sectorId = '';
-    switch (selectedSector.toLowerCase()) {
-      case 'total':
-        sectorId = '_T';
-        break;
-      case 'business':
-        sectorId = 'EMPRESAS';
-        break;
-      case 'government':
-        sectorId = 'ADMINISTRACION_PUBLICA';
-        break;
-      case 'education':
-        sectorId = 'ENSENIANZA_SUPERIOR';
-        break;
-      case 'nonprofit':
-        sectorId = 'IPSFL';
-        break;
-      default:
-        sectorId = '_T'; // Total por defecto
-    }
-    
-    // Filtrar datos por año, sector y sexo (total)
-    const filteredData = data.filter(item => {
-      return item.TIME_PERIOD === year &&
-             item.SECTOR_EJECUCION_CODE === sectorId &&
-             item.SEXO_CODE === '_T' &&
-             item.MEDIDAS_CODE === 'INVESTIGADORES_EJC';
-    });
-    
-    if (filteredData.length === 0) {
-      console.log(`No hay datos para el año ${year}, sector ${sectorId}`);
-      return null;
-    }
-    
-    // Crear un mapa para matchear códigos ISO a los TERRITORIO_CODE del dataset
-    const isoToTerritorioCodeMap: {[key: string]: string} = {
-      'ES-AN': '01', // Andalucía
-      'ES-AR': '02', // Aragón
-      'ES-AS': '03', // Asturias
-      'ES-CN': '05', // Canarias
-      'ES-CB': '06', // Cantabria
-      'ES-CM': '08', // Castilla-La Mancha
-      'ES-CL': '07', // Castilla y León
-      'ES-CT': '09', // Cataluña
-      'ES-CE': '18', // Ceuta
-      'ES-MD': '13', // Madrid
-      'ES-VC': '10', // Comunidad Valenciana
-      'ES-EX': '11', // Extremadura
-      'ES-GA': '12', // Galicia
-      'ES-IB': '04', // Islas Baleares
-      'ES-RI': '17', // La Rioja
-      'ES-ML': '19', // Melilla
-      'ES-MC': '14', // Murcia
-      'ES-NC': '15', // Navarra
-      'ES-PV': '16'  // País Vasco
-    };
+  // Obtener el nombre de la comunidad del feature
+  const communityName = getCommunityName(feature, language);
+  if (!communityName) return null;
+  
+  // Para debugging
+  console.log(`Buscando valor para comunidad: "${communityName}"`);
+  
+  // Convertir a normalizado para comparar
+  const normalizedCommunityName = normalizarTexto(communityName);
+  
+  // Mapear el sector seleccionado al código del sector en el CSV
+  let sectorId = '';
+  switch (selectedSector.toLowerCase()) {
+    case 'total':
+      sectorId = '_T';
+      break;
+    case 'business':
+      sectorId = 'EMPRESAS';
+      break;
+    case 'government':
+      sectorId = 'ADMINISTRACION_PUBLICA';
+      break;
+    case 'education':
+      sectorId = 'ENSENIANZA_SUPERIOR';
+      break;
+    case 'nonprofit':
+      sectorId = 'IPSFL';
+      break;
+    default:
+      sectorId = '_T'; // Total por defecto
+  }
+  
+  // Filtrar datos por año, sector y sexo (total)
+  const filteredData = data.filter(item => {
+    return item.TIME_PERIOD === year &&
+           item.SECTOR_EJECUCION_CODE === sectorId &&
+           item.SEXO_CODE === '_T' &&
+           item.MEDIDAS_CODE === 'INVESTIGADORES_EJC';
+  });
+  
+  if (filteredData.length === 0) {
+    console.log(`No hay datos para el año ${year}, sector ${sectorId}`);
+    return null;
+  }
+  
+  // Crear un mapa para matchear códigos ISO a los TERRITORIO_CODE del dataset
+  const isoToTerritorioCodeMap: {[key: string]: string} = {
+    'ES-AN': '01', // Andalucía
+    'ES-AR': '02', // Aragón
+    'ES-AS': '03', // Asturias
+    'ES-CN': '05', // Canarias
+    'ES-CB': '06', // Cantabria
+    'ES-CM': '08', // Castilla-La Mancha
+    'ES-CL': '07', // Castilla y León
+    'ES-CT': '09', // Cataluña
+    'ES-CE': '18', // Ceuta
+    'ES-MD': '13', // Madrid
+    'ES-VC': '10', // Comunidad Valenciana
+    'ES-EX': '11', // Extremadura
+    'ES-GA': '12', // Galicia
+    'ES-IB': '04', // Islas Baleares
+    'ES-RI': '17', // La Rioja
+    'ES-ML': '19', // Melilla
+    'ES-MC': '14', // Murcia
+    'ES-NC': '15', // Navarra
+    'ES-PV': '16'  // País Vasco
+  };
     
     // Función para validar valores
     const validarValor = (valor: string | undefined): number | null => {
@@ -372,19 +372,19 @@ function getCommunityValue(
       }
       
       return numero;
-    };
+  };
+  
+  // Intentar diferentes estrategias para encontrar una coincidencia
+  
+  // 1. Buscar por código ISO si está disponible
+  if (feature.properties?.iso) {
+    const isoCode = feature.properties.iso.toString().toUpperCase();
+    const territorioCode = isoToTerritorioCodeMap[isoCode];
     
-    // Intentar diferentes estrategias para encontrar una coincidencia
-    
-    // 1. Buscar por código ISO si está disponible
-    if (feature.properties?.iso) {
-      const isoCode = feature.properties.iso.toString().toUpperCase();
-      const territorioCode = isoToTerritorioCodeMap[isoCode];
-      
-      if (territorioCode) {
-        const matchByCode = filteredData.find(item => item.TERRITORIO_CODE === territorioCode);
-        if (matchByCode) {
-          console.log(`Coincidencia encontrada por código ISO ${isoCode} -> ${territorioCode} para "${communityName}"`);
+    if (territorioCode) {
+      const matchByCode = filteredData.find(item => item.TERRITORIO_CODE === territorioCode);
+      if (matchByCode) {
+        console.log(`Coincidencia encontrada por código ISO ${isoCode} -> ${territorioCode} para "${communityName}"`);
           // Verificar que OBS_VALUE existe y no está vacío
           const parsedValue = validarValor(matchByCode.OBS_VALUE);
           if (parsedValue !== null) {
@@ -393,164 +393,164 @@ function getCommunityValue(
             console.log(`Valor no numérico para "${communityName}": "${matchByCode.OBS_VALUE || 'VACÍO'}"`);
           }
           return null;
-        }
       }
     }
-    
-    // 2. Buscar por nombre exacto
-    const communityMatch = filteredData.find(item => {
-      const itemCommunityName = normalizarTexto(item.TERRITORIO);
-      return itemCommunityName === normalizedCommunityName;
-    });
-    
-    if (communityMatch) {
+  }
+  
+  // 2. Buscar por nombre exacto
+  const communityMatch = filteredData.find(item => {
+    const itemCommunityName = normalizarTexto(item.TERRITORIO);
+    return itemCommunityName === normalizedCommunityName;
+  });
+  
+  if (communityMatch) {
       // Verificar que OBS_VALUE existe y no está vacío
       const valor = validarValor(communityMatch.OBS_VALUE);
       if (valor !== null) {
-        console.log(`Coincidencia exacta encontrada para "${communityName}": ${communityMatch.OBS_VALUE}`);
+    console.log(`Coincidencia exacta encontrada para "${communityName}": ${communityMatch.OBS_VALUE}`);
         return valor;
       } else {
         console.log(`Coincidencia exacta encontrada para "${communityName}" pero el valor "${communityMatch.OBS_VALUE || 'VACÍO'}" no es válido`);
       }
       return null;
-    }
+  }
+  
+  // 3. Buscar a través del mapeo de nombres
+  for (const key in communityNameMapping) {
+    const keyNormalized = normalizarTexto(key);
+    const valueInCurrentLanguage = language === 'es' ? 
+      communityNameMapping[key].es : 
+      communityNameMapping[key].en;
+    const valueNormalized = normalizarTexto(valueInCurrentLanguage);
     
-    // 3. Buscar a través del mapeo de nombres
-    for (const key in communityNameMapping) {
-      const keyNormalized = normalizarTexto(key);
-      const valueInCurrentLanguage = language === 'es' ? 
-        communityNameMapping[key].es : 
-        communityNameMapping[key].en;
-      const valueNormalized = normalizarTexto(valueInCurrentLanguage);
+    // Si el nombre normalizado de la comunidad coincide con alguna clave o valor del mapeo
+    if (normalizedCommunityName === keyNormalized || normalizedCommunityName === valueNormalized) {
+      // Buscar en los datos por todas las posibles variaciones del nombre
+      const possibleNames = [
+        key,
+        communityNameMapping[key].es,
+        communityNameMapping[key].en
+      ];
       
-      // Si el nombre normalizado de la comunidad coincide con alguna clave o valor del mapeo
-      if (normalizedCommunityName === keyNormalized || normalizedCommunityName === valueNormalized) {
-        // Buscar en los datos por todas las posibles variaciones del nombre
-        const possibleNames = [
-          key,
-          communityNameMapping[key].es,
-          communityNameMapping[key].en
-        ];
+      for (const name of possibleNames) {
+        const match = filteredData.find(item => 
+          normalizarTexto(item.TERRITORIO) === normalizarTexto(name)
+        );
         
-        for (const name of possibleNames) {
-          const match = filteredData.find(item => 
-            normalizarTexto(item.TERRITORIO) === normalizarTexto(name)
-          );
-          
-          if (match) {
+        if (match) {
             // Verificar que OBS_VALUE existe y no está vacío
             const parsedValue = validarValor(match.OBS_VALUE);
             if (parsedValue !== null) {
-              console.log(`Coincidencia por mapeo encontrada para "${communityName}" usando "${name}": ${match.OBS_VALUE}`);
+          console.log(`Coincidencia por mapeo encontrada para "${communityName}" usando "${name}": ${match.OBS_VALUE}`);
               return parsedValue;
             } else {
               console.log(`Coincidencia por mapeo encontrada para "${communityName}" usando "${name}" pero el valor "${match.OBS_VALUE || 'VACÍO'}" no es válido`);
             }
             return null;
-          }
         }
       }
     }
-    
-    // 4. Búsqueda por contención (para casos como "Principado de Asturias" vs "Asturias")
-    const matchByContains = filteredData.find(item => {
-      const itemName = normalizarTexto(item.TERRITORIO);
-      return itemName.includes(normalizedCommunityName) || normalizedCommunityName.includes(itemName);
-    });
-    
-    if (matchByContains) {
+  }
+  
+  // 4. Búsqueda por contención (para casos como "Principado de Asturias" vs "Asturias")
+  const matchByContains = filteredData.find(item => {
+    const itemName = normalizarTexto(item.TERRITORIO);
+    return itemName.includes(normalizedCommunityName) || normalizedCommunityName.includes(itemName);
+  });
+  
+  if (matchByContains) {
       // Verificar que OBS_VALUE existe y no está vacío
       const parsedValue = validarValor(matchByContains.OBS_VALUE);
       if (parsedValue !== null) {
-        console.log(`Coincidencia por contención encontrada para "${communityName}" con "${matchByContains.TERRITORIO}": ${matchByContains.OBS_VALUE}`);
+    console.log(`Coincidencia por contención encontrada para "${communityName}" con "${matchByContains.TERRITORIO}": ${matchByContains.OBS_VALUE}`);
         return parsedValue;
       } else {
         console.log(`Coincidencia por contención encontrada para "${communityName}" con "${matchByContains.TERRITORIO}" pero el valor "${matchByContains.OBS_VALUE || 'VACÍO'}" no es válido`);
       }
       return null;
-    }
-    
-    // 5. Casos especiales conocidos
-    const specialCases: {[key: string]: string[]} = {
-      'andalucia': ['01'],
-      'aragon': ['02'],
-      'asturias': ['03'],
-      'baleares': ['04', 'islas baleares', 'illes balears'],
-      'canarias': ['05', 'islas canarias'],
-      'cantabria': ['06'],
-      'castilla y leon': ['07', 'castilla leon', 'castilla-leon'],
-      'castilla-la mancha': ['08', 'castilla la mancha'],
-      'cataluna': ['09', 'cataluña', 'catalunya'],
-      'comunidad valenciana': ['10', 'c valenciana', 'valencia'],
-      'extremadura': ['11'],
-      'galicia': ['12'],
-      'madrid': ['13', 'comunidad de madrid'],
-      'murcia': ['14', 'region de murcia'],
-      'navarra': ['15', 'comunidad foral de navarra'],
-      'pais vasco': ['16', 'euskadi'],
-      'la rioja': ['17', 'rioja'],
-      'ceuta': ['18'],
-      'melilla': ['19']
-    };
-    
-    for (const baseName in specialCases) {
-      if (normalizedCommunityName.includes(baseName) || baseName.includes(normalizedCommunityName)) {
-        // Buscar por código primero
-        const codes = specialCases[baseName].filter(c => c.length === 2);
-        for (const code of codes) {
-          const matchBySpecialCode = filteredData.find(item => item.TERRITORIO_CODE === code);
-          if (matchBySpecialCode) {
+  }
+  
+  // 5. Casos especiales conocidos
+  const specialCases: {[key: string]: string[]} = {
+    'andalucia': ['01'],
+    'aragon': ['02'],
+    'asturias': ['03'],
+    'baleares': ['04', 'islas baleares', 'illes balears'],
+    'canarias': ['05', 'islas canarias'],
+    'cantabria': ['06'],
+    'castilla y leon': ['07', 'castilla leon', 'castilla-leon'],
+    'castilla-la mancha': ['08', 'castilla la mancha'],
+    'cataluna': ['09', 'cataluña', 'catalunya'],
+    'comunidad valenciana': ['10', 'c valenciana', 'valencia'],
+    'extremadura': ['11'],
+    'galicia': ['12'],
+    'madrid': ['13', 'comunidad de madrid'],
+    'murcia': ['14', 'region de murcia'],
+    'navarra': ['15', 'comunidad foral de navarra'],
+    'pais vasco': ['16', 'euskadi'],
+    'la rioja': ['17', 'rioja'],
+    'ceuta': ['18'],
+    'melilla': ['19']
+  };
+  
+  for (const baseName in specialCases) {
+    if (normalizedCommunityName.includes(baseName) || baseName.includes(normalizedCommunityName)) {
+      // Buscar por código primero
+      const codes = specialCases[baseName].filter(c => c.length === 2);
+      for (const code of codes) {
+        const matchBySpecialCode = filteredData.find(item => item.TERRITORIO_CODE === code);
+        if (matchBySpecialCode) {
             // Verificar que OBS_VALUE existe y no está vacío
             const parsedValue = validarValor(matchBySpecialCode.OBS_VALUE);
             if (parsedValue !== null) {
-              console.log(`Coincidencia por caso especial (código) para "${communityName}" usando código "${code}": ${matchBySpecialCode.OBS_VALUE}`);
+          console.log(`Coincidencia por caso especial (código) para "${communityName}" usando código "${code}": ${matchBySpecialCode.OBS_VALUE}`);
               return parsedValue;
             } else {
               console.log(`Coincidencia por caso especial (código) para "${communityName}" usando código "${code}" pero el valor "${matchBySpecialCode.OBS_VALUE || 'VACÍO'}" no es válido`);
             }
             return null;
-          }
         }
+      }
+      
+      // Luego buscar por nombres alternativos
+      const altNames = specialCases[baseName].filter(c => c.length > 2);
+      for (const altName of altNames) {
+        const matchBySpecialName = filteredData.find(item => 
+          normalizarTexto(item.TERRITORIO).includes(altName) || 
+          altName.includes(normalizarTexto(item.TERRITORIO))
+        );
         
-        // Luego buscar por nombres alternativos
-        const altNames = specialCases[baseName].filter(c => c.length > 2);
-        for (const altName of altNames) {
-          const matchBySpecialName = filteredData.find(item => 
-            normalizarTexto(item.TERRITORIO).includes(altName) || 
-            altName.includes(normalizarTexto(item.TERRITORIO))
-          );
-          
-          if (matchBySpecialName) {
+        if (matchBySpecialName) {
             // Verificar que OBS_VALUE existe y no está vacío
             const parsedValue = validarValor(matchBySpecialName.OBS_VALUE);
             if (parsedValue !== null) {
-              console.log(`Coincidencia por caso especial (nombre) para "${communityName}" usando "${altName}": ${matchBySpecialName.OBS_VALUE}`);
+          console.log(`Coincidencia por caso especial (nombre) para "${communityName}" usando "${altName}": ${matchBySpecialName.OBS_VALUE}`);
               return parsedValue;
             } else {
               console.log(`Coincidencia por caso especial (nombre) para "${communityName}" usando "${altName}" pero el valor "${matchBySpecialName.OBS_VALUE || 'VACÍO'}" no es válido`);
             }
             return null;
-          }
         }
       }
     }
-    
-    // 6. Último recurso: imprimir todos los nombres de territorios disponibles para debugging
-    console.log(`No se encontró coincidencia para "${communityName}". Territorios disponibles en los datos:`);
-    filteredData.forEach(item => {
-      console.log(`- "${item.TERRITORIO}" (${item.TERRITORIO_CODE}): ${item.OBS_VALUE}`);
-    });
-    
-    return null;
+  }
+  
+  // 6. Último recurso: imprimir todos los nombres de territorios disponibles para debugging
+  console.log(`No se encontró coincidencia para "${communityName}". Territorios disponibles en los datos:`);
+  filteredData.forEach(item => {
+    console.log(`- "${item.TERRITORIO}" (${item.TERRITORIO_CODE}): ${item.OBS_VALUE}`);
+  });
+  
+  return null;
   } catch (error) {
     console.error(`Error al obtener valor para ${feature.properties?.name || 'desconocido'}:`, error);
-    return null;
-  }
+  return null;
+}
 }
 
 // Función para obtener rango de valores para todas las comunidades autónomas
 function getValueRange(
-  data: ResearchersCommunityData[], 
+  data: ResearchersCommunityData[],
   year: string, 
   sector: string
 ): { min: number, max: number, median: number, quartiles: number[] } {
@@ -852,14 +852,14 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       addCustomStyles();
       
       // Continuar con la renderización normal
-      const renderMap = () => {
+    const renderMap = () => {
         try {
-          // Limpiar SVG
-          const svg = d3.select(svgRef.current);
-          svg.selectAll("*").remove();
-          
+      // Limpiar SVG
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove();
+      
           // Obtener dimensiones del contenedor con un tamaño fijo
-          const containerWidth = mapRef.current?.clientWidth || 800;
+      const containerWidth = mapRef.current?.clientWidth || 800;
           const containerHeight = 400; // Altura fija de 400px
           
           // Definir la paleta de colores al inicio para evitar problemas de inicialización
@@ -871,492 +871,645 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           console.log("- Color para ZERO (valor 0):", mapPalette.ZERO);
           console.log("- Color para MIN (valor mínimo):", mapPalette.MIN);
           console.log("- Color para MAX (valor máximo):", mapPalette.MAX);
-          
-          // Configurar dimensiones y proyecciones
-          const width = containerWidth;
-          const height = containerHeight;
-          
+      
+      // Configurar dimensiones y proyecciones
+      const width = containerWidth;
+      const height = containerHeight;
+      
           // Mejorar las proyecciones para mejor visualización con la nueva altura fija
-          // Crear proyección para España peninsular con mejor escala
-          const projectionMainland = d3.geoMercator()
-            .center([-3.5, 40.0])
+      // Crear proyección para España peninsular con mejor escala
+      const projectionMainland = d3.geoMercator()
+        .center([-3.5, 40.0])
             .scale(width * 2.8) // Ajustar escala para la nueva altura
             .translate([width / 2, height / 2]);
+      
+      // Crear proyección específica para las Islas Canarias
+      const projectionCanarias = d3.geoMercator()
+        .center([-15.5, 28.2])
+            .scale(width * 2.5) // Aumentar escala para islas más grandes y visibles
+            .translate([width * 0.14, height * 0.78]); // Ajustar posición para mejor visualización
+      
+      // Generadores de ruta
+      const pathGeneratorMainland = d3.geoPath().projection(projectionMainland);
+      const pathGeneratorCanarias = d3.geoPath().projection(projectionCanarias);
+      
+      // Configurar SVG
+      svg.attr("width", width)
+         .attr("height", height)
+         .attr("viewBox", `0 0 ${width} ${height}`)
+             .attr("style", "width: 100%; height: 100%; margin-bottom: 10px;");
+      
+      // Crear grupos para la península y Canarias
+      const mapGroup = svg.append("g").attr("class", "mainland");
+      const canariasGroup = svg.append("g").attr("class", "canarias");
+      
+      // Crear tooltip global en lugar del tooltip interno
+      const createGlobalTooltip = (): HTMLElement => {
+        // Verificar si ya existe un tooltip global
+        let tooltipElement = document.getElementById('researchers-map-tooltip');
+        
+        if (!tooltipElement) {
+          // Crear nuevo tooltip y agregarlo al body
+          tooltipElement = document.createElement('div');
+          tooltipElement.id = 'researchers-map-tooltip';
+          tooltipElement.className = 'researchers-map-tooltip';
           
-          // Crear proyección específica para las Islas Canarias
-          const projectionCanarias = d3.geoMercator()
-            .center([-15.5, 28.2])
-            .scale(width * 2.2) // Ajustar escala para la nueva altura
-            .translate([width * 0.14, height * 0.80]);
-          
-          // Generadores de ruta
-          const pathGeneratorMainland = d3.geoPath().projection(projectionMainland);
-          const pathGeneratorCanarias = d3.geoPath().projection(projectionCanarias);
-          
-          // Configurar SVG
-          svg.attr("width", width)
-             .attr("height", height)
-             .attr("viewBox", `0 0 ${width} ${height}`)
-             .attr("style", "width: 100%; height: 100%;");
-          
-          // Crear grupos para la península y Canarias
-          const mapGroup = svg.append("g").attr("class", "mainland");
-          const canariasGroup = svg.append("g").attr("class", "canarias");
-          
-          // Crear tooltip global en lugar del tooltip interno
-          const createGlobalTooltip = (): HTMLElement => {
-            // Verificar si ya existe un tooltip global
-            let tooltipElement = document.getElementById('researchers-map-tooltip');
-            
-            if (!tooltipElement) {
-              // Crear nuevo tooltip y agregarlo al body
-              tooltipElement = document.createElement('div');
-              tooltipElement.id = 'researchers-map-tooltip';
-              tooltipElement.className = 'researchers-map-tooltip';
-              
-              // Aplicar estilos base manualmente
-              Object.assign(tooltipElement.style, {
-                position: 'fixed',
-                display: 'none',
-                opacity: '0',
-                zIndex: '999999',
-                pointerEvents: 'none',
-                backgroundColor: 'white',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                borderRadius: '4px',
-                padding: '0',
-                minWidth: '150px',
-                maxWidth: '320px',
-                border: '1px solid #e2e8f0',
-                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
-                fontSize: '14px',
-                lineHeight: '1.5',
-                color: '#333',
-                transition: 'opacity 0.15s ease-in-out'
-              });
-              
-              document.body.appendChild(tooltipElement);
-              
-              // Crear hoja de estilo inline para las clases de Tailwind
-              const styleSheet = document.createElement('style');
-              styleSheet.id = 'tooltip-researchers-map-styles';
-              styleSheet.textContent = `
-                #researchers-map-tooltip .text-green-600 { color: #059669; }
-                #researchers-map-tooltip .text-red-600 { color: #DC2626; }
-                #researchers-map-tooltip .bg-blue-50 { background-color: #EFF6FF; }
-                #researchers-map-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
-                #researchers-map-tooltip .border-blue-100 { border-color: #DBEAFE; }
-                #researchers-map-tooltip .border-gray-100 { border-color: #F3F4F6; }
-                #researchers-map-tooltip .text-gray-500 { color: #6B7280; }
-                #researchers-map-tooltip .text-blue-700 { color: #1D4ED8; }
-                #researchers-map-tooltip .text-gray-800 { color: #1F2937; }
-                #researchers-map-tooltip .text-gray-600 { color: #4B5563; }
-                #researchers-map-tooltip .text-yellow-500 { color: #F59E0B; }
-                #researchers-map-tooltip .rounded-lg { border-radius: 0.5rem; }
-                #researchers-map-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-                #researchers-map-tooltip .p-3 { padding: 0.75rem; }
-                #researchers-map-tooltip .p-4 { padding: 1rem; }
-                #researchers-map-tooltip .p-2 { padding: 0.5rem; }
-                #researchers-map-tooltip .pt-3 { padding-top: 0.75rem; }
-                #researchers-map-tooltip .mb-3 { margin-bottom: 0.75rem; }
-                #researchers-map-tooltip .mb-1 { margin-bottom: 0.25rem; }
-                #researchers-map-tooltip .mb-4 { margin-bottom: 1rem; }
-                #researchers-map-tooltip .mr-1 { margin-right: 0.25rem; }
-                #researchers-map-tooltip .mr-2 { margin-right: 0.5rem; }
-                #researchers-map-tooltip .mt-1 { margin-top: 0.25rem; }
-                #researchers-map-tooltip .mt-3 { margin-top: 0.75rem; }
-                #researchers-map-tooltip .text-xs { font-size: 0.75rem; }
-                #researchers-map-tooltip .text-sm { font-size: 0.875rem; }
-                #researchers-map-tooltip .text-lg { font-size: 1.125rem; }
-                #researchers-map-tooltip .text-xl { font-size: 1.25rem; }
-                #researchers-map-tooltip .font-bold { font-weight: 700; }
-                #researchers-map-tooltip .font-medium { font-weight: 500; }
-                #researchers-map-tooltip .flex { display: flex; }
-                #researchers-map-tooltip .items-center { align-items: center; }
-                #researchers-map-tooltip .justify-between { justify-content: space-between; }
-                #researchers-map-tooltip .w-8 { width: 2rem; }
-                #researchers-map-tooltip .h-6 { height: 1.5rem; }
-                #researchers-map-tooltip .w-36 { width: 9rem; }
-                #researchers-map-tooltip .w-44 { width: 11rem; }
-                #researchers-map-tooltip .w-48 { width: 12rem; }
-                #researchers-map-tooltip .rounded { border-radius: 0.25rem; }
-                #researchers-map-tooltip .rounded-md { border-radius: 0.375rem; }
-                #researchers-map-tooltip .overflow-hidden { overflow: hidden; }
-                #researchers-map-tooltip .border-t { border-top-width: 1px; }
-                #researchers-map-tooltip .border-b { border-bottom-width: 1px; }
-                #researchers-map-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
-                #researchers-map-tooltip .max-w-xs { max-width: 20rem; }
-                #researchers-map-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
-                #researchers-map-tooltip .w-full { width: 100%; }
-                #researchers-map-tooltip .h-full { height: 100%; }
-                #researchers-map-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
-                #researchers-map-tooltip .flag-container { min-width: 2rem; min-height: 1.5rem; }
-              `;
-              document.head.appendChild(styleSheet);
-            }
-            
-            return tooltipElement;
-          };
-          
-          // Crear tooltip global
-          const globalTooltip = createGlobalTooltip();
-          
-          // Función para posicionar el tooltip global
-          const positionGlobalTooltip = (event: MouseEvent, content: string): void => {
-            const tooltipEl = globalTooltip;
-            if (!tooltipEl) return;
-            
-            // Actualizar contenido
-            tooltipEl.innerHTML = content;
-            
-            // Aplicar estilos
-            Object.assign(tooltipEl.style, {
-              position: 'fixed',
-              display: 'block',
-              opacity: '1',
-              zIndex: '999999',
-              pointerEvents: 'none',
-              transition: 'opacity 0.15s'
-            });
-            
-            const tooltipWidth = tooltipEl.offsetWidth;
-            const tooltipHeight = tooltipEl.offsetHeight;
-            
-            // Obtener posición del mouse
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-            
-            // Calcular posición del tooltip
-            let left = mouseX + 15;
-            let top = mouseY - tooltipHeight / 2;
-            
-            // Ajustar posición si se sale de la ventana
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            
-            if (left + tooltipWidth > windowWidth) {
-              left = mouseX - tooltipWidth - 15;
-            }
-            
-            if (top + tooltipHeight > windowHeight) {
-              top = mouseY - tooltipHeight - 15;
-            }
-            
-            if (top < 0) {
-              top = 15;
-            }
-            
-            // Establecer posición y visibilidad
-            tooltipEl.style.left = `${left}px`;
-            tooltipEl.style.top = `${top}px`;
-          };
-          
-          // Filtrar características para península y Canarias
-          const canariasFeatures = geoJson.features.filter(feature => {
-            const name = getCommunityName(feature, language);
-            return name.includes('Canarias') || name.includes('Canary');
+          // Aplicar estilos base manualmente
+          Object.assign(tooltipElement.style, {
+            position: 'fixed',
+            display: 'none',
+            opacity: '0',
+            zIndex: '999999',
+            pointerEvents: 'none',
+            backgroundColor: 'white',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+            padding: '0',
+            minWidth: '150px',
+            maxWidth: '320px',
+            border: '1px solid #e2e8f0',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+            fontSize: '14px',
+            lineHeight: '1.5',
+            color: '#333',
+            transition: 'opacity 0.15s ease-in-out'
           });
           
-          const mainlandFeatures = geoJson.features.filter(feature => {
-            const name = getCommunityName(feature, language);
-            return !name.includes('Canarias') && !name.includes('Canary');
-          });
+          document.body.appendChild(tooltipElement);
           
-          // Función para formatear el valor
-          const formatValue = (value: number | null): string => {
-            if (value === null) return t.noData;
-            if (isNaN(value)) return t.noData;
-            if (value === 0) return '0';
-            
-            return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
-              maximumFractionDigits: 0
-            }).format(value);
-          };
+          // Crear hoja de estilo inline para las clases de Tailwind
+          const styleSheet = document.createElement('style');
+          styleSheet.id = 'tooltip-researchers-map-styles';
+          styleSheet.textContent = `
+            #researchers-map-tooltip .text-green-600 { color: #059669; }
+            #researchers-map-tooltip .text-red-600 { color: #DC2626; }
+            #researchers-map-tooltip .bg-blue-50 { background-color: #EFF6FF; }
+            #researchers-map-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+            #researchers-map-tooltip .border-blue-100 { border-color: #DBEAFE; }
+            #researchers-map-tooltip .border-gray-100 { border-color: #F3F4F6; }
+            #researchers-map-tooltip .text-gray-500 { color: #6B7280; }
+            #researchers-map-tooltip .text-blue-700 { color: #1D4ED8; }
+            #researchers-map-tooltip .text-gray-800 { color: #1F2937; }
+            #researchers-map-tooltip .text-gray-600 { color: #4B5563; }
+            #researchers-map-tooltip .text-yellow-500 { color: #F59E0B; }
+            #researchers-map-tooltip .rounded-lg { border-radius: 0.5rem; }
+            #researchers-map-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+            #researchers-map-tooltip .p-3 { padding: 0.75rem; }
+            #researchers-map-tooltip .p-4 { padding: 1rem; }
+            #researchers-map-tooltip .p-2 { padding: 0.5rem; }
+            #researchers-map-tooltip .pt-3 { padding-top: 0.75rem; }
+            #researchers-map-tooltip .mb-3 { margin-bottom: 0.75rem; }
+            #researchers-map-tooltip .mb-1 { margin-bottom: 0.25rem; }
+            #researchers-map-tooltip .mb-4 { margin-bottom: 1rem; }
+            #researchers-map-tooltip .mr-1 { margin-right: 0.25rem; }
+            #researchers-map-tooltip .mr-2 { margin-right: 0.5rem; }
+            #researchers-map-tooltip .mt-1 { margin-top: 0.25rem; }
+            #researchers-map-tooltip .mt-3 { margin-top: 0.75rem; }
+            #researchers-map-tooltip .text-xs { font-size: 0.75rem; }
+            #researchers-map-tooltip .text-sm { font-size: 0.875rem; }
+            #researchers-map-tooltip .text-lg { font-size: 1.125rem; }
+            #researchers-map-tooltip .text-xl { font-size: 1.25rem; }
+            #researchers-map-tooltip .font-bold { font-weight: 700; }
+            #researchers-map-tooltip .font-medium { font-weight: 500; }
+            #researchers-map-tooltip .flex { display: flex; }
+            #researchers-map-tooltip .items-center { align-items: center; }
+            #researchers-map-tooltip .justify-between { justify-content: space-between; }
+            #researchers-map-tooltip .w-8 { width: 2rem; }
+            #researchers-map-tooltip .h-6 { height: 1.5rem; }
+            #researchers-map-tooltip .w-36 { width: 9rem; }
+            #researchers-map-tooltip .w-44 { width: 11rem; }
+            #researchers-map-tooltip .w-48 { width: 12rem; }
+            #researchers-map-tooltip .rounded { border-radius: 0.25rem; }
+            #researchers-map-tooltip .rounded-md { border-radius: 0.375rem; }
+            #researchers-map-tooltip .overflow-hidden { overflow: hidden; }
+            #researchers-map-tooltip .border-t { border-top-width: 1px; }
+            #researchers-map-tooltip .border-b { border-bottom-width: 1px; }
+            #researchers-map-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+            #researchers-map-tooltip .max-w-xs { max-width: 20rem; }
+            #researchers-map-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+            #researchers-map-tooltip .w-full { width: 100%; }
+            #researchers-map-tooltip .h-full { height: 100%; }
+            #researchers-map-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+            #researchers-map-tooltip .flag-container { min-width: 2rem; min-height: 1.5rem; }
+          `;
+          document.head.appendChild(styleSheet);
+        }
+        
+        return tooltipElement;
+      };
+      
+      // Crear tooltip global
+      const globalTooltip = createGlobalTooltip();
+      
+      // Función para posicionar el tooltip global
+      const positionGlobalTooltip = (event: MouseEvent, content: string): void => {
+        const tooltipEl = globalTooltip;
+        if (!tooltipEl) return;
+        
+        // Actualizar contenido
+        tooltipEl.innerHTML = content;
+        
+        // Aplicar estilos
+        Object.assign(tooltipEl.style, {
+          position: 'fixed',
+          display: 'block',
+          opacity: '1',
+          zIndex: '999999',
+          pointerEvents: 'none',
+          transition: 'opacity 0.15s'
+        });
+        
+        const tooltipWidth = tooltipEl.offsetWidth;
+        const tooltipHeight = tooltipEl.offsetHeight;
+        
+        // Obtener posición del mouse
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        
+        // Calcular posición del tooltip
+        let left = mouseX + 15;
+        let top = mouseY - tooltipHeight / 2;
+        
+        // Ajustar posición si se sale de la ventana
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        if (left + tooltipWidth > windowWidth) {
+          left = mouseX - tooltipWidth - 15;
+        }
+        
+        if (top + tooltipHeight > windowHeight) {
+          top = mouseY - tooltipHeight - 15;
+        }
+        
+        if (top < 0) {
+          top = 15;
+        }
+        
+        // Establecer posición y visibilidad
+        tooltipEl.style.left = `${left}px`;
+        tooltipEl.style.top = `${top}px`;
+      };
+      
+      // Filtrar características para península y Canarias
+      const canariasFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return name.includes('Canarias') || name.includes('Canary');
+      });
+      
+      const mainlandFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return !name.includes('Canarias') && !name.includes('Canary');
+      });
+      
+      // Función para formatear el valor
+      const formatValue = (value: number | null): string => {
+        if (value === null) return t.noData;
+        if (isNaN(value)) return t.noData;
+        if (value === 0) return '0';
+        
+        return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
+          maximumFractionDigits: 0
+        }).format(value);
+      };
+      
+      // Función para obtener el ranking de una comunidad
+      const getCommunityRank = (feature: GeoJsonFeature): { rank: number, total: number } | null => {
+        const communityName = getCommunityName(feature, language);
+        if (!communityName) return null;
+        
+        // Obtener el valor actual para esta comunidad
+        const currentValue = getCommunityValue(feature, data, selectedYear.toString(), selectedSector, language);
+        
+        // Si no hay valor para esta comunidad, no mostrar ranking
+        if (currentValue === null) return null;
+        
+        // Mapear el sector seleccionado al código del sector en el CSV
+        let sectorId = '';
+        switch (selectedSector.toLowerCase()) {
+          case 'total':
+            sectorId = '_T';
+            break;
+          case 'business':
+            sectorId = 'EMPRESAS';
+            break;
+          case 'government':
+            sectorId = 'ADMINISTRACION_PUBLICA';
+            break;
+          case 'education':
+            sectorId = 'ENSENIANZA_SUPERIOR';
+            break;
+          case 'nonprofit':
+            sectorId = 'IPSFL';
+            break;
+          default:
+            sectorId = '_T'; // Total por defecto
+        }
+        
+        // Filtrar datos por año, sector y sexo
+        const filteredData = data.filter(item => {
+          return item.TIME_PERIOD === selectedYear.toString() &&
+                 item.SECTOR_EJECUCION_CODE === sectorId &&
+                 item.SEXO_CODE === '_T' &&
+                 item.MEDIDAS_CODE === 'INVESTIGADORES_EJC';
+        });
+        
+        if (filteredData.length === 0) return null;
+        
+        // Excluir España del cálculo del ranking
+        // España generalmente tiene el código '00' o 'ES' o se llama 'España' o 'TOTAL NACIONAL'
+        const communityOnlyData = filteredData.filter(item => {
+          const isTerritorySpain = (
+            item.TERRITORIO_CODE === '00' || 
+            item.TERRITORIO_CODE === 'ES' || 
+            normalizarTexto(item.TERRITORIO) === 'espana' ||
+            normalizarTexto(item.TERRITORIO) === 'spain' ||
+            normalizarTexto(item.TERRITORIO) === 'total nacional'
+          );
+          return !isTerritorySpain;
+        });
+        
+        // Si después de filtrar no hay datos, salir
+        if (communityOnlyData.length === 0) return null;
+        
+        // Crear un mapa para obtener valores por comunidad
+        const communityValuesMap = new Map<string, number>();
+        
+        communityOnlyData.forEach(item => {
+          // Intentar obtener el nombre normalizado de la comunidad
+          let matchedName = '';
+          const itemTerritory = normalizarTexto(item.TERRITORIO);
           
-          // Función para obtener el ranking de una comunidad
-          const getCommunityRank = (feature: GeoJsonFeature): { rank: number, total: number } | null => {
-            const communityName = getCommunityName(feature, language);
-            if (!communityName) return null;
+          // Intentar hacer coincidencia directa primero
+          for (const key in communityNameMapping) {
+            const normalizedKey = normalizarTexto(key);
+            const esValue = normalizarTexto(communityNameMapping[key].es);
+            const enValue = normalizarTexto(communityNameMapping[key].en);
             
-            // Obtener el valor actual para esta comunidad
-            const currentValue = getCommunityValue(feature, data, selectedYear.toString(), selectedSector, language);
-            
-            // Si no hay valor para esta comunidad, no mostrar ranking
-            if (currentValue === null) return null;
-            
-            // Mapear el sector seleccionado al código del sector en el CSV
-            let sectorId = '';
-            switch (selectedSector.toLowerCase()) {
-              case 'total':
-                sectorId = '_T';
-                break;
-              case 'business':
-                sectorId = 'EMPRESAS';
-                break;
-              case 'government':
-                sectorId = 'ADMINISTRACION_PUBLICA';
-                break;
-              case 'education':
-                sectorId = 'ENSENIANZA_SUPERIOR';
-                break;
-              case 'nonprofit':
-                sectorId = 'IPSFL';
-                break;
-              default:
-                sectorId = '_T'; // Total por defecto
-            }
-            
-            // Filtrar datos por año, sector y sexo
-            const filteredData = data.filter(item => {
-              return item.TIME_PERIOD === selectedYear.toString() &&
-                     item.SECTOR_EJECUCION_CODE === sectorId &&
-                     item.SEXO_CODE === '_T' &&
-                     item.MEDIDAS_CODE === 'INVESTIGADORES_EJC';
-            });
-            
-            if (filteredData.length === 0) return null;
-            
-            // Ordenar comunidades por valor
-            const sortedCommunities = [...filteredData]
-              .sort((a, b) => {
-                const valueA = parseFloat(a.OBS_VALUE);
-                const valueB = parseFloat(b.OBS_VALUE);
-                return valueB - valueA; // Ordenar descendente
-              });
-            
-            // Buscar la posición de la comunidad actual
-            const normalizedCommunityName = normalizarTexto(communityName);
-            
-            const communityIndex = sortedCommunities.findIndex(item => {
-              const itemCommunityName = item.TERRITORIO;
-              const itemNormalizedName = normalizarTexto(itemCommunityName);
+            if (itemTerritory === normalizedKey || 
+                itemTerritory === esValue || 
+                itemTerritory === enValue ||
+                itemTerritory.includes(esValue) || 
+                esValue.includes(itemTerritory) ||
+                enValue.includes(itemTerritory) ||
+                itemTerritory.includes(enValue)) {
               
-              // Verificar coincidencia directa o por mapeo
-              return itemNormalizedName === normalizedCommunityName ||
-                    Object.keys(communityNameMapping).some(key => 
-                      normalizarTexto(key) === normalizedCommunityName && 
-                      normalizarTexto(communityNameMapping[key].es) === itemNormalizedName);
+              matchedName = language === 'es' ? 
+                            communityNameMapping[key].es : 
+                            communityNameMapping[key].en;
+              break;
+            }
+          }
+          
+          // Si no se encontró coincidencia, usar el nombre original
+          if (!matchedName) {
+            matchedName = item.TERRITORIO;
+          }
+          
+          // Normalizar el valor
+          const value = parseFloat(item.OBS_VALUE);
+          if (!isNaN(value)) {
+            // Para manejar posibles duplicados, tomar el mayor valor
+            const existingValue = communityValuesMap.get(matchedName) || 0;
+            communityValuesMap.set(matchedName, Math.max(existingValue, value));
+          }
+        });
+        
+        // Convertir el mapa a un array y ordenar por valor (descendente)
+        const sortedEntries = Array.from(communityValuesMap.entries())
+          .sort((a, b) => b[1] - a[1]);
+        
+        // Verificar si tenemos suficientes datos para el ranking
+        if (sortedEntries.length === 0) return null;
+        
+        // Buscar la posición de la comunidad actual
+        const normalizedCommunityName = normalizarTexto(communityName);
+        
+        // Caso especial: buscamos primero por nombre exacto
+        let communityIndex = sortedEntries.findIndex(([name]) => 
+          normalizarTexto(name) === normalizedCommunityName
+        );
+        
+        // Si no se encuentra por nombre exacto, intentar buscar con el mapeo
+        if (communityIndex === -1) {
+          // Obtener todos los posibles nombres para esta comunidad
+          const possibleNames: string[] = [];
+          
+          // Añadir el nombre actual
+          possibleNames.push(normalizedCommunityName);
+          
+          // Añadir nombres del mapeo
+          for (const key in communityNameMapping) {
+            const keyNormalized = normalizarTexto(key);
+            const esValueNormalized = normalizarTexto(communityNameMapping[key].es);
+            const enValueNormalized = normalizarTexto(communityNameMapping[key].en);
+            
+            if (keyNormalized === normalizedCommunityName || 
+                esValueNormalized === normalizedCommunityName || 
+                enValueNormalized === normalizedCommunityName) {
+              
+              possibleNames.push(keyNormalized);
+              possibleNames.push(esValueNormalized);
+              possibleNames.push(enValueNormalized);
+            }
+          }
+          
+          // Buscar entre todos los posibles nombres
+          for (const possibleName of possibleNames) {
+            const index = sortedEntries.findIndex(([name]) => {
+              const nameNormalized = normalizarTexto(name);
+              return nameNormalized === possibleName || 
+                     nameNormalized.includes(possibleName) || 
+                     possibleName.includes(nameNormalized);
             });
             
-            if (communityIndex === -1) return null;
-            
-            // Devolver ranking y total
-            return {
-              rank: communityIndex + 1,
-              total: sortedCommunities.length
-            };
-          };
-          
-          // Función para obtener el valor del país/comunidad
-          const getSpainValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
-            // Obtener el valor de España sumando todas las comunidades
-            let totalResearchers = 0;
-            let communityCount = 0;
-            
-            // Mapear el sector seleccionado al código del sector en el CSV
-            let sectorId = '';
-            switch (sector.toLowerCase()) {
-              case 'total':
-                sectorId = '_T';
-                break;
-              case 'business':
-                sectorId = 'EMPRESAS';
-                break;
-              case 'government':
-                sectorId = 'ADMINISTRACION_PUBLICA';
-                break;
-              case 'education':
-                sectorId = 'ENSENIANZA_SUPERIOR';
-                break;
-              case 'nonprofit':
-                sectorId = 'IPSFL';
-                break;
-              default:
-                sectorId = '_T'; // Total por defecto
+            if (index !== -1) {
+              communityIndex = index;
+              break;
             }
-            
-            // Filtrar los datos por año y sector
-            const filteredData = data.filter(item => 
-              item.TIME_PERIOD === year && 
-              item.SECTOR_EJECUCION_CODE === sectorId && 
-              item.SEXO_CODE === '_T' &&
-              item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
-            );
-            
-            // Sumar los valores
-            filteredData.forEach(item => {
-              const value = parseFloat(item.OBS_VALUE);
-              if (!isNaN(value)) {
-                totalResearchers += value;
-                communityCount++;
-              }
-            });
-            
-            return communityCount > 0 ? totalResearchers : null;
-          };
-          
-          // Función para obtener el valor de una comunidad específica (por ejemplo Canarias)
-          const getCanariasValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
-            // Mapear el sector seleccionado al código del sector en el CSV
-            let sectorId = '';
-            switch (sector.toLowerCase()) {
-              case 'total':
-                sectorId = '_T';
-                break;
-              case 'business':
-                sectorId = 'EMPRESAS';
-                break;
-              case 'government':
-                sectorId = 'ADMINISTRACION_PUBLICA';
-                break;
-              case 'education':
-                sectorId = 'ENSENIANZA_SUPERIOR';
-                break;
-              case 'nonprofit':
-                sectorId = 'IPSFL';
-                break;
-              default:
-                sectorId = '_T'; // Total por defecto
-            }
-            
-            // Buscar datos de Canarias
-            const canariasData = data.find(item => 
-              normalizarTexto(item.TERRITORIO).includes('canarias') && 
-              item.TIME_PERIOD === year && 
-              item.SECTOR_EJECUCION_CODE === sectorId && 
-              item.SEXO_CODE === '_T' &&
-              item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
-            );
-            
-            return canariasData ? parseFloat(canariasData.OBS_VALUE) : null;
-          };
-          
-          // Función para manejar el evento mouseover común para ambas regiones
-          function handleMouseOver(this: d3.BaseType, event: MouseEvent, d: GeoJsonFeature): void {
-            // Destacar comunidad al pasar el mouse
-            d3.select(this)
-              .attr('stroke', '#000')
-              .attr('stroke-width', 1.5);
-            
+          }
+        }
+        
+        // Si aún no se encuentra, buscar el valor directamente
+        if (communityIndex === -1 && currentValue !== null) {
+          communityIndex = sortedEntries.findIndex(([, value]) => 
+            Math.abs(value - currentValue) < 0.01 // Tolerancia para errores de redondeo
+          );
+        }
+        
+        // Si todavía no se encuentra, no podemos mostrar el ranking
+        if (communityIndex === -1) {
+          console.log(`No se pudo encontrar ranking para: ${communityName}`);
+          return null;
+        }
+        
+        // Devolver ranking y total (solo de comunidades, sin España)
+        return {
+          rank: communityIndex + 1,
+          total: sortedEntries.length
+        };
+      };
+      
+      // Función para obtener el valor del país/comunidad
+      const getSpainValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
+        // Obtener el valor de España sumando todas las comunidades
+        let totalResearchers = 0;
+        let communityCount = 0;
+        
+        // Mapear el sector seleccionado al código del sector en el CSV
+        let sectorId = '';
+        switch (sector.toLowerCase()) {
+          case 'total':
+            sectorId = '_T';
+            break;
+          case 'business':
+            sectorId = 'EMPRESAS';
+            break;
+          case 'government':
+            sectorId = 'ADMINISTRACION_PUBLICA';
+            break;
+          case 'education':
+            sectorId = 'ENSENIANZA_SUPERIOR';
+            break;
+          case 'nonprofit':
+            sectorId = 'IPSFL';
+            break;
+          default:
+            sectorId = '_T'; // Total por defecto
+        }
+        
+        // Filtrar los datos por año y sector
+        const filteredData = data.filter(item => 
+          item.TIME_PERIOD === year && 
+          item.SECTOR_EJECUCION_CODE === sectorId && 
+          item.SEXO_CODE === '_T' &&
+          item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
+        );
+        
+        // Sumar los valores
+        filteredData.forEach(item => {
+          const value = parseFloat(item.OBS_VALUE);
+          if (!isNaN(value)) {
+            totalResearchers += value;
+            communityCount++;
+          }
+        });
+        
+        return communityCount > 0 ? totalResearchers : null;
+      };
+      
+      // Función para obtener el valor de una comunidad específica (por ejemplo Canarias)
+      const getCanariasValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
+        // Mapear el sector seleccionado al código del sector en el CSV
+        let sectorId = '';
+        switch (sector.toLowerCase()) {
+          case 'total':
+            sectorId = '_T';
+            break;
+          case 'business':
+            sectorId = 'EMPRESAS';
+            break;
+          case 'government':
+            sectorId = 'ADMINISTRACION_PUBLICA';
+            break;
+          case 'education':
+            sectorId = 'ENSENIANZA_SUPERIOR';
+            break;
+          case 'nonprofit':
+            sectorId = 'IPSFL';
+            break;
+          default:
+            sectorId = '_T'; // Total por defecto
+        }
+        
+        // Buscar datos de Canarias
+        const canariasData = data.find(item => 
+          normalizarTexto(item.TERRITORIO).includes('canarias') && 
+          item.TIME_PERIOD === year && 
+          item.SECTOR_EJECUCION_CODE === sectorId && 
+          item.SEXO_CODE === '_T' &&
+          item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
+        );
+        
+        return canariasData ? parseFloat(canariasData.OBS_VALUE) : null;
+      };
+      
+      // Función para manejar el evento mouseover común para ambas regiones
+      function handleMouseOver(this: d3.BaseType, event: MouseEvent, d: GeoJsonFeature): void {
+        // Destacar comunidad al pasar el mouse
+        d3.select(this)
+          .attr('stroke', '#000')
+          .attr('stroke-width', 1.5);
+        
             // Forzar color correcto si es una región sin datos (esto es nuevo)
             const valueForColor = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
             if (valueForColor === null) {
               d3.select(this).attr('fill', '#f5f5f5');
             }
+        
+        // Obtener datos de la comunidad
+        const communityName = getCommunityName(d, language);
+        
+        // Obtener valor y ranking
+        const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+        const ranking = getCommunityRank(d);
+        
+        // Conseguir la bandera de la comunidad si está disponible
+        const communityCode = getCommunityCode(d);
+        
+        // Mapa de nombres alternativos para cada comunidad (ayuda a resolver problemas de coincidencia)
+        const communityNameAliases: Record<string, string[]> = {
+          'Asturias': ['Principado de Asturias', 'Asturias'],
+          'Navarra': ['Comunidad Foral de Navarra', 'Navarra'],
+          'Madrid': ['Comunidad de Madrid', 'Madrid'],
+          'Islas Baleares': ['Illes Balears', 'Islas Baleares', 'Baleares'],
+          'Com. Valenciana': ['Comunidad Valenciana', 'Valencia'],
+          'La Rioja': ['La Rioja', 'Rioja'],
+          'Murcia': ['Región de Murcia', 'Murcia'],
+          'Castilla-La Mancha': ['Castilla - La Mancha', 'Castilla La Mancha', 'Castilla-La Mancha']
+        };
+        
+        // Buscar correspondencias para el nombre de la comunidad actual
+        const possibleNames = communityNameAliases[communityName] || [communityName];
             
-            // Obtener datos de la comunidad
-            const communityName = getCommunityName(d, language);
-            
-            // Obtener valor y ranking
-            const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
-            const ranking = getCommunityRank(d);
-            
-            // Conseguir la bandera de la comunidad si está disponible
-            const communityCode = getCommunityCode(d);
-            
-            // Mapa de nombres alternativos para cada comunidad (ayuda a resolver problemas de coincidencia)
-            const communityNameAliases: Record<string, string[]> = {
-              'Asturias': ['Principado de Asturias', 'Asturias'],
-              'Navarra': ['Comunidad Foral de Navarra', 'Navarra'],
-              'Madrid': ['Comunidad de Madrid', 'Madrid'],
-              'Islas Baleares': ['Illes Balears', 'Islas Baleares', 'Baleares'],
-              'Com. Valenciana': ['Comunidad Valenciana', 'Valencia'],
-              'La Rioja': ['La Rioja', 'Rioja'],
-              'Murcia': ['Región de Murcia', 'Murcia'],
-              'Castilla-La Mancha': ['Castilla - La Mancha', 'Castilla La Mancha', 'Castilla-La Mancha']
-            };
-            
-            // Buscar correspondencias para el nombre de la comunidad actual
-            const possibleNames = communityNameAliases[communityName] || [communityName];
-            
-            let flagObj = communityFlags.find(flag => 
-              // Por código
-              flag.code === communityCode || 
-              // Por nombre normalizado
-              normalizarTexto(flag.community) === normalizarTexto(communityName) ||
-              // Por nombres alternativos
-              possibleNames.some(name => flag.community.includes(name) || normalizarTexto(flag.community) === normalizarTexto(name)) ||
-              // Por fragmentos de nombre en casos específicos
-              (communityName.includes('Valencia') && flag.community.includes('Valenciana')) ||
-              (communityName === 'País Vasco' && flag.community.includes('Vasco'))
-            );
-            
-            // Caso especial para Castilla-La Mancha
-            if (!flagObj && (
-                communityName.includes('Castilla-La Mancha') || 
-                communityName.includes('Castilla La Mancha') ||
-                normalizarTexto(communityName).includes('castilla') && normalizarTexto(communityName).includes('mancha')
-               )) {
-              flagObj = communityFlags.find(flag => 
-                flag.code === 'CLM' || 
-                normalizarTexto(flag.community).includes('castilla') && normalizarTexto(flag.community).includes('mancha')
-              );
+            // Obtener también el nombre en español para buscar banderas cuando está en inglés
+            let spanishCommunityName = communityName;
+            if (language === 'en') {
+              // Si estamos en inglés, intentar encontrar el nombre en español
+              for (const key in communityNameMapping) {
+                const mappedName = communityNameMapping[key];
+                if (mappedName.en === communityName) {
+                  spanishCommunityName = mappedName.es;
+                  // Añadir el nombre en español a las posibilidades
+                  if (!possibleNames.includes(spanishCommunityName)) {
+                    possibleNames.push(spanishCommunityName);
+                  }
+                  break;
+                }
+              }
             }
-            
-            let flagUrl = flagObj ? flagObj.flag : '';
+        
+        let flagObj = communityFlags.find(flag => 
+          // Por código
+          flag.code === communityCode || 
+          // Por nombre normalizado
+          normalizarTexto(flag.community) === normalizarTexto(communityName) ||
+              // También buscar por el nombre en español si estamos en inglés
+              (language === 'en' && normalizarTexto(flag.community) === normalizarTexto(spanishCommunityName)) ||
+          // Por nombres alternativos
+          possibleNames.some(name => flag.community.includes(name) || normalizarTexto(flag.community) === normalizarTexto(name)) ||
+          // Por fragmentos de nombre en casos específicos
+          (communityName.includes('Valencia') && flag.community.includes('Valenciana')) ||
+              (communityName === 'País Vasco' && flag.community.includes('Vasco')) ||
+              (communityName === 'Basque Country' && flag.community.includes('Vasco'))
+        );
+        
+        // Caso especial para Castilla-La Mancha
+        if (!flagObj && (
+            communityName.includes('Castilla-La Mancha') || 
+            communityName.includes('Castilla La Mancha') ||
+                normalizarTexto(communityName).includes('castilla') && normalizarTexto(communityName).includes('mancha') ||
+                communityName.includes('Castilla–La Mancha') // Versión en inglés
+           )) {
+          flagObj = communityFlags.find(flag => 
+            flag.code === 'CLM' || 
+            normalizarTexto(flag.community).includes('castilla') && normalizarTexto(flag.community).includes('mancha')
+          );
+        }
+        
+        let flagUrl = flagObj ? flagObj.flag : '';
 
-            // Fallback específico para Castilla-La Mancha (URL directa)
-            if (!flagUrl && (
-                communityName.includes('Castilla-La Mancha') || 
-                communityName.includes('Castilla La Mancha') ||
-                normalizarTexto(communityName).includes('castilla') && normalizarTexto(communityName).includes('mancha')
-               )) {
-              console.log("Usando URL directa para Castilla-La Mancha");
-              flagUrl = "https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg";
+            // Añadir URLs directas para banderas problemáticas
+            if (!flagUrl) {
+              // Mapa de URLs directas para banderas que no se encuentran automáticamente
+              const directFlagUrls: Record<string, string> = {
+                // Nombres en español
+                'Castilla-La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+                'Com. Valenciana': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
+                'Extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
+                'País Vasco': 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg',
+                'Castilla y León': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
+                'La Rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
+                'Islas Baleares': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg',
+                
+                // Nombres en inglés
+                'Castilla–La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+                'Valencia': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
+                'Basque Country': 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg',
+                'Castile and León': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
+                'Balearic Islands': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg',
+              };
+              
+              // Buscar directamente por el nombre actual
+              if (directFlagUrls[communityName]) {
+                flagUrl = directFlagUrls[communityName];
+                console.log(`Usando URL directa para ${communityName}`);
+              }
             }
 
-            // Fallback específico para Comunidad Valenciana (URL directa)
-            if (!flagUrl && (
-                communityName.includes('Com. Valenciana') || 
-                communityName.includes('Valencia') ||
-                normalizarTexto(communityName).includes('valencia')
-               )) {
-              console.log("Usando URL directa para Comunidad Valenciana");
-              flagUrl = "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
-            }
+        // Fallback específico para Castilla-La Mancha (URL directa)
+        if (!flagUrl && (
+            communityName.includes('Castilla-La Mancha') || 
+            communityName.includes('Castilla La Mancha') ||
+                normalizarTexto(communityName).includes('castilla') && normalizarTexto(communityName).includes('mancha') ||
+                communityName.includes('Castilla–La Mancha') // Versión en inglés
+           )) {
+          console.log("Usando URL directa para Castilla-La Mancha");
+          flagUrl = "https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg";
+        }
 
-            // Obtener valores para comparativas
-            const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
-            const spainAvg = spainValue !== null ? spainValue / 17 : null; // 17 comunidades autónomas
-            const canariasValue = getCanariasValue(data, selectedYear.toString(), selectedSector);
-            
-            // Obtener valor del año anterior para cálculo YoY
-            const prevYearValue = getPreviousYearValue(d, data, (selectedYear - 1).toString(), selectedSector, language);
-            const hasYoYData = value !== null && prevYearValue !== null;
-            const yoyChange = hasYoYData ? ((value - prevYearValue) / prevYearValue) * 100 : null;
-            const yoyIsPositive = yoyChange !== null && yoyChange > 0;
-            
-            // Crear contenido HTML del tooltip
+        // Fallback específico para Comunidad Valenciana (URL directa)
+        if (!flagUrl && (
+            communityName.includes('Com. Valenciana') || 
+            communityName.includes('Valencia') ||
+            normalizarTexto(communityName).includes('valencia')
+           )) {
+          console.log("Usando URL directa para Comunidad Valenciana");
+          flagUrl = "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
+        }
+
+        // Obtener valores para comparativas
+        const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
+        const spainAvg = spainValue !== null ? spainValue / 17 : null; // 17 comunidades autónomas
+        const canariasValue = getCanariasValue(data, selectedYear.toString(), selectedSector);
+        
+        // Obtener valor del año anterior para cálculo YoY
+        const prevYearValue = getPreviousYearValue(d, data, (selectedYear - 1).toString(), selectedSector, language);
+        const hasYoYData = value !== null && prevYearValue !== null;
+        const yoyChange = hasYoYData ? ((value - prevYearValue) / prevYearValue) * 100 : null;
+        const yoyIsPositive = yoyChange !== null && yoyChange > 0;
+        
+        // Crear contenido HTML del tooltip
             let tooltipContent = '';
             
             if (value === null) {
               // Si no hay datos, mostrar un tooltip simplificado con un ícono de reloj
               tooltipContent = `
-                <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                  <!-- Header con el nombre del país -->
-                  <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                    ${flagUrl ? `
-                      <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                        <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
-                      </div>
-                    ` : ''}
-                    <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
-                  </div>
-                  
+          <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+            <!-- Header con el nombre del país -->
+            <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+              ${flagUrl ? `
+                <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
+                </div>
+              ` : ''}
+              <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
+            </div>
+            
                   <!-- Contenido simplificado para casos sin datos -->
                   <div class="p-4 flex flex-col items-center justify-center">
                     <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
-                      </svg>
-                    </div>
+                </svg>
+              </div>
                     <div class="text-gray-500 font-medium">${language === 'es' ? 'Sin datos' : 'No data'}</div>
-                  </div>
-                </div>
-              `;
-            } else if (value === 0) {
-              // Si el valor es exactamente 0, mostrar un mensaje especial
+              </div>
+            </div>
+          `;
+        } else if (value === 0) {
+          // Si el valor es exactamente 0, mostrar un mensaje especial
               tooltipContent = `
                 <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                   <!-- Header con el nombre del país -->
@@ -1371,21 +1524,21 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
                   
                   <!-- Contenido principal -->
                   <div class="p-4">
-                    <!-- Métrica principal para valor cero -->
-                    <div class="mb-3">
-                      <div class="flex items-center text-gray-500 text-sm mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                        <span>${t.researchers}:</span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="text-xl font-bold text-orange-500">0</span>
-                        <span class="text-xs ml-2 text-orange-500">${language === 'es' ? 'Sin investigadores' : 'No researchers'}</span>
+            <!-- Métrica principal para valor cero -->
+            <div class="mb-3">
+              <div class="flex items-center text-gray-500 text-sm mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                <span>${t.researchers}:</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xl font-bold text-orange-500">0</span>
+                <span class="text-xs ml-2 text-orange-500">${language === 'es' ? 'Sin investigadores' : 'No researchers'}</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-              `;
-            } else {
+              </div>
+            </div>
+          `;
+        } else {
               tooltipContent = `
                 <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                   <!-- Header con el nombre del país -->
@@ -1400,174 +1553,174 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
                   
                   <!-- Contenido principal -->
                   <div class="p-4">
-                    <!-- Métrica principal -->
-                    <div class="mb-3">
-                      <div class="flex items-center text-gray-500 text-sm mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                        <span>${t.researchers}:</span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="text-xl font-bold text-blue-700">${formatValue(value)}</span>
-                      </div>
-              `;
-              
-              // Añadir variación YoY si está disponible
-              if (hasYoYData && yoyChange !== null) {
-                tooltipContent += `
-                  <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                      <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-                    </svg>
-                    <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(1)}% vs ${selectedYear - 1}</span>
-                  </div>
-                `;
-              } else {
-                tooltipContent += `
-                  <div class="text-gray-500 flex items-center mt-1 text-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <span>Sin datos vs ${selectedYear - 1}</span>
-                  </div>
-                `;
-              }
-              
-              tooltipContent += `</div>`;
-              
-              // Mostrar ranking si está disponible
-              if (ranking) {
-                tooltipContent += `
-                  <div class="mb-4">
-                    <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                        <circle cx="12" cy="8" r="6" />
-                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                      </svg>
-                      <span class="font-medium">Rank </span>
-                      <span class="font-bold text-lg mx-1">${ranking.rank}</span>
-                      <span class="text-gray-600">${language === 'es' ? `de ${ranking.total}` : `of ${ranking.total}`}</span>
-                    </div>
-                  </div>
-                `;
-              }
-              
-              // Añadir comparativas si hay datos disponibles
-              let comparisonsHtml = '';
-              
-              // Comparativa con la media de España
-              if (spainAvg !== null && value !== null) {
-                const diffSpain = value - spainAvg;
-                const percentDiff = (diffSpain / spainAvg) * 100;
-                const isPositive = diffSpain > 0;
-                
-                comparisonsHtml += `
-                  <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                      `vs Media España (${formatValue(spainAvg)}):` : 
-                      `vs Spain Avg (${formatValue(spainAvg)}):`}</span>
-                    <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
-                  </div>
-                `;
-              }
-              
-              // Comparativa con Canarias (solo si la comunidad actual no es Canarias)
-              if (canariasValue !== null && value !== null && !communityName.includes('Canarias') && !communityName.includes('Canary')) {
-                const diffCanarias = value - canariasValue;
-                const percentDiff = (diffCanarias / canariasValue) * 100;
-                const isPositive = diffCanarias > 0;
-                
-                comparisonsHtml += `
-                  <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                      `vs Canarias (${formatValue(canariasValue)}):` : 
-                      `vs Canary Islands (${formatValue(canariasValue)}):`}</span>
-                    <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
-                  </div>
-                `;
-              }
-              
-              // Añadir sección de comparativas si hay datos
-              if (comparisonsHtml) {
-                tooltipContent += `
-                  <div class="space-y-2 border-t border-gray-100 pt-3">
-                    <div class="text-xs text-gray-500 mb-1">Comparativa</div>
-                    ${comparisonsHtml}
-                  </div>
-                `;
-              }
-            }
-            
+            <!-- Métrica principal -->
+            <div class="mb-3">
+              <div class="flex items-center text-gray-500 text-sm mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                <span>${t.researchers}:</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xl font-bold text-blue-700">${formatValue(value)}</span>
+              </div>
+          `;
+          
+          // Añadir variación YoY si está disponible
+          if (hasYoYData && yoyChange !== null) {
             tooltipContent += `
+              <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                </svg>
+                <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(1)}% vs ${selectedYear - 1}</span>
+              </div>
+            `;
+          } else {
+            tooltipContent += `
+              <div class="text-gray-500 flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>Sin datos vs ${selectedYear - 1}</span>
+              </div>
+            `;
+          }
+          
+          tooltipContent += `</div>`;
+          
+          // Mostrar ranking si está disponible
+          if (ranking) {
+            tooltipContent += `
+              <div class="mb-4">
+                <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                    <circle cx="12" cy="8" r="6" />
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                  </svg>
+                  <span class="font-medium">Rank </span>
+                  <span class="font-bold text-lg mx-1">${ranking.rank}</span>
+                  <span class="text-gray-600">${language === 'es' ? `de ${ranking.total}` : `of ${ranking.total}`}</span>
                 </div>
               </div>
             `;
-            
-            // Mostrar tooltip
-            positionGlobalTooltip(event, tooltipContent);
           }
           
-          // Función para manejar el movimiento del mouse
-          function handleMouseMove(event: MouseEvent): void {
-            const tooltipEl = globalTooltip;
-            if (!tooltipEl) return;
+          // Añadir comparativas si hay datos disponibles
+          let comparisonsHtml = '';
+          
+          // Comparativa con la media de España
+          if (spainAvg !== null && value !== null) {
+            const diffSpain = value - spainAvg;
+            const percentDiff = (diffSpain / spainAvg) * 100;
+            const isPositive = diffSpain > 0;
             
-            const tooltipWidth = tooltipEl.offsetWidth;
-            const tooltipHeight = tooltipEl.offsetHeight;
-            
-            // Obtener posición del mouse
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-            
-            // Calcular posición del tooltip
-            let left = mouseX + 15;
-            let top = mouseY - tooltipHeight / 2;
-            
-            // Ajustar posición si se sale de la ventana
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            
-            if (left + tooltipWidth > windowWidth) {
-              left = mouseX - tooltipWidth - 15;
-            }
-            
-            if (top + tooltipHeight > windowHeight) {
-              top = mouseY - tooltipHeight - 15;
-            }
-            
-            if (top < 0) {
-              top = 15;
-            }
-            
-            // Establecer posición y visibilidad
-            tooltipEl.style.left = `${left}px`;
-            tooltipEl.style.top = `${top}px`;
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs Media España (${formatValue(spainAvg)}):` : 
+                  `vs Spain Avg (${formatValue(spainAvg)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
+              </div>
+            `;
           }
           
-          // Función para manejar el evento mouseout
-          function handleMouseOut(this: d3.BaseType): void {
-            d3.select(this)
-              .attr('stroke', '#fff')
-              .attr('stroke-width', 0.5);
+          // Comparativa con Canarias (solo si la comunidad actual no es Canarias)
+          if (canariasValue !== null && value !== null && !communityName.includes('Canarias') && !communityName.includes('Canary')) {
+            const diffCanarias = value - canariasValue;
+            const percentDiff = (diffCanarias / canariasValue) * 100;
+            const isPositive = diffCanarias > 0;
             
-            // Ocultar tooltip global
-            const tooltipEl = globalTooltip;
-            if (tooltipEl) {
-              tooltipEl.style.display = 'none';
-              tooltipEl.style.opacity = '0';
-            }
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                  `vs Canarias (${formatValue(canariasValue)}):` : 
+                  `vs Canary Islands (${formatValue(canariasValue)}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
+              </div>
+            `;
           }
           
-          // Dibujar comunidades autónomas de la península
-          mapGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.mainland')
-            .data(mainlandFeatures)
-            .enter()
-            .append('path')
-            // @ts-expect-error - Suppress typing error with d3 geo path
-            .attr('d', (d) => pathGeneratorMainland(d) as string)
-            .attr('fill', (d: GeoJsonFeature) => {
-              const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+          // Añadir sección de comparativas si hay datos
+          if (comparisonsHtml) {
+            tooltipContent += `
+              <div class="space-y-2 border-t border-gray-100 pt-3">
+                <div class="text-xs text-gray-500 mb-1">Comparativa</div>
+                ${comparisonsHtml}
+              </div>
+            `;
+          }
+        }
+        
+        tooltipContent += `
+            </div>
+          </div>
+        `;
+        
+        // Mostrar tooltip
+        positionGlobalTooltip(event, tooltipContent);
+      }
+      
+      // Función para manejar el movimiento del mouse
+      function handleMouseMove(event: MouseEvent): void {
+        const tooltipEl = globalTooltip;
+        if (!tooltipEl) return;
+        
+        const tooltipWidth = tooltipEl.offsetWidth;
+        const tooltipHeight = tooltipEl.offsetHeight;
+        
+        // Obtener posición del mouse
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        
+        // Calcular posición del tooltip
+        let left = mouseX + 15;
+        let top = mouseY - tooltipHeight / 2;
+        
+        // Ajustar posición si se sale de la ventana
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        if (left + tooltipWidth > windowWidth) {
+          left = mouseX - tooltipWidth - 15;
+        }
+        
+        if (top + tooltipHeight > windowHeight) {
+          top = mouseY - tooltipHeight - 15;
+        }
+        
+        if (top < 0) {
+          top = 15;
+        }
+        
+        // Establecer posición y visibilidad
+        tooltipEl.style.left = `${left}px`;
+        tooltipEl.style.top = `${top}px`;
+      }
+      
+      // Función para manejar el evento mouseout
+      function handleMouseOut(this: d3.BaseType): void {
+        d3.select(this)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 0.5);
+        
+        // Ocultar tooltip global
+        const tooltipEl = globalTooltip;
+        if (tooltipEl) {
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.opacity = '0';
+        }
+      }
+      
+      // Dibujar comunidades autónomas de la península
+      mapGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.mainland')
+        .data(mainlandFeatures)
+        .enter()
+        .append('path')
+        // @ts-expect-error - Suppress typing error with d3 geo path
+        .attr('d', (d) => pathGeneratorMainland(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
               const communityName = getCommunityName(d, language);
               
               // Usar un color hardcoded para valores nulos para mayor confiabilidad
@@ -1581,35 +1734,35 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
               
               const color = getColorForValue(value, selectedSector, data, selectedYear.toString(), mapPalette);
               return color;
-            })
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 0.5)
-            .attr('id', (d: GeoJsonFeature) => {
-              const name = getCommunityName(d, language);
-              return `community-${normalizarTexto(name)}`;
-            })
+        })
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 0.5)
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-${normalizarTexto(name)}`;
+        })
             .attr('class', (d: GeoJsonFeature) => {
               const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
               return value === null ? 'community mainland no-data' : 'community mainland';
             })
-            .on('mouseover', handleMouseOver)
-            .on('mousemove', handleMouseMove)
-            .on('mouseout', handleMouseOut)
-            .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
-              if (onClick) {
-                onClick(getCommunityName(d, language));
-              }
-            });
-          
-          // Dibujar Islas Canarias
-          canariasGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.canarias')
-            .data(canariasFeatures)
-            .enter()
-            .append('path')
-            // @ts-expect-error - Suppress typing error with d3 geo path
-            .attr('d', (d) => pathGeneratorCanarias(d) as string)
-            .attr('fill', (d: GeoJsonFeature) => {
-              const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
+          }
+        });
+      
+      // Dibujar Islas Canarias
+      canariasGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.canarias')
+        .data(canariasFeatures)
+        .enter()
+        .append('path')
+        // @ts-expect-error - Suppress typing error with d3 geo path
+        .attr('d', (d) => pathGeneratorCanarias(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
               const communityName = getCommunityName(d, language);
               
               if (value === null) {
@@ -1622,58 +1775,58 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
               
               const color = getColorForValue(value, selectedSector, data, selectedYear.toString(), mapPalette);
               return color;
-            })
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 0.5)
-            .attr('id', (d: GeoJsonFeature) => {
-              const name = getCommunityName(d, language);
-              return `community-canarias-${normalizarTexto(name)}`;
-            })
+        })
+        .attr('stroke', '#000')  // Borde más oscuro para mejor visibilidad
+        .attr('stroke-width', 0.7)  // Borde ligeramente más grueso para destacar
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-canarias-${normalizarTexto(name)}`;
+        })
             .attr('class', (d: GeoJsonFeature) => {
               const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
               return value === null ? 'community canarias no-data' : 'community canarias';
             })
-            .on('mouseover', handleMouseOver)
-            .on('mousemove', handleMouseMove)
-            .on('mouseout', handleMouseOut)
-            .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
-              if (onClick) {
-                onClick(getCommunityName(d, language));
-              }
-            });
-          
-          // Dibujar el recuadro que contiene a las Islas Canarias con mejor estilo
-          if (canariasFeatures.length > 0) {
-            // Fondo blanco translúcido para el recuadro
-            canariasGroup.append('rect')
-              .attr('x', width * 0.02)
-              .attr('y', height * 0.74)
-              .attr('width', width * 0.24)
-              .attr('height', height * 0.17)
-              .attr('rx', 4)
-              .attr('ry', 4)
-              .attr('fill', 'rgba(255, 255, 255, 0.8)')
-              .attr('stroke', '#0077b6')
-              .attr('stroke-width', 1)
-              .attr('stroke-dasharray', '3,3')
-              .lower();
-            
-            // Etiqueta para Canarias
-            canariasGroup.append('text')
-              .attr('x', width * 0.04)
-              .attr('y', height * 0.76)
-              .attr('font-size', '8px')
-              .attr('font-weight', 'bold')
-              .attr('fill', '#0077b6')
-              .attr('class', 'canarias-label')
-              .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
           }
-          
+        });
+      
+      // Dibujar el recuadro que contiene a las Islas Canarias con mejor estilo
+      if (canariasFeatures.length > 0) {
+        // Fondo blanco translúcido para el recuadro
+        canariasGroup.append('rect')
+          .attr('x', width * 0.02)
+          .attr('y', height * 0.70)
+          .attr('width', width * 0.24)
+          .attr('height', height * 0.18)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', 'rgba(255, 255, 255, 0.8)')
+          .attr('stroke', '#0077b6')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,3')
+          .lower();
+        
+        // Etiqueta para Canarias con mejor estilo
+        canariasGroup.append('text')
+          .attr('x', width * 0.04)
+          .attr('y', height * 0.73)
+          .attr('font-size', '10px')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#0077b6')
+          .attr('class', 'canarias-label')
+          .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
+      }
+      
           // Añadir depuración justo antes de crear la leyenda
           console.log("Depuración de estilos de elementos SVG:");
           console.log("- Color definido para NO_DATA_COLOR:", NO_DATA_COLOR);
           console.log("- Color en la paleta - NULL:", mapPalette.NULL);
-          
+      
           // En lugar de hacer esto en el efecto de renderizado del mapa, asegurémonos de que se haga cuando se detectan regiones sin datos
           const markRegionsWithNoData = () => {
             // Marcar directamente las regiones sin datos con un atributo para mayor confiabilidad
@@ -1688,9 +1841,9 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
                   element.setAttribute('class', 'community mainland no-data');
                   console.log(`Marcando región sin datos: ${name}`);
                 }
-              }
+        }
             });
-            
+      
             // Lo mismo para Canarias
             canariasFeatures.forEach(feature => {
               const value = getCommunityValue(feature, data, selectedYear.toString(), selectedSector, language);
@@ -1703,8 +1856,8 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
                   element.setAttribute('class', 'community canarias no-data');
                   console.log(`Marcando región sin datos (Canarias): ${name}`);
                 }
-              }
-            });
+            }
+          });
           };
           
           // Llamar a esta función después de renderizar todo el mapa
@@ -1714,10 +1867,10 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           console.error('Error al renderizar el mapa:', err);
           setError(err instanceof Error ? err.message : 'Error desconocido al renderizar el mapa');
           setIsLoading(false);
-        }
-      };
-      
-      renderMap();
+      }
+    };
+    
+    renderMap();
     } catch (err) {
       console.error('Error al iniciar renderizado del mapa:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido al iniciar renderizado');
@@ -1727,15 +1880,15 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
     // Limpieza al desmontar
     return () => {
       try {
-        const tooltipElement = document.getElementById('researchers-map-tooltip');
-        if (tooltipElement && tooltipElement.parentNode) {
-          tooltipElement.parentNode.removeChild(tooltipElement);
-        }
-        
-        const styleElement = document.getElementById('tooltip-researchers-map-styles');
-        if (styleElement && styleElement.parentNode) {
-          styleElement.parentNode.removeChild(styleElement);
-        }
+      const tooltipElement = document.getElementById('researchers-map-tooltip');
+      if (tooltipElement && tooltipElement.parentNode) {
+        tooltipElement.parentNode.removeChild(tooltipElement);
+      }
+      
+      const styleElement = document.getElementById('tooltip-researchers-map-styles');
+      if (styleElement && styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement);
+      }
         
         // Eliminar también los estilos personalizados
         const mapStyleElement = document.getElementById('researchers-map-custom-styles');
@@ -1804,7 +1957,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           <div 
             className="border border-gray-200 rounded-lg bg-white overflow-hidden"
             style={{ 
-              height: '400px',
+              height: '450px', // Aumentar altura para mejor visualización
               width: '100%',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}
