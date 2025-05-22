@@ -858,9 +858,9 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           const svg = d3.select(svgRef.current);
           svg.selectAll("*").remove();
           
-          // Obtener dimensiones del contenedor
+          // Obtener dimensiones del contenedor con un tamaño fijo
           const containerWidth = mapRef.current?.clientWidth || 800;
-          const containerHeight = mapRef.current?.clientHeight || 600;
+          const containerHeight = 400; // Altura fija de 400px
           
           // Definir la paleta de colores al inicio para evitar problemas de inicialización
           const mapPalette = getSectorPalette(selectedSector);
@@ -876,18 +876,18 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           const width = containerWidth;
           const height = containerHeight;
           
-          // Mejorar las proyecciones para mejor visualización
+          // Mejorar las proyecciones para mejor visualización con la nueva altura fija
           // Crear proyección para España peninsular con mejor escala
           const projectionMainland = d3.geoMercator()
             .center([-3.5, 40.0])
-            .scale(width * 3.2) // Aumentar escala para mejor visualización
-            .translate([width / 2, height / 2.2]);
+            .scale(width * 2.8) // Ajustar escala para la nueva altura
+            .translate([width / 2, height / 2]);
           
           // Crear proyección específica para las Islas Canarias
           const projectionCanarias = d3.geoMercator()
             .center([-15.5, 28.2])
-            .scale(width * 2.5) // Aumentar escala para mejor visualización
-            .translate([width * 0.14, height * 0.82]);
+            .scale(width * 2.2) // Ajustar escala para la nueva altura
+            .translate([width * 0.14, height * 0.80]);
           
           // Generadores de ruta
           const pathGeneratorMainland = d3.geoPath().projection(projectionMainland);
@@ -897,7 +897,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           svg.attr("width", width)
              .attr("height", height)
              .attr("viewBox", `0 0 ${width} ${height}`)
-             .attr("style", "width: 100%; height: auto; max-height: 600px;");
+             .attr("style", "width: 100%; height: 100%;");
           
           // Crear grupos para la península y Canarias
           const mapGroup = svg.append("g").attr("class", "mainland");
@@ -1327,80 +1327,88 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
             const yoyIsPositive = yoyChange !== null && yoyChange > 0;
             
             // Crear contenido HTML del tooltip
-            let tooltipContent = `
-              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <!-- Header con el nombre del país -->
-                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                  ${flagUrl ? `
-                    <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                      <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
-                    </div>
-                  ` : ''}
-                  <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
-                </div>
-                
-                <!-- Contenido principal -->
-                <div class="p-4">
-            `;
+            let tooltipContent = '';
             
             if (value === null) {
-              // Si no hay datos, mostrar mensaje específico
-              tooltipContent += `
-                <div class="flex flex-col items-start p-3">
-                  <div class="flex items-center mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 mr-2">
-                      <path d="m22 7-7.5 7.5-7-7L2 13"></path>
-                      <path d="M16 7h6v6"></path>
-                    </svg>
-                    <span class="text-gray-600">Investigadores:</span>
-                  </div>
-                  <div class="text-blue-600 font-bold text-lg mb-2">Sin datos</div>
-                  <div class="text-red-500 text-sm flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                      <path d="M12 5v14M5 12l7 7 7-7"></path>
-                    </svg>
-                    <span>NaN% vs ${selectedYear - 1}</span>
+              // Si no hay datos, mostrar un tooltip simplificado con un ícono de reloj
+              tooltipContent = `
+                <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                  <!-- Header con el nombre del país -->
+                  <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                    ${flagUrl ? `
+                      <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                        <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
+                      </div>
+                    ` : ''}
+                    <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
                   </div>
                   
-                  <div class="mt-4 pt-3 border-t border-gray-100 w-full">
-                    <div class="text-xs text-gray-500 mb-1">Comparativa</div>
-                    <div class="flex justify-between items-center text-xs mb-1">
-                      <span class="text-gray-600 inline-block w-44">vs Media España (${spainAvg ? formatValue(spainAvg) : '--'}):</span>
-                      <span class="font-medium text-red-600">Sin datos</span>
+                  <!-- Contenido simplificado para casos sin datos -->
+                  <div class="p-4 flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
                     </div>
-                    <div class="flex justify-between items-center text-xs">
-                      <span class="text-gray-600 inline-block w-44">vs Canarias (${canariasValue ? formatValue(canariasValue) : '--'}):</span>
-                      <span class="font-medium text-red-600">Sin datos</span>
-                    </div>
+                    <div class="text-gray-500 font-medium">${language === 'es' ? 'Sin datos' : 'No data'}</div>
                   </div>
                 </div>
               `;
             } else if (value === 0) {
               // Si el valor es exactamente 0, mostrar un mensaje especial
-              tooltipContent += `
-                <!-- Métrica principal para valor cero -->
-                <div class="mb-3">
-                  <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                    <span>${t.researchers}:</span>
+              tooltipContent = `
+                <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                  <!-- Header con el nombre del país -->
+                  <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                    ${flagUrl ? `
+                      <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                        <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
+                      </div>
+                    ` : ''}
+                    <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
                   </div>
-                  <div class="flex items-center">
-                    <span class="text-xl font-bold text-orange-500">0</span>
-                    <span class="text-xs ml-2 text-orange-500">${language === 'es' ? 'Sin investigadores' : 'No researchers'}</span>
+                  
+                  <!-- Contenido principal -->
+                  <div class="p-4">
+                    <!-- Métrica principal para valor cero -->
+                    <div class="mb-3">
+                      <div class="flex items-center text-gray-500 text-sm mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                        <span>${t.researchers}:</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="text-xl font-bold text-orange-500">0</span>
+                        <span class="text-xs ml-2 text-orange-500">${language === 'es' ? 'Sin investigadores' : 'No researchers'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               `;
             } else {
-              tooltipContent += `
-                <!-- Métrica principal -->
-                <div class="mb-3">
-                  <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                    <span>${t.researchers}:</span>
+              tooltipContent = `
+                <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                  <!-- Header con el nombre del país -->
+                  <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                    ${flagUrl ? `
+                      <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                        <img src="${flagUrl}" class="w-full h-full object-cover" alt="${communityName}" />
+                      </div>
+                    ` : ''}
+                    <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
                   </div>
-                  <div class="flex items-center">
-                    <span class="text-xl font-bold text-blue-700">${formatValue(value)}</span>
-                  </div>
+                  
+                  <!-- Contenido principal -->
+                  <div class="p-4">
+                    <!-- Métrica principal -->
+                    <div class="mb-3">
+                      <div class="flex items-center text-gray-500 text-sm mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                        <span>${t.researchers}:</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="text-xl font-bold text-blue-700">${formatValue(value)}</span>
+                      </div>
               `;
               
               // Añadir variación YoY si está disponible
@@ -1661,172 +1669,10 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
               .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
           }
           
-          // Crear leyenda mejorada
-          const legendGroup = svg.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(${width - 150}, ${height - 180})`);
-          
-          // Obtener la paleta de colores para el sector seleccionado
-          const palette = getSectorPalette(selectedSector);
-          
-          // Configuración de tamaños para la leyenda
-          const legendRectSize = 15;
-          const legendSpacing = 25;
-          
-          // Añadir un fondo a la leyenda para mejor legibilidad
-          legendGroup.append('rect')
-            .attr('x', -10)
-            .attr('y', -25)
-            .attr('width', 140)
-            .attr('height', valueRange.quartiles && valueRange.quartiles.length > 0 ? 200 : 80) // Altura reducida cuando no hay datos
-            .attr('fill', 'rgba(255, 255, 255, 0.85)')
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', 0.5)
-            .attr('rx', 4)
-            .attr('ry', 4);
-            
-          // Título de la leyenda
-          legendGroup.append('text')
-            .attr('x', 0)
-            .attr('y', -15)
-            .attr('font-size', '12px')
-            .attr('font-weight', 'bold')
-            .text(t.legend);
-          
-          // Variable constante para el color sin datos
-          const NO_DATA_COLOR = '#f5f5f5';
-          
-          // Añadir la etiqueta "Sin datos" a la leyenda
-          legendGroup.append('rect')
-            .attr('x', 0)
-            .attr('y', -5)
-            .attr('width', legendRectSize)
-            .attr('height', legendRectSize)
-            .attr('fill', '#f5f5f5') // Usar literal en lugar de constante
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', 0.5);
-          
-          legendGroup.append('text')
-            .attr('x', legendRectSize + 5)
-            .attr('y', -5 + legendRectSize / 2)
-            .attr('dy', '0.35em')
-            .attr('font-size', '10px')
-            .text(t.noData);
-          
-          // Añadir etiqueta para valor cero
-          legendGroup.append('rect')
-            .attr('x', 0)
-            .attr('y', 20)
-            .attr('width', legendRectSize)
-            .attr('height', legendRectSize)
-            .attr('fill', palette.ZERO)
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', 0.5);
-          
-          legendGroup.append('text')
-            .attr('x', legendRectSize + 5)
-            .attr('y', 20 + legendRectSize / 2)
-            .attr('dy', '0.35em')
-            .attr('font-size', '10px')
-            .text('0');
-          
-          // Colores base para la leyenda
-          const legendColors = [
-            palette.MIN,
-            palette.LOW,
-            palette.MID,
-            palette.HIGH,
-            palette.MAX
-          ];
-          
-          if (valueRange.quartiles && valueRange.quartiles.length > 0) {
-            // Usar los cuartiles de valueRange
-            const quartiles = valueRange.quartiles;
-            
-            // Eliminar cuartiles duplicados o muy cercanos
-            const uniqueQuartiles: number[] = [];
-            quartiles.forEach((val, idx) => {
-              // Si es el primer valor o es significativamente diferente del anterior
-              if (idx === 0 || val > uniqueQuartiles[uniqueQuartiles.length - 1] * 1.1) {
-                uniqueQuartiles.push(val);
-              }
-            });
-            
-            // Asegurar que haya al menos 2 valores para formar un rango
-            if (uniqueQuartiles.length < 2) {
-              uniqueQuartiles.push(quartiles[quartiles.length - 1]);
-            }
-            
-            // Colores correspondientes a los valores de la leyenda
-            const colors = Array(uniqueQuartiles.length).fill(0).map((_, i) => {
-              const idx = Math.floor(i * (legendColors.length - 1) / (uniqueQuartiles.length - 1));
-              return legendColors[idx];
-            });
-            
-            // Rectángulos de color con valores para rangos exclusivos
-            uniqueQuartiles.forEach((value, i) => {
-              if (i < uniqueQuartiles.length - 1) {
-                const yPos = i * legendSpacing + 50;
-                
-                // Rectángulo de color
-                legendGroup.append('rect')
-                  .attr('x', 0)
-                  .attr('y', yPos)
-                  .attr('width', legendRectSize)
-                  .attr('height', legendRectSize)
-                  .attr('fill', colors[i])
-                  .attr('stroke', '#ccc')
-                  .attr('stroke-width', 0.5);
-                
-                // Etiqueta de valor (rango)
-                // Asegurar que el primer valor no sea 0 para evitar confusión
-                const startValue = value === 0 ? 0.1 : value;
-                const endValue = uniqueQuartiles[i + 1];
-                
-                legendGroup.append('text')
-                  .attr('x', legendRectSize + 5)
-                  .attr('y', yPos + legendRectSize / 2)
-                  .attr('dy', '0.35em')
-                  .attr('font-size', '10px')
-                  .text(`${formatValue(startValue)} - ${formatValue(endValue)}`);
-              }
-            });
-            
-            // Añadir última categoría solo si es significativamente diferente
-            if (uniqueQuartiles.length > 1) {
-              const lastValue = uniqueQuartiles[uniqueQuartiles.length - 1];
-              const yPos = (uniqueQuartiles.length - 1) * legendSpacing + 50;
-              
-              legendGroup.append('rect')
-                .attr('x', 0)
-                .attr('y', yPos)
-                .attr('width', legendRectSize)
-                .attr('height', legendRectSize)
-                .attr('fill', colors[colors.length - 1])
-                .attr('stroke', '#ccc')
-                .attr('stroke-width', 0.5);
-              
-              legendGroup.append('text')
-                .attr('x', legendRectSize + 5)
-                .attr('y', yPos + legendRectSize / 2)
-                .attr('dy', '0.35em')
-                .attr('font-size', '10px')
-                .text(`> ${formatValue(lastValue)}`);
-            }
-          } else {
-            // Si no hay datos, mostrar solo "Sin datos" con una leyenda simplificada
-            legendGroup.append('text')
-              .attr('x', legendRectSize + 5)
-              .attr('y', 20 + legendRectSize / 2)
-              .attr('dy', '0.35em')
-              .attr('font-size', '10px')
-              .text(language === 'es' ? '0 investigadores' : '0 researchers');
-          }
-          
           // Añadir depuración justo antes de crear la leyenda
           console.log("Depuración de estilos de elementos SVG:");
           console.log("- Color definido para NO_DATA_COLOR:", NO_DATA_COLOR);
-          console.log("- Color en la paleta - NULL:", palette.NULL);
+          console.log("- Color en la paleta - NULL:", mapPalette.NULL);
           
           // En lugar de hacer esto en el efecto de renderizado del mapa, asegurémonos de que se haga cuando se detectan regiones sin datos
           const markRegionsWithNoData = () => {
@@ -1903,7 +1749,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
   }, [geoJson, data, selectedYear, selectedSector, language, onClick, dataDisplayType, t, valueRange]);
   
   return (
-    <div className="relative w-full h-full" ref={mapRef} key={`map-${language}-${selectedYear}-${selectedSector}`}>
+    <div className="relative h-full" ref={mapRef} key={`map-${language}-${selectedYear}-${selectedSector}`}>
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center">
@@ -1955,7 +1801,14 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
               })()}
             </div>
           </div>
-          <div className="h-[calc(100%-2rem)]">
+          <div 
+            className="border border-gray-200 rounded-lg bg-white overflow-hidden"
+            style={{ 
+              height: '400px',
+              width: '100%',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            }}
+          >
             <svg ref={svgRef} className="w-full h-full"></svg>
           </div>
         </>
