@@ -248,15 +248,16 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
       if (selectedSector === 'total') {
         canarySectorId = "(_T)";
       } else if (selectedSector === 'business') {
-        canarySectorId = "(BES)";
+        canarySectorId = "(EMPRESAS)";
       } else if (selectedSector === 'government') {
-        canarySectorId = "(GOV)";
+        canarySectorId = "(ADMINISTRACION_PUBLICA)";
       } else if (selectedSector === 'education') {
-        canarySectorId = "(HES)";
+        canarySectorId = "(ENSENIANZA_SUPERIOR)";
       } else if (selectedSector === 'nonprofit') {
         canarySectorId = "(IPSFL)";
       }
       
+      // Buscar en todos los años para determinar si hay datos disponibles
       const canaryData = autonomousCommunitiesData.find(row => 
         row["Año"] === year && 
         normalizeText(row["Comunidad Limpio"]) === "canarias" && 
