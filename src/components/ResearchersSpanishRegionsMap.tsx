@@ -1075,6 +1075,16 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           flagUrl = "https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg";
         }
 
+        // Fallback específico para Comunidad Valenciana (URL directa)
+        if (!flagUrl && (
+            communityName.includes('Com. Valenciana') || 
+            communityName.includes('Valencia') ||
+            normalizarTexto(communityName).includes('valencia')
+           )) {
+          console.log("Usando URL directa para Comunidad Valenciana");
+          flagUrl = "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
+        }
+
         // Obtener valores para comparativas
         const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
         const spainAvg = spainValue !== null ? spainValue / 17 : null; // 17 comunidades autónomas

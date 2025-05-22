@@ -578,6 +578,22 @@ const RegionRankingChart: React.FC<RegionRankingChartProps> = ({
         }
       }
       
+      // Fallback específico para Castilla-La Mancha (directo)
+      if (normalizedName.includes('castilla') && normalizedName.includes('mancha') ||
+          searchName.includes('castilla') && searchName.includes('mancha')) {
+        console.log("Ranking - Usando URL directa para Castilla-La Mancha");
+        return "https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg";
+      }
+      
+      // Fallback específico para Comunidad Valenciana (URL directa)
+      if (normalizedName.includes('valencia') || 
+          searchName.includes('valencia') || 
+          communityName.includes('Com. Valenciana') ||
+          communityName.includes('Valencia')) {
+        console.log("Ranking - Usando URL directa para Comunidad Valenciana");
+        return "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
+      }
+      
       return '';
     }
   };
