@@ -1,6 +1,38 @@
-import React, { useEffect, useRef } from 'react';
+import React, { memo, useRef, useEffect } from 'react';
+import { Bar } from 'react-chartjs-2';
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend,
+  ChartOptions,
+  ChartEvent,
+  Chart
+} from 'chart.js';
 import * as d3 from 'd3';
 import autonomous_communities_flags from '../logos/autonomous_communities_flags.json';
+
+// Registrar componentes necesarios de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Definir colores específicos para los componentes de investigadores (igual que en ResearcherRankingChart)
+const RESEARCHER_SECTOR_COLORS = {
+  total: '#607D8B',        // Azul grisáceo (antes para organizaciones sin fines de lucro)
+  business: '#546E7A',     // Azul grisáceo más sobrio para empresas
+  government: '#795548',   // Marrón para gobierno
+  education: '#7E57C2',    // Morado para educación
+  nonprofit: '#5C6BC0'     // Azul índigo (antes para todos los sectores)
+};
 
 // Interfaz para los datos de investigadores por comunidades autónomas
 interface ResearchersCommunityData {
@@ -33,6 +65,16 @@ interface ResearchersCommunityRankingChartProps {
   language: 'es' | 'en';
   maxItems?: number; // Número máximo de comunidades a mostrar (opcional)
 }
+
+// Colores para la gráfica
+const CHART_PALETTE = {
+  DEFAULT: '#1e88e5', // Azul por defecto
+  LIGHT: '#90caf9',   // Azul claro
+  HIGHLIGHT: '#ff5252', // Rojo para destacar
+  TEXT: '#000000',    // Color del texto (negro) 
+  BORDER: '#E5E7EB',  // Color del borde (gris suave)
+  CANARIAS: '#FFD600', // Amarillo para Canarias
+};
 
 // Tabla de mapeo entre nombres de comunidades en el CSV y nombres normalizados
 const communityNameMapping: { [key: string]: { es: string, en: string } } = {
@@ -112,7 +154,9 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
   language,
   maxItems = 17, // Por defecto mostramos todas las comunidades autónomas
 }) => {
-  const chartRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<Chart<'bar', number[], string>>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Textos según el idioma
   const texts = {
@@ -122,7 +166,10 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
       researchersLabel: 'Investigadores',
       loading: 'Cargando...',
       researchers: 'Investigadores',
-      thousands: 'miles'
+      thousands: 'miles',
+      comparative: "Comparativa",
+      vsSpain: "vs España",
+      vsCanarias: "vs Canarias"
     },
     en: {
       title: 'Ranking of Autonomous Communities by number of researchers',
@@ -130,19 +177,316 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
       researchersLabel: 'Researchers',
       loading: 'Loading...',
       researchers: 'Researchers',
-      thousands: 'thousands'
+      thousands: 'thousands',
+      comparative: "Comparative",
+      vsSpain: "vs Spain",
+      vsCanarias: "vs Canary Islands"
     }
   };
 
   const t = texts[language];
 
   useEffect(() => {
-    if (!chartRef.current || !data || data.length === 0) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    // Limpiar el gráfico existente
-    d3.select(chartRef.current).selectAll('*').remove();
+    const handleMouseLeave = () => {
+      hideGlobalTooltip();
+    };
+
+    // Definir handleScroll fuera del bloque if
+    const handleScroll = () => {
+      hideGlobalTooltip();
+    };
+
+    container.addEventListener('mouseleave', handleMouseLeave);
+    
+    // Añadir manejador de eventos de scroll para ocultar el tooltip
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+    
+    return () => {
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+      
+      // Limpiar tooltip global al desmontar
+      const globalTooltip = document.getElementById('global-chart-tooltip');
+      if (globalTooltip && globalTooltip.parentNode) {
+        globalTooltip.parentNode.removeChild(globalTooltip);
+      }
+      
+      // Limpiar estilos del tooltip
+      const tooltipStyles = document.getElementById('tooltip-chart-styles');
+      if (tooltipStyles && tooltipStyles.parentNode) {
+        tooltipStyles.parentNode.removeChild(tooltipStyles);
+      }
+    };
+  }, []);
+
+  // Funciones para manejar el tooltip global
+  const createGlobalTooltip = (): HTMLElement => {
+    // Verificar si ya existe un tooltip global
+    let tooltipElement = document.getElementById('global-chart-tooltip');
+    
+    if (!tooltipElement) {
+      // Crear nuevo tooltip y agregarlo al body
+      tooltipElement = document.createElement('div');
+      tooltipElement.id = 'global-chart-tooltip';
+      tooltipElement.className = 'chart-tooltip'; // Clase para poder aplicar estilos
+      
+      // Aplicar estilos base manualmente
+      Object.assign(tooltipElement.style, {
+        position: 'fixed',
+        display: 'none',
+        opacity: '0',
+        zIndex: '999999',
+        pointerEvents: 'none',
+        backgroundColor: 'white',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+        borderRadius: '4px',
+        padding: '0', 
+        minWidth: '150px',
+        maxWidth: '320px',
+        border: '1px solid #e2e8f0',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+        fontSize: '14px',
+        lineHeight: '1.5',
+        color: '#333',
+        transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+      });
+      
+      document.body.appendChild(tooltipElement);
+      
+      // Crear hoja de estilo inline para las clases de Tailwind
+      const styleSheet = document.createElement('style');
+      styleSheet.id = 'tooltip-chart-styles';
+      styleSheet.textContent = `
+        #global-chart-tooltip {
+          transform-origin: center;
+          transform: scale(0.95);
+          transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+        }
+        #global-chart-tooltip.visible {
+          opacity: 1 !important;
+          transform: scale(1);
+        }
+        #global-chart-tooltip .text-green-600 { color: #059669; }
+        #global-chart-tooltip .text-red-600 { color: #DC2626; }
+        #global-chart-tooltip .bg-blue-50 { background-color: #EFF6FF; }
+        #global-chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+        #global-chart-tooltip .border-blue-100 { border-color: #DBEAFE; }
+        #global-chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
+        #global-chart-tooltip .text-gray-500 { color: #6B7280; }
+        #global-chart-tooltip .text-blue-700 { color: #1D4ED8; }
+        #global-chart-tooltip .text-gray-800 { color: #1F2937; }
+        #global-chart-tooltip .text-gray-600 { color: #4B5563; }
+        #global-chart-tooltip .text-yellow-500 { color: #F59E0B; }
+        #global-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
+        #global-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        #global-chart-tooltip .p-3 { padding: 0.75rem; }
+        #global-chart-tooltip .p-4 { padding: 1rem; }
+        #global-chart-tooltip .p-2 { padding: 0.5rem; }
+        #global-chart-tooltip .pt-3 { padding-top: 0.75rem; }
+        #global-chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
+        #global-chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
+        #global-chart-tooltip .mb-4 { margin-bottom: 1rem; }
+        #global-chart-tooltip .mr-1 { margin-right: 0.25rem; }
+        #global-chart-tooltip .mr-2 { margin-right: 0.5rem; }
+        #global-chart-tooltip .mt-1 { margin-top: 0.25rem; }
+        #global-chart-tooltip .mt-3 { margin-top: 0.75rem; }
+        #global-chart-tooltip .text-xs { font-size: 0.75rem; }
+        #global-chart-tooltip .text-sm { font-size: 0.875rem; }
+        #global-chart-tooltip .text-lg { font-size: 1.125rem; }
+        #global-chart-tooltip .text-xl { font-size: 1.25rem; }
+        #global-chart-tooltip .font-bold { font-weight: 700; }
+        #global-chart-tooltip .font-medium { font-weight: 500; }
+        #global-chart-tooltip .flex { display: flex; }
+        #global-chart-tooltip .items-center { align-items: center; }
+        #global-chart-tooltip .justify-between { justify-content: space-between; }
+        #global-chart-tooltip .w-8 { width: 2rem; }
+        #global-chart-tooltip .h-6 { height: 1.5rem; }
+        #global-chart-tooltip .w-36 { width: 9rem; }
+        #global-chart-tooltip .w-48 { width: 12rem; }
+        #global-chart-tooltip .rounded { border-radius: 0.25rem; }
+        #global-chart-tooltip .rounded-md { border-radius: 0.375rem; }
+        #global-chart-tooltip .overflow-hidden { overflow: hidden; }
+        #global-chart-tooltip .border-t { border-top-width: 1px; }
+        #global-chart-tooltip .border-b { border-bottom-width: 1px; }
+        #global-chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+        #global-chart-tooltip .max-w-xs { max-width: 20rem; }
+        #global-chart-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+        #global-chart-tooltip .w-full { width: 100%; }
+        #global-chart-tooltip .h-full { height: 100%; }
+        #global-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+        #global-chart-tooltip .flag-container { min-width: 2rem; min-height: 1.5rem; }
+      `;
+      document.head.appendChild(styleSheet);
+    }
+    
+    return tooltipElement;
+  };
+
+  // Posicionar el tooltip global
+  const positionGlobalTooltip = (event: MouseEvent, content: string): void => {
+    const tooltipEl = createGlobalTooltip();
+    
+    // Actualizar contenido
+    tooltipEl.innerHTML = content;
+    
+    // Aplicar estilos base
+    Object.assign(tooltipEl.style, {
+      position: 'fixed',
+      display: 'block',
+      opacity: '0',
+      zIndex: '999999',
+      pointerEvents: 'none',
+      backgroundColor: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      borderRadius: '4px',
+      padding: '0',
+      minWidth: '150px',
+      maxWidth: '320px',
+      border: '1px solid #e2e8f0',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+      fontSize: '14px',
+      lineHeight: '1.5',
+      color: '#333',
+      transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+    });
+    
+    const tooltipWidth = tooltipEl.offsetWidth;
+    const tooltipHeight = tooltipEl.offsetHeight;
+    
+    // Obtener posición del mouse
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    
+    // Posicionar más cerca del elemento - menos offset
+    let left = mouseX + 10;
+    let top = mouseY - (tooltipHeight / 2);
+    
+    // Ajustar posición si se sale de la ventana
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    if (left + tooltipWidth > windowWidth) {
+      left = mouseX - tooltipWidth - 10;
+    }
+    
+    if (top + tooltipHeight > windowHeight) {
+      top = windowHeight - tooltipHeight - 10;
+    }
+    
+    if (top < 10) {
+      top = 10;
+    }
+    
+    // Establecer posición y visibilidad con precisión
+    tooltipEl.style.left = `${Math.floor(left)}px`;
+    tooltipEl.style.top = `${Math.floor(top)}px`;
+    
+    // Agregar clase visible tras un pequeño delay para activar la animación
+    setTimeout(() => {
+      tooltipEl.classList.add('visible');
+    }, 10);
+  };
+
+  // Ocultar el tooltip global
+  const hideGlobalTooltip = (): void => {
+    const tooltipEl = document.getElementById('global-chart-tooltip');
+    if (tooltipEl) {
+      // Quitar la clase visible primero para la animación
+      tooltipEl.classList.remove('visible');
+      
+      // Después de la transición, ocultar el tooltip
+      setTimeout(() => {
+        if (tooltipEl) {
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.opacity = '0';
+        }
+      }, 150);
+    }
+  };
+
+  const getCommunityFlagUrl = (communityName: string): string => {
+    // Normalizar el nombre de la comunidad
+    const normalizedName = normalizarTexto(communityName);
+    
+    // Caso especial para Comunidad Valenciana
+    if (normalizedName.includes('valenciana') || 
+        normalizedName.includes('valencia') || 
+        normalizedName.includes('com valenciana')) {
+      // URL directa para la bandera de la Comunidad Valenciana
+      return "https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg";
+    }
+    
+    // Mapeo específico para nombres problemáticos
+    const specificNameMapping: Record<string, string> = {
+      'extremadura': 'extremadura',
+      'castilla y leon': 'castilla y leon',
+      'castilla leon': 'castilla y leon',
+      'castilla-la mancha': 'castilla-la mancha',
+      'navarra': 'comunidad foral de navarra',
+      'asturias': 'principado de asturias',
+      'ceuta': 'ciudad autonoma de ceuta',
+      'melilla': 'ciudad autonoma de melilla'
+    };
+    
+    // Si el nombre normalizado está en el mapa de conversión específico, usar ese nombre
+    const mappedName = specificNameMapping[normalizedName] || normalizedName;
+    
+    // Buscar en communityFlags con diferentes estrategias
+    let matchingFlag = communityFlags.find(flag => 
+      normalizarTexto(flag.community) === mappedName
+    );
+    
+    // Si no hay coincidencia exacta, probar con coincidencia parcial
+    if (!matchingFlag) {
+      matchingFlag = communityFlags.find(flag => {
+        const flagCommunity = normalizarTexto(flag.community);
+        return flagCommunity.includes(mappedName) || mappedName.includes(flagCommunity);
+      });
+    }
+    
+    return matchingFlag ? matchingFlag.flag : '';
+  };
+
+  // Función para formatear números con separador de miles
+  const formatNumber = (value: number, decimals: number = 0) => {
+    return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', { 
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals 
+    }).format(value);
+  };
+
+  // Función para obtener el valor del año anterior para una comunidad
+  const getPreviousYearValue = (communityName: string, code: string): number | null => {
+    const prevYear = selectedYear - 1;
+    const sectorId = getSectorId();
+    
+    // Buscar datos del año anterior para la misma comunidad y sector
+    const prevYearData = data.filter(item => 
+      item.TIME_PERIOD === prevYear.toString() &&
+      item.SECTOR_EJECUCION_CODE === sectorId &&
+      item.SEXO_CODE === '_T' &&
+      item.MEDIDAS_CODE === 'INVESTIGADORES_EJC' &&
+      (normalizarTexto(item.TERRITORIO) === normalizarTexto(communityName) || 
+       item.TERRITORIO_CODE === code)
+    );
+    
+    if (prevYearData.length === 0) return null;
+    
+    const value = parseFloat(prevYearData[0].OBS_VALUE);
+    return isNaN(value) ? null : value;
+  };
 
     // Mapear el sector seleccionado al código del sector en los datos
+  const getSectorId = () => {
     let sectorId = '';
     switch (selectedSector.toLowerCase()) {
       case 'total':
@@ -163,24 +507,22 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
       default:
         sectorId = '_T'; // Total por defecto
     }
+    return sectorId;
+  };
 
-    // Filtrar datos por año, sector y sexo (total)
+  // Filtrar y procesar datos para el gráfico
+  const getChartData = () => {
+    const sectorId = getSectorId();
+
+    // Filtrar datos por año, sector, sexo (total) y medida (INVESTIGADORES_EJC)
     const filteredData = data.filter(item => 
       item.TIME_PERIOD === selectedYear.toString() &&
       item.SECTOR_EJECUCION_CODE === sectorId &&
-      item.SEXO_CODE === '_T'
+      item.SEXO_CODE === '_T' &&
+      item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
     );
 
-    if (filteredData.length === 0) {
-      // Mostrar mensaje de "no hay datos"
-      d3.select(chartRef.current)
-        .append('div')
-        .attr('class', 'flex h-full items-center justify-center')
-        .append('p')
-        .attr('class', 'text-lg text-gray-500')
-        .text(t.noData);
-      return;
-    }
+    if (filteredData.length === 0) return [];
 
     // Transformar los datos para el gráfico
     const chartData = filteredData.map(item => {
@@ -196,146 +538,350 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         : communityName;
       
       // Obtener la bandera de la comunidad si está disponible
-      const flagObj = communityFlags.find(flag => 
-        normalizarTexto(flag.community) === normalizarTexto(displayName) ||
-        normalizarTexto(flag.community) === normalizarTexto(communityName)
-      );
+      const flagUrl = getCommunityFlagUrl(displayName);
       
       return {
         name: displayName,
+        originalName: communityName,
         value: parseFloat(item.OBS_VALUE),
         code: item.TERRITORIO_CODE,
-        flag: flagObj ? flagObj.flag : ''
+        flag: flagUrl
       };
     })
-    .filter(item => !isNaN(item.value))
+    .filter(item => {
+      // Filtrar para eliminar entradas no válidas y España
+      if (isNaN(item.value)) return false;
+      
+      // Excluir España (puede aparecer como "España", "Spain", "ESPAÑA", etc.)
+      const normalizedName = normalizarTexto(item.name);
+      const normalizedOriginal = normalizarTexto(item.originalName);
+      
+      return !normalizedName.includes('españa') && 
+             !normalizedName.includes('spain') && 
+             !normalizedOriginal.includes('españa') && 
+             !normalizedOriginal.includes('spain') && 
+             item.code !== 'ES' && 
+             item.code !== 'ESPAÑA';
+    })
     .sort((a, b) => b.value - a.value) // Ordenar de mayor a menor
     .slice(0, maxItems); // Limitar número de elementos si es necesario
 
-    // Configuración del gráfico
-    const margin = { top: 30, right: 30, bottom: 10, left: 130 };
-    const width = chartRef.current.clientWidth - margin.left - margin.right;
-    const height = Math.max(chartData.length * 45, 300) - margin.top - margin.bottom;
+    return chartData;
+  };
 
-    // Crear SVG
-    const svg = d3.select(chartRef.current)
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-      .attr('style', 'width: 100%; height: auto; max-height: 600px;')
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+  const chartData = getChartData();
 
-    // Escalas X e Y
-    const x = d3.scaleLinear()
-      .domain([0, d3.max(chartData, d => d.value) || 0])
-      .range([0, width]);
+  // Función para manejar eventos de tooltip
+  const handleChartEvent = (event: ChartEvent, elements: Array<unknown>) => {
+    const chartCanvas = document.querySelector('canvas');
+    if (chartCanvas) {
+      chartCanvas.style.cursor = elements && elements.length ? 'pointer' : 'default';
+      
+      // Si no hay elementos activos, ocultar el tooltip
+      if (!elements || elements.length === 0) {
+        hideGlobalTooltip();
+        return;
+      }
 
-    const y = d3.scaleBand()
-      .domain(chartData.map(d => d.name))
-      .range([0, height])
-      .padding(0.3);
+      // Obtener el elemento activo
+      if (elements && elements.length > 0 && event.native) {
+        // @ts-expect-error - Ignoramos errores de tipos ya que es difícil tipar esto correctamente
+        const dataIndex = elements[0].index;
+        
+        // Comprobar si hay datos para este índice
+        if (chartData[dataIndex]) {
+          const communityData = chartData[dataIndex];
+          const communityName = communityData.name;
+          
+          // Obtener el rank
+          const rank = dataIndex + 1;
+          const total = chartData.length;
+          
+          // Construir contenido del tooltip con estilos inline para mayor compatibilidad
+          const tooltipContent = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+              <!-- Cabecera con bandera y nombre -->
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                ${communityData.flag ? 
+                  `<div class="w-8 h-6 mr-2 rounded overflow-hidden border border-gray-200">
+                    <img src="${communityData.flag}" style="width: 100%; height: 100%; object-fit: cover;" alt="${communityName}" />
+                   </div>` 
+                  : ''}
+                <h3 class="text-lg font-bold text-gray-800">${communityName}</h3>
+              </div>
+              
+              <!-- Contenido principal -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-3">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <span>${t.researchers}:</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="text-xl font-bold text-blue-700">
+                      ${formatNumber(communityData.value, 0)}
+                    </span>
+                  </div>
+                  ${(() => {
+                    // Obtener el valor del año anterior
+                    const prevValue = getPreviousYearValue(communityData.originalName, communityData.code);
+                    if (prevValue !== null) {
+                      const diff = communityData.value - prevValue;
+                      const percentage = (diff / prevValue) * 100;
+                      const isPositive = diff > 0;
+                      return `
+                        <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                            <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                          </svg>
+                          <span>${isPositive ? '+' : ''}${percentage.toFixed(1)}% vs ${selectedYear - 1}</span>
+                        </div>
+                      `;
+                    }
+                    return '';
+                  })()}
+                </div>
+                
+                <!-- Ranking -->
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
+                    <span class="font-bold text-lg mx-1">${rank}</span>
+                    <span class="text-gray-600">${language === 'es' ? `de ${total}` : `of ${total}`}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // Mostrar tooltip global con el contenido generado
+          const nativeEvent = event.native as MouseEvent;
+          positionGlobalTooltip(nativeEvent, tooltipContent);
+        }
+      }
+    }
+  };
 
-    // Añadir ejes
-    svg.append('g')
-      .attr('transform', `translate(0,0)`)
-      .call(d3.axisLeft(y).tickSize(0))
-      .selectAll('text')
-      .attr('class', 'text-sm')
-      .attr('dy', '0.35em');
+  // Estilos para el contenedor con scroll
+  const scrollContainerStyle: React.CSSProperties = {
+    height: '400px',
+    overflowY: 'auto',
+    border: '1px solid #f0f0f0',
+    borderRadius: '8px',
+    padding: '0 10px',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#d1d5db #f3f4f6',
+    msOverflowStyle: 'none',
+  } as React.CSSProperties;
 
-    svg.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat(d => {
-        // Formatear números grandes (en miles)
-        const value = d as number;
-        return value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value.toString();
-      }))
-      .selectAll('text')
-      .attr('class', 'text-xs')
-      .attr('dy', '0.71em');
+  // Agregar estilos específicos para el scrollbar con CSS en useEffect
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'custom-scrollbar-styles';
+    
+    styleElement.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 8px;
+        border: 2px solid #f3f4f6;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #9ca3af;
+      }
+    `;
+    
+    document.head.appendChild(styleElement);
+    
+    return () => {
+      const existingStyle = document.getElementById('custom-scrollbar-styles');
+      if (existingStyle && existingStyle.parentNode) {
+        existingStyle.parentNode.removeChild(existingStyle);
+      }
+    };
+  }, []);
 
-    // Añadir título al eje X
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', height + margin.bottom + 30)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'text-xs text-gray-600')
-      .text(t.researchers);
+  // Si no hay datos, mostrar mensaje de no disponibilidad
+  if (chartData.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center text-gray-500">
+          <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="mt-2">{t.noData}</p>
+        </div>
+      </div>
+    );
+  }
 
-    // Añadir líneas de referencia horizontales
-    svg.selectAll('line.grid')
-      .data(x.ticks(5))
-      .enter()
-      .append('line')
-      .attr('class', 'grid')
-      .attr('x1', d => x(d))
-      .attr('x2', d => x(d))
-      .attr('y1', 0)
-      .attr('y2', height)
-      .attr('stroke', '#e5e7eb')
-      .attr('stroke-width', 1);
+  // Altura dinámica para el gráfico en función del número de comunidades
+  const chartHeight = Math.max(400, chartData.length * 28);
 
-    // Añadir barras
-    const bars = svg.selectAll('.bar')
-      .data(chartData)
-      .enter()
-      .append('g')
-      .attr('class', 'bar');
+  // Configuración del gráfico
+  const getChartConfig = () => {
+    const labels = chartData.map(item => item.name);
+    const values = chartData.map(item => item.value);
+    
+    // Obtener el color del sector seleccionado
+    const sectorColor = RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+    
+    // Generar colores (Canarias en amarillo, el resto según el color del sector)
+    const backgroundColors = chartData.map(item => {
+      const communityName = item.name.toLowerCase();
+      return communityName.includes('canarias') || 
+             communityName.includes('canary') ? 
+             CHART_PALETTE.CANARIAS : sectorColor;
+    });
+    
+    const data = {
+      labels,
+      datasets: [{
+        label: t.researchers,
+        data: values,
+        backgroundColor: backgroundColors,
+        borderColor: backgroundColors.map(color => {
+          return d3.color(color)?.darker(0.2)?.toString() || color;
+        }),
+        borderWidth: 1,
+        borderRadius: 4,
+        barThickness: 18,
+        barPercentage: 0.95,
+        categoryPercentage: 0.97
+      }]
+    };
+    
+    const options: ChartOptions<'bar'> = {
+      indexAxis: 'y' as const,
+      responsive: true,
+      maintainAspectRatio: false,
+      onClick: (event, elements) => {
+        handleChartEvent(event, elements);
+      },
+      onHover: (event, elements) => {
+        handleChartEvent(event, elements);
+      },
+      events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'mouseenter'],
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          enabled: false
+        }
+      },
+      scales: {
+        y: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: CHART_PALETTE.TEXT,
+            font: {
+              size: 11
+            },
+            padding: 5
+          },
+          afterFit: (scaleInstance) => {
+            scaleInstance.width = Math.max(scaleInstance.width, 120);
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            display: false
+          },
+          title: {
+            display: false
+          }
+        }
+      },
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+          top: 10,
+          bottom: 10
+        }
+      }
+    };
+    
+    return { data, options };
+  };
 
-    bars.append('rect')
-      .attr('y', d => y(d.name) || 0)
-      .attr('height', y.bandwidth())
-      .attr('x', 0)
-      .attr('width', d => x(d.value))
-      .attr('fill', '#3b82f6')
-      .attr('rx', 4) // Bordes redondeados
-      .attr('ry', 4);
-
-    // Añadir etiquetas de valor
-    bars.append('text')
-      .attr('x', d => x(d.value) + 5)
-      .attr('y', d => (y(d.name) || 0) + y.bandwidth() / 2)
-      .attr('dy', '0.35em')
-      .attr('class', 'text-xs font-medium')
-      .text(d => {
-        // Formatear el número según el idioma
-        return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
-          maximumFractionDigits: 0
-        }).format(d.value);
-      });
-
-    // Añadir banderas si están disponibles
-    bars.append('image')
-      .filter(d => Boolean(d.flag)) // Solo añadir imágenes si hay una bandera disponible
-      .attr('x', -25)
-      .attr('y', d => (y(d.name) || 0) + (y.bandwidth() - 20) / 2)
-      .attr('width', 20)
-      .attr('height', 15)
-      .attr('xlink:href', d => d.flag);
-
-    // Añadir título al gráfico
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', -10)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'text-sm font-medium')
-      .text(`${t.title} (${selectedYear})`);
-
-  }, [data, selectedYear, selectedSector, language, maxItems, t]);
+  const chartConfig = getChartConfig();
+  
+  // Función para mapear el sector a su nombre localizado
+  const getSectorName = () => {
+    const sectorNames: Record<string, { es: string, en: string }> = {
+      'total': {
+        es: 'Todos los sectores',
+        en: 'All sectors'
+      },
+      'business': {
+        es: 'Empresas',
+        en: 'Business enterprise'
+      },
+      'government': {
+        es: 'Administración Pública',
+        en: 'Government'
+      },
+      'education': {
+        es: 'Enseñanza Superior',
+        en: 'Higher education'
+      },
+      'nonprofit': {
+        es: 'Instituciones sin fines de lucro',
+        en: 'Non-profit institutions'
+      }
+    };
+    
+    return sectorNames[selectedSector] ? 
+            sectorNames[selectedSector][language] : 
+            (language === 'es' ? 'Todos los sectores' : 'All sectors');
+  };
 
   return (
-    <div 
+    <div className="relative h-full" ref={containerRef}>
+      <div className="mb-2 text-center">
+        <h3 className="text-sm font-semibold text-gray-800">
+          {language === 'es' ? `Ranking de investigadores por CCAA · ${selectedYear}` : `Researchers Ranking by Region · ${selectedYear}`}
+        </h3>
+        <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+             style={{ backgroundColor: `${d3.color(RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total)?.copy({ opacity: 0.15 })}` }}>
+          {getSectorName()}
+        </div>
+      </div>
+      
+      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
+        <div style={{ height: `${chartHeight}px`, width: '100%' }}>
+          <Bar 
       ref={chartRef} 
-      className="w-full h-full min-h-[400px] flex items-center justify-center"
-      aria-label={t.title}
-    >
-      {!data || data.length === 0 ? (
-        <div className="text-gray-500">{t.loading}</div>
-      ) : null}
+            data={chartConfig.data}
+            options={chartConfig.options}
+          />
+        </div>
+      </div>
+      
+      {/* Etiqueta del eje X centrada */}
+      <div className="text-center mt-2 mb-2 text-sm font-medium text-gray-700">
+        {t.researchers}
+      </div>
     </div>
   );
 };
 
-export default ResearchersCommunityRankingChart; 
+export default memo(ResearchersCommunityRankingChart);
