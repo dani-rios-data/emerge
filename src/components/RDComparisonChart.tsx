@@ -8,7 +8,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { 
-  TrendingUp,
   ChevronDown
 } from 'lucide-react';
 import country_flags from '../logos/country_flags.json';
@@ -53,6 +52,7 @@ interface RDComparisonChartProps {
   gdpData: GDPConsolidadoData[];
   autonomousCommunitiesData: GastoIDComunidadesData[];
   years: string[];
+  selectedSector: string; // Nueva prop para recibir el sector seleccionado
 }
 
 // Interfaz para un punto de datos en la serie temporal
@@ -78,11 +78,9 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
   language, 
   gdpData,
   autonomousCommunitiesData,
-  years 
+  years,
+  selectedSector // Recibimos el sector seleccionado como prop
 }) => {
-  // Estado para el sector seleccionado (por defecto "total" - todos los sectores)
-  const [selectedSector, setSelectedSector] = useState<string>("total");
-  
   // Estado para el país seleccionado (por defecto España)
   const [selectedCountry, setSelectedCountry] = useState<CountryOption>({
     name: 'Spain',
@@ -105,12 +103,15 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
   // Referencia para detectar clics fuera del dropdown
   const dropdownRef = useRef<HTMLDivElement>(null);
   
+  // Referencia para el contenedor de la gráfica
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  
   // Textos localizados
   const texts = {
     es: {
       title: "Comparativa de Inversión en I+D",
       canary: "Islas Canarias",
-      euAverage: "Unión Europea",
+      euAverage: "Media UE",
       selectSector: "Sector",
       selectCountry: "Seleccionar país",
       allSectors: "Todos los sectores",
@@ -253,7 +254,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
       } else if (selectedSector === 'education') {
         canarySectorId = "(HES)";
       } else if (selectedSector === 'nonprofit') {
-        canarySectorId = "(PNP)";
+        canarySectorId = "(IPSFL)";
       }
       
       const canaryData = autonomousCommunitiesData.find(row => 
@@ -377,7 +378,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
                   ></div>
                   <span className="text-sm">
                     <span className="font-medium">{entry.name}: </span>
-                    <span>{entry.value} {t.percentGDP}</span>
+                    <span>{entry.value.toFixed(2)}%</span>
                     {yoyChange !== null && (
                       <span className={`ml-1.5 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {yoyText}
@@ -415,7 +416,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
     // Buscar la bandera adecuada según el tipo
     if (type === 'eu') {
       const euFlag = country_flags.find(flag => flag.iso3 === 'EUU');
-      flagUrl = euFlag?.flag || '';
+      flagUrl = euFlag?.flag || 'https://flagcdn.com/eu.svg';
     } else if (type === 'canary') {
       const canaryFlag = autonomous_communities_flags.find(flag => flag.code === 'CAN');
       flagUrl = canaryFlag?.flag || '';
@@ -508,202 +509,186 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-8 shadow-sm hover:shadow-md transition-shadow duration-300">
-      {/* Filtros - Solo mantener el selector de sector */}
-      <div className="mb-6 px-4">
-        <div className="flex justify-between items-center">
-          {/* Selector de sector - Ahora más angosto */}
-          <div className="flex items-center bg-blue-50 rounded-md border border-blue-100 shadow-sm p-1 pr-3">
-            <div className="flex items-center pl-2 pr-1">
-              <TrendingUp size={18} className="text-blue-600 mr-2 flex-shrink-0" />
-              <span className="text-sm font-semibold text-gray-700 mr-2 whitespace-nowrap">
-                {t.selectSector}:
+    <div className="w-full h-full">
+      <div className="mb-4 flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold mb-1">{t.title}</h3>
+          <p className="text-sm text-gray-500">
+            {getSelectedSectorName()}
+          </p>
+        </div>
+        
+        {/* Selector de país estilo bandera */}
+        <div className="flex-shrink-0 relative" ref={dropdownRef}>
+          <div 
+            className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+          >
+            <div className="flex items-center gap-1 px-2 py-1">
+              <FlagImage 
+                type="country" 
+                iso3={selectedCountry.iso3} 
+                size={20} 
+                strokeColor="rgba(229, 231, 235, 0.5)"
+              />
+              <span className="text-sm font-medium text-gray-800">
+                {language === 'es' ? selectedCountry.localName : selectedCountry.name}
               </span>
             </div>
-            <select 
-              value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
-              className="px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm rounded-md"
-            >
-              {getSectorOptions().map(option => (
-                <option key={option.id} value={option.id}>
-                  {option.name[language]}
-                </option>
-              ))}
-            </select>
+            <div className="p-1 px-2 border-l border-gray-200 text-gray-500">
+              <ChevronDown size={16} />
+            </div>
           </div>
           
-          {/* Selector de país - Ahora fuera de la gráfica */}
-          <div className="flex-shrink-0 relative" ref={dropdownRef}>
-            <div 
-              className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              <div className="flex items-center gap-1 px-2 py-1">
-                <FlagImage 
-                  type="country" 
-                  iso3={selectedCountry.iso3} 
-                  size={20} 
-                  strokeColor="rgba(229, 231, 235, 0.5)"
-                />
-                <span className="text-sm font-medium text-gray-800">
-                  {language === 'es' ? selectedCountry.localName : selectedCountry.name}
-                </span>
-              </div>
-              <div className="p-1 px-2 border-l border-gray-200 text-gray-500">
-                <ChevronDown size={16} />
-              </div>
+          {/* Menú desplegable */}
+          {dropdownOpen && (
+            <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto w-48 right-0">
+              {availableCountries.map(country => (
+                <button
+                  key={country.iso3}
+                  className={`flex items-center w-full text-left px-3 py-1.5 hover:bg-gray-100 ${
+                    country.iso3 === selectedCountry.iso3 ? 'bg-blue-50' : ''
+                  }`}
+                  onClick={() => {
+                    setSelectedCountry(country);
+                    setDropdownOpen(false);
+                  }}
+                >
+                  <FlagImage 
+                    type="country" 
+                    iso3={country.iso3} 
+                    size={18} 
+                    strokeColor="rgba(229, 231, 235, 0.5)"
+                  />
+                  <span className="ml-2 text-sm">
+                    {language === 'es' ? country.localName : country.name}
+                  </span>
+                </button>
+              ))}
             </div>
-            
-            {/* Menú desplegable */}
-            {dropdownOpen && (
-              <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto w-48 right-0">
-                {availableCountries.map(country => (
-                  <button
-                    key={country.iso3}
-                    className={`flex items-center w-full text-left px-3 py-1.5 hover:bg-gray-100 ${
-                      country.iso3 === selectedCountry.iso3 ? 'bg-blue-50' : ''
-                    }`}
-                    onClick={() => {
-                      setSelectedCountry(country);
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    <FlagImage 
-                      type="country" 
-                      iso3={country.iso3} 
-                      size={18} 
-                      strokeColor="rgba(229, 231, 235, 0.5)"
-                    />
-                    <span className="ml-2 text-sm">
-                      {language === 'es' ? country.localName : country.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
-      
-      {/* Contenido de la gráfica */}
-      <div className="px-4 pb-6">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-600">{t.loading}</span>
+
+      {loading ? (
+        <div className="h-full w-full flex items-center justify-center">
+          <div className="text-center">
+            <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-gray-500">{t.loading}</p>
           </div>
-        ) : timeSeriesData.length === 0 ? (
-          <div className="flex justify-center items-center h-64">
-            <span className="text-gray-500">{t.noData}</span>
+        </div>
+      ) : timeSeriesData.length === 0 ? (
+        <div className="h-full w-full flex items-center justify-center">
+          <p className="text-gray-500">{t.noData}</p>
+        </div>
+      ) : (
+        <div>
+          {/* Gráfica de líneas */}
+          <div ref={chartContainerRef} className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={timeSeriesData}
+                margin={{ top: 20, right: 50, left: 20, bottom: 10 }}
+              >
+                <XAxis 
+                  dataKey="year" 
+                  tick={{ fill: '#4b5563', fontSize: 10 }}
+                  tickLine={{ stroke: '#9ca3af' }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                />
+                <YAxis 
+                  label={{ 
+                    value: t.percentGDP, 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }
+                  }}
+                  tick={{ fill: '#4b5563', fontSize: 10 }}
+                  tickLine={{ stroke: '#9ca3af' }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickFormatter={formatYAxis}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                
+                {/* Línea para la UE */}
+                <Line 
+                  type="linear" 
+                  dataKey="eu" 
+                  name={t.euAverage}
+                  stroke={lineColors.eu} 
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6, stroke: lineColors.eu, strokeWidth: 1, fill: '#fff' }}
+                  isAnimationActive={false}
+                />
+                
+                {/* Línea para Canarias */}
+                <Line 
+                  type="linear" 
+                  dataKey="canary" 
+                  name={t.canary}
+                  stroke={lineColors.canary} 
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6, stroke: lineColors.canary, strokeWidth: 1, fill: '#fff' }}
+                  isAnimationActive={false}
+                />
+                
+                {/* Línea para el país seleccionado */}
+                <Line 
+                  type="linear" 
+                  dataKey="country" 
+                  name={language === 'es' ? selectedCountry.localName : selectedCountry.name}
+                  stroke={lineColors.country} 
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6, stroke: lineColors.country, strokeWidth: 1, fill: '#fff' }}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            
+            {/* Renderizar las banderas */}
+            {renderFlags()}
           </div>
-        ) : (
-          <div>
-            {/* Gráfica de líneas */}
-            <div className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={timeSeriesData}
-                  margin={{ top: 20, right: 50, left: 20, bottom: 10 }}
-                >
-                  {/* Eliminada la cuadrícula (CartesianGrid) */}
-                  <XAxis 
-                    dataKey="year" 
-                    tick={{ fill: '#4b5563', fontSize: 10 }}
-                    tickLine={{ stroke: '#9ca3af' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <YAxis 
-                    label={{ 
-                      value: t.percentGDP, 
-                      angle: -90, 
-                      position: 'insideLeft',
-                      style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }
-                    }}
-                    tick={{ fill: '#4b5563', fontSize: 10 }}
-                    tickLine={{ stroke: '#9ca3af' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                    tickFormatter={formatYAxis}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  
-                  {/* Línea para la UE */}
-                  <Line 
-                    type="linear" 
-                    dataKey="eu" 
-                    name={t.euAverage}
-                    stroke={lineColors.eu} 
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6, stroke: lineColors.eu, strokeWidth: 1, fill: '#fff' }}
-                    isAnimationActive={false}
-                  />
-                  
-                  {/* Línea para Canarias */}
-                  <Line 
-                    type="linear" 
-                    dataKey="canary" 
-                    name={t.canary}
-                    stroke={lineColors.canary} 
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6, stroke: lineColors.canary, strokeWidth: 1, fill: '#fff' }}
-                    isAnimationActive={false}
-                  />
-                  
-                  {/* Línea para el país seleccionado */}
-                  <Line 
-                    type="linear" 
-                    dataKey="country" 
-                    name={language === 'es' ? selectedCountry.localName : selectedCountry.name}
-                    stroke={lineColors.country} 
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6, stroke: lineColors.country, strokeWidth: 1, fill: '#fff' }}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              
-              {/* Renderizar las banderas */}
-              {renderFlags()}
+          
+          {/* Nueva leyenda en la parte inferior central */}
+          <div className="flex flex-wrap items-center justify-center mt-4 gap-x-8 gap-y-3">
+            {/* UE */}
+            <div className="flex items-center">
+              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.eu }}></div>
+              <span className="text-sm font-medium text-gray-700">{t.euAverage}</span>
             </div>
             
-            {/* Nueva leyenda en la parte inferior central */}
-            <div className="flex flex-wrap items-center justify-center mt-4 gap-x-8 gap-y-3">
-              {/* UE */}
-              <div className="flex items-center">
-                <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.eu }}></div>
-                <span className="text-sm font-medium text-gray-700">{t.euAverage}</span>
-              </div>
-              
-              {/* Canarias */}
-              <div className="flex items-center">
-                <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.canary }}></div>
-                <span className="text-sm font-medium text-gray-700">{t.canary}</span>
-              </div>
-              
-              {/* País seleccionado */}
-              <div className="flex items-center">
-                <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.country }}></div>
-                <span className="text-sm font-medium text-gray-700">
-                  {language === 'es' ? selectedCountry.localName : selectedCountry.name}
-                </span>
-              </div>
+            {/* Canarias */}
+            <div className="flex items-center">
+              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.canary }}></div>
+              <span className="text-sm font-medium text-gray-700">{t.canary}</span>
             </div>
             
-            {/* Nota inferior */}
-            <div className="mt-4 text-xs text-gray-500 text-center">
-              <p>
-                {language === 'es' 
-                  ? `Sector visualizado: ${getSelectedSectorName()}`
-                  : `Visualized sector: ${getSelectedSectorName()}`
-                }
-              </p>
+            {/* País seleccionado */}
+            <div className="flex items-center">
+              <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: lineColors.country }}></div>
+              <span className="text-sm font-medium text-gray-700">
+                {language === 'es' ? selectedCountry.localName : selectedCountry.name}
+              </span>
             </div>
           </div>
-        )}
-      </div>
+          
+          {/* Nota inferior */}
+          <div className="mt-4 text-xs text-gray-500 text-center">
+            <p>
+              {language === 'es' 
+                ? `Sector visualizado: ${getSelectedSectorName()}`
+                : `Visualized sector: ${getSelectedSectorName()}`
+              }
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

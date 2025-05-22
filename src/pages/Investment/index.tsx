@@ -1002,15 +1002,50 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Componente SectorDistribution */}
               <SectorDistribution language={language} />
               
-              {/* Nuevo componente RDComparisonChart */}
+              {/* Sección de Tendencia histórica con RDComparisonChart */}
               {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
                 <>
                   <SubsectionTitle title={language === 'es' ? "Tendencia histórica" : "Historical Trend"} />
+                  
+                  {/* Nuevo selector de sector independiente para el gráfico de tendencia */}
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
+                    <div className="flex items-center">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-blue-500 mr-2"
+                      >
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                      </svg>
+                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                      <select 
+                        value={getSectorId(selectedSector)}
+                        onChange={(e) => handleSectorChange(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                      >
+                        {rdSectors.map(sector => (
+                          <option key={sector.id} value={sector.id}>
+                            {sector.name[language]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Componente RDComparisonChart con el selectedSector como prop */}
                   <RDComparisonChart 
                     language={language}
                     gdpData={mapToGDPConsolidadoData(europeData)}
                     autonomousCommunitiesData={autonomousCommunitiesData}
                     years={availableYears.map(year => year.toString())}
+                    selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector).toLowerCase()}
                   />
                 </>
               )}

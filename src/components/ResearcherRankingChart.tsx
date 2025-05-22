@@ -149,6 +149,13 @@ const labelDescriptions: Record<string, { es: string, en: string }> = {
 function getCountryFlagUrl(countryCode: string): string {  
   // Intentar diferentes enfoques para encontrar la bandera correcta
   
+  // Manejar el caso especial de Grecia (EL)
+  if (countryCode === 'EL') {
+    // Buscar la bandera de Grecia usando el código estándar ISO (GR)
+    const greeceFlag = countryFlags.find(flag => flag.code === 'GR' || flag.iso3 === 'GRC');
+    return greeceFlag?.flag || 'https://flagcdn.com/gr.svg';
+  }
+  
   // 1. Intentar directamente por ISO3
   let foundFlag = countryFlags.find(flag => flag.iso3 === countryCode);
   
@@ -165,13 +172,23 @@ function getCountryFlagUrl(countryCode: string): string {
     };
     
     if (iso3ToIso2[countryCode]) {
-      foundFlag = countryFlags.find(flag => flag.code === iso3ToIso2[countryCode]);
+      // Si el código ISO2 es 'EL', usar 'GR' para la bandera
+      if (iso3ToIso2[countryCode] === 'EL') {
+        foundFlag = countryFlags.find(flag => flag.code === 'GR');
+      } else {
+        foundFlag = countryFlags.find(flag => flag.code === iso3ToIso2[countryCode]);
+      }
     }
   }
   
   // 3. Si sigue sin encontrarse, buscar por código ISO2 directo
   if (!foundFlag && countryCode.length === 2) {
-    foundFlag = countryFlags.find(flag => flag.code === countryCode);
+    // Si el código es 'EL', buscar con 'GR'
+    if (countryCode === 'EL') {
+      foundFlag = countryFlags.find(flag => flag.code === 'GR');
+    } else {
+      foundFlag = countryFlags.find(flag => flag.code === countryCode);
+    }
   }
   
   // 4. Si nada funciona, verificar casos especiales
@@ -188,6 +205,11 @@ function getCountryFlagUrl(countryCode: string): string {
   // Si se encontró la bandera, devolver la URL
   if (foundFlag?.flag) {
     return foundFlag.flag;
+  }
+  
+  // Último recurso: si es 'EL', usar la URL directa de la bandera de Grecia
+  if (countryCode === 'EL') {
+    return 'https://flagcdn.com/gr.svg';
   }
   
   // Si no se encontró ninguna bandera, devolver un placeholder
