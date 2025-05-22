@@ -86,17 +86,22 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     loadResearchersData();
   }, [language]);
 
-  // Función auxiliar para mapear el sector a su código correspondiente
+  // Función para mapear el valor del sector al código utilizado en los datos
   const mapSectorToCode = (sector: string): string => {
-    const sectorMapping = {
-      'total': 'TOTAL',
-      'business': 'BES',
-      'government': 'GOV',
-      'education': 'HES',
-      'nonprofit': 'PNP'
-    };
-    
-    return sectorMapping[sector as keyof typeof sectorMapping] || 'TOTAL';
+    switch(sector) {
+      case 'total':
+        return 'total';
+      case 'business':
+        return 'business';
+      case 'government':
+        return 'government';
+      case 'education':
+        return 'education';
+      case 'nonprofit':
+        return 'nonprofit';
+      default:
+        return 'total';
+    }
   };
 
   // Manejador de cambio de año

@@ -428,7 +428,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
                 ></div>
                 <span className="text-sm">
                   <span className="font-medium">{name}: </span>
-                  <span>{entry.value.toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}</span>
+                  <span>{Math.round(entry.value).toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}</span>
                   {yoyChange !== null && (
                     <span className={`ml-1.5 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {yoyText}
