@@ -820,7 +820,7 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           const spainItem = chartData.sortedItems.find(item => item.code === 'ES');
           let comparisonsHtml = '';
           
-          // Comparativa con la UE (media)
+                      // Comparativa con la UE (media)
           if (euItem && !chartItem.isSupranational) {
             const euValue = euItem.isAverage ? euItem.value : (euItem.value / 27);
             const difference = value - euValue;
@@ -831,8 +831,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Media UE (${formatValue(euValue)}):` : 
-                  `vs Avg UE (${formatValue(euValue)}):`}</span>
+                  `vs Media UE (${formatValue(Math.round(euValue))}):` : 
+                  `vs Avg UE (${formatValue(Math.round(euValue))}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -848,8 +848,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs España (${formatValue(spainItem.value)}):` : 
-                  `vs Spain (${formatValue(spainItem.value)}):`}</span>
+                  `vs España (${formatValue(Math.round(spainItem.value))}):` : 
+                  `vs Spain (${formatValue(Math.round(spainItem.value))}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -881,7 +881,7 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
                   </div>
                   <div class="flex items-center">
                     <span class="text-xl font-bold text-blue-700">
-                      ${formatValue(value)}
+                      ${formatValue(Math.round(value))}
                     </span>
                     ${isAverage ? `<span class="text-xs ml-1 text-gray-600">${language === 'es' ? '(promedio)' : '(average)'}</span>` : ''}
                     ${obsTagHtml}
@@ -932,9 +932,12 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     }
   };
 
-  // Formatear valores numéricos con separador de miles
+  // Formatear valores numéricos con separador de miles, sin decimales
   const formatValue = (value: number): string => {
-    return new Intl.NumberFormat('es-ES').format(value);
+    return new Intl.NumberFormat('es-ES', {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(value);
   };
 
   // Obtener el nombre del país a partir del código

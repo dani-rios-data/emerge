@@ -145,7 +145,7 @@ const getSectorPalette = (sectorId: string) => {
   // Crear un contraste más fuerte para el mapa de calor
   return {
     NULL: '#f5f5f5',           // Gris claro para valores nulos
-    ZERO: '#666666',           // Gris fuerte para países con 0 investigadores
+    ZERO: '#ff9800',           // Color anaranjado para países con 0 investigadores
     MIN: d3.color(baseColor)?.brighter(1.9)?.toString() || '#f5f5f5',  // Muy claro
     LOW: d3.color(baseColor)?.brighter(1.1)?.toString() || '#d0d0d0',  // Claro
     MID: baseColor,                                                    // Color base del sector
