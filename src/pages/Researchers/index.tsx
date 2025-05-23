@@ -7,6 +7,7 @@ import ResearchersBySectorChart from '../../components/ResearchersBySectorChart'
 import ResearchersSpanishRegionsMap from '../../components/ResearchersSpanishRegionsMap';
 import ResearchersCommunityRankingChart from '../../components/ResearchersCommunityRankingChart';
 import ResearchersCommunitiesTimelineChart from '../../components/ResearchersCommunitiesTimelineChart';
+import ResearchersCommunitiesBySectorChart from '../../components/ResearchersCommunitiesBySectorChart';
 import Papa from 'papaparse';
 
 interface ResearchersProps {
@@ -254,7 +255,8 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
       educationSector: "Enseñanza Superior",
       nonprofitSector: "Instituciones Privadas sin Fines de Lucro",
       timelineTitle: "Evolución temporal",
-      sectorTimelineTitle: "Evolución por sectores"
+      sectorTimelineTitle: "Evolución por sectores",
+      communitySectorTimelineTitle: "Evolución sectorial por comunidades autónomas"
     },
     en: {
       yearLabel: "Year:",
@@ -267,7 +269,8 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
       educationSector: "Higher education sector",
       nonprofitSector: "Private non-profit sector",
       timelineTitle: "Timeline Evolution",
-      sectorTimelineTitle: "Evolution by Sectors"
+      sectorTimelineTitle: "Evolution by Sectors",
+      communitySectorTimelineTitle: "Sectoral Evolution by Autonomous Communities"
     }
   };
 
@@ -611,6 +614,38 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
                 />
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Nueva subsección: Evolución sectorial por comunidades autónomas */}
+        <div className="mb-8">
+          <SubsectionTitle title={t.communitySectorTimelineTitle} />
+          
+          {isCommunityLoading ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+              <div className="text-center text-gray-400">
+                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-lg">{t.loadingData}</p>
+              </div>
+            </div>
+          ) : communityError ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+              <div className="text-center text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg">{communityError}</p>
+              </div>
+            </div>
+          ) : (
+            <ResearchersCommunitiesBySectorChart
+              data={researchersCommunityData}
+              language={language}
+              defaultCommunity="Canarias"
+            />
           )}
         </div>
       </div>

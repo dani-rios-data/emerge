@@ -52,7 +52,7 @@ interface LocalizedTexts {
   euAverage: string;
   spain: string;
   country: string;
-  researchersPerMillionPeople: string;
+  researchersCount: string;
   year: string;
   loading: string;
   noData: string;
@@ -80,7 +80,6 @@ const LINE_COLORS = {
 const FLAG_SIZE = 22;
 const FLAG_MARGIN = 6; // Separación del último punto
 const MIN_GAP = 24; // Mínima separación vertical entre banderas
-const GAP = 4;
 
 // Lista de países europeos para filtrar
 const EUROPEAN_COUNTRY_CODES = [
@@ -269,10 +268,10 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
   const texts = {
     es: {
       title: "Evolución temporal",
-      euAverage: "Media UE",
+      euAverage: "UE (total)",
       spain: "España",
       country: "País seleccionado",
-      researchersPerMillionPeople: "Número de investigadores",
+      researchersCount: "Número de investigadores",
       year: "Año",
       loading: "Cargando datos...",
       noData: "No hay datos disponibles",
@@ -286,10 +285,10 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
     },
     en: {
       title: "Timeline Evolution",
-      euAverage: "EU Average",
+      euAverage: "EU (total)",
       spain: "Spain",
       country: "Selected Country",
-      researchersPerMillionPeople: "Number of researchers",
+      researchersCount: "Number of researchers",
       year: "Year",
       loading: "Loading data...",
       noData: "No data available",
@@ -434,7 +433,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
         );
 
         if (euData && euData.OBS_VALUE) {
-          // Dividir el valor de la UE entre 27 para obtener la media
+          // Dividir el valor de la UE entre 27 para obtener la media por país
           dataPoint.eu = parseFloat(euData.OBS_VALUE.replace(',', '.')) / 27;
         }
 
@@ -768,7 +767,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
                 />
                 <YAxis 
                   label={{ 
-                    value: t.researchersPerMillionPeople, 
+                    value: t.researchersCount, 
                     angle: -90, 
                     position: 'insideLeft',
                     style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }

@@ -90,8 +90,7 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
   // Textos localizados
   const texts = {
     es: {
-      title: "Evolución sectorial",
-      spain: "España",
+      title: "Evolución por sectores",
       researchersCount: "Número de investigadores",
       year: "Año",
       loading: "Cargando datos...",
@@ -105,8 +104,7 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
       nonprofit: "Instituciones Privadas sin Fines de Lucro"
     },
     en: {
-      title: "Sectoral Evolution",
-      spain: "Spain",
+      title: "Evolution by Sectors",
       researchersCount: "Number of researchers",
       year: "Year",
       loading: "Loading data...",
@@ -416,9 +414,14 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
       });
     
     return (
-      <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg">
-        <p className="text-sm font-medium mb-2">{`${selectedCountry.localName} (${label})`}</p>
-        <div className="space-y-1">
+      <div className="bg-white/95 backdrop-blur-sm p-4 border border-gray-200/60 shadow-xl rounded-xl max-w-xs">
+        <div className="border-b border-gray-100 pb-2 mb-3">
+          <p className="text-sm font-semibold text-gray-800 flex items-center">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            {`${selectedCountry.localName} (${label})`}
+          </p>
+        </div>
+        <div className="space-y-2.5">
           {sortedPayload.map((entry, index) => {
             if (entry.value === null) return null;
             
@@ -432,18 +435,26 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
               `(${yoyChange.startsWith('-') ? '' : '+'}${yoyChange}%)` : '';
             
             return (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center">
+              <div key={index} className="flex items-center justify-between py-1">
+                <div className="flex items-center flex-1 min-w-0">
                   <div 
-                    className="w-2 h-2 rounded-full mr-2" 
+                    className="w-3 h-3 rounded-full mr-3 shadow-sm ring-1 ring-gray-200" 
                     style={{ backgroundColor: entry.color }}
                   ></div>
-                  <span className="text-sm font-medium">{sectorName}:</span>
+                  <span className="text-sm font-medium text-gray-700 truncate">
+                    {sectorName}
+                  </span>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-bold">{Math.round(entry.value).toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}</span>
+                <div className="flex items-center ml-3">
+                  <span className="text-sm font-bold text-gray-900">
+                    {Math.round(entry.value).toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}
+                  </span>
                   {yoyChange !== null && (
-                    <span className={`ml-1.5 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`ml-2 text-xs font-medium px-1.5 py-0.5 rounded-md ${
+                      parseFloat(yoyChange) >= 0 
+                        ? 'text-emerald-700 bg-emerald-50' 
+                        : 'text-red-700 bg-red-50'
+                    }`}>
                       {yoyText}
                     </span>
                   )}

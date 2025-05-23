@@ -41,7 +41,7 @@ interface CommunityOption {
 // Interfaz para los textos de localización
 interface LocalizedTexts {
   noData: string;
-  researchersLabel: string;
+  researchersCount: string;
   loading: string;
   spainAverage: string;
   canarias: string;
@@ -309,7 +309,7 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
   const texts = {
     es: {
       noData: 'Sin datos',
-      researchersLabel: 'Investigadores',
+      researchersCount: 'Número de investigadores',
       loading: 'Cargando...',
       spainAverage: 'Media España',
       canarias: 'Canarias',
@@ -317,7 +317,7 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
     },
     en: {
       noData: 'No data',
-      researchersLabel: 'Researchers',
+      researchersCount: 'Number of researchers',
       loading: 'Loading...',
       spainAverage: 'Spain Average',
       canarias: 'Canary Islands',
@@ -638,7 +638,7 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
             />
             <YAxis 
               label={{ 
-                value: t.researchersLabel, 
+                value: t.researchersCount, 
                 angle: -90, 
                 position: 'insideLeft',
                 style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }
