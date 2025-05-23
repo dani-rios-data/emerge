@@ -5,7 +5,8 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  ResponsiveContainer
+  ResponsiveContainer,
+  Customized
 } from 'recharts';
 import { ChevronDown } from 'lucide-react';
 import country_flags from '../logos/country_flags.json';
@@ -45,12 +46,41 @@ interface ResearchersTimelineChartProps {
   selectedSector: string;
 }
 
+// Interfaz para los textos de localización
+interface LocalizedTexts {
+  title: string;
+  euAverage: string;
+  spain: string;
+  country: string;
+  researchersPerMillionPeople: string;
+  year: string;
+  loading: string;
+  noData: string;
+  selectCountry: string;
+  total: string;
+  business: string;
+  government: string;
+  education: string;
+  nonprofit: string;
+}
+
+// Interfaz para las escalas de Recharts
+interface AxisScale {
+  scale: (value: unknown) => number;
+}
+
 // Colores para las líneas
 const LINE_COLORS = {
   eu: "#4338ca",    // Índigo para UE
   es: "#dc2626",    // Rojo para España
   country: "#3b82f6" // Azul para el país seleccionado
 };
+
+// Parámetros para las banderas
+const FLAG_SIZE = 22;
+const FLAG_MARGIN = 6; // Separación del último punto
+const MIN_GAP = 24; // Mínima separación vertical entre banderas
+const GAP = 4;
 
 // Lista de países europeos para filtrar
 const EUROPEAN_COUNTRY_CODES = [
@@ -59,6 +89,154 @@ const EUROPEAN_COUNTRY_CODES = [
   'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'GB', 'CH', 'NO', 
   'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 'XK'
 ];
+
+// Componente para renderizar banderas dentro del SVG
+const FlagsCustomComponent = (props: {
+  yAxisMap?: AxisScale[];
+  xAxisMap?: AxisScale[];
+  data?: TimeSeriesDataPoint[];
+  selectedCountry?: CountryOption;
+  texts?: LocalizedTexts;
+  [key: string]: unknown;
+}) => {
+  const { yAxisMap, xAxisMap, data, selectedCountry, texts } = props;
+  
+  if (!data || !data.length || !yAxisMap || !xAxisMap || !selectedCountry || !texts) return null;
+
+  const xScale = xAxisMap[0]?.scale;
+  const yScale = yAxisMap[0]?.scale;
+  
+  if (!xScale || !yScale) return null;
+
+  // Obtener el último punto de datos
+  const lastDataPoint = data[data.length - 1];
+  const lastX = xScale(lastDataPoint.year);
+
+  // Función para obtener URL de bandera
+  const getFlagUrl = (type: 'eu' | 'es' | 'country', code?: string) => {
+    if (type === 'eu') {
+      const euFlag = country_flags.find(flag => flag.code === 'EU' || flag.iso3 === 'EUU');
+      return euFlag?.flag || "https://flagcdn.com/eu.svg";
+    } else if (type === 'es') {
+      const esFlag = country_flags.find(flag => flag.code === 'ES' || flag.iso3 === 'ESP');
+      return esFlag?.flag || "https://flagcdn.com/es.svg";
+    } else if (type === 'country' && code) {
+      if (code === 'EL') {
+        const greeceFlag = country_flags.find(flag => flag.code === 'GR' || flag.iso3 === 'GRC');
+        return greeceFlag?.flag || 'https://flagcdn.com/gr.svg';
+      } else {
+        const countryFlag = country_flags.find(flag => flag.code === code || flag.iso3 === code);
+        return countryFlag?.flag || `https://flagcdn.com/${code.toLowerCase()}.svg`;
+      }
+    }
+    return '';
+  };
+
+  // Preparar puntos de banderas
+  const flagPoints = [];
+
+  // UE
+  if (lastDataPoint.eu !== null) {
+    flagPoints.push({
+      key: 'eu',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.eu),
+      originalY: yScale(lastDataPoint.eu),
+      flagUrl: getFlagUrl('eu'),
+      color: LINE_COLORS.eu,
+      label: texts.euAverage
+    });
+  }
+
+  // España
+  if (lastDataPoint.es !== null) {
+    flagPoints.push({
+      key: 'es',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.es),
+      originalY: yScale(lastDataPoint.es),
+      flagUrl: getFlagUrl('es'),
+      color: LINE_COLORS.es,
+      label: texts.spain
+    });
+  }
+
+  // País seleccionado (solo si no es España)
+  if (selectedCountry.code !== 'ES' && lastDataPoint.country !== null) {
+    flagPoints.push({
+      key: 'country',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.country),
+      originalY: yScale(lastDataPoint.country),
+      flagUrl: getFlagUrl('country', selectedCountry.code),
+      color: LINE_COLORS.country,
+      label: selectedCountry.name
+    });
+  }
+
+  // Lógica de anti-solape: ordenar por Y y ajustar posiciones
+  flagPoints.sort((a, b) => a.originalY - b.originalY);
+  
+  for (let i = 1; i < flagPoints.length; i++) {
+    const currentFlag = flagPoints[i];
+    const previousFlag = flagPoints[i - 1];
+    
+    if (currentFlag.y - previousFlag.y < MIN_GAP) {
+      currentFlag.y = previousFlag.y + MIN_GAP;
+    }
+  }
+
+  return (
+    <g>
+      {flagPoints.map(point => {
+        if (!point.flagUrl) return null;
+        
+        return (
+          <g key={point.key}>
+            {/* Línea conectora si la bandera se movió de su posición original */}
+            {Math.abs(point.y - point.originalY) > 2 && (
+              <line
+                x1={point.x - 2}
+                y1={point.originalY}
+                x2={point.x - 2}
+                y2={point.y}
+                stroke={point.color}
+                strokeWidth={1}
+                strokeDasharray="2,2"
+                opacity={0.5}
+              />
+            )}
+            
+            {/* Bandera */}
+            <image
+              href={point.flagUrl}
+              x={point.x}
+              y={point.y - FLAG_SIZE / 2}
+              width={FLAG_SIZE}
+              height={FLAG_SIZE * 0.67}
+              style={{ 
+                cursor: 'pointer',
+                filter: `drop-shadow(0 1px 2px rgba(0,0,0,0.1))`
+              }}
+            />
+            
+            {/* Borde de la bandera */}
+            <rect
+              x={point.x}
+              y={point.y - FLAG_SIZE / 2}
+              width={FLAG_SIZE}
+              height={FLAG_SIZE * 0.67}
+              fill="none"
+              stroke={point.color}
+              strokeWidth={1}
+              rx={2}
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+};
 
 const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
   data,
@@ -443,10 +621,6 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
     );
   };
 
-  // Parámetros para las banderas
-  const FLAG_SIZE = 22;
-  const GAP = 4;
-
   // Componente para renderizar banderas
   const FlagImage = ({ 
     type, 
@@ -503,73 +677,6 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
           boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
         }}
       />
-    );
-  };
-
-  // Componente para renderizar las banderas al final de las líneas
-  const renderFlags = () => {
-    if (!timeSeriesData.length) return null;
-    
-    // Obtener el último punto de datos
-    const lastDataPoint = timeSeriesData[timeSeriesData.length - 1];
-    
-    // Calcular dinámicamente el rango visible del eje Y
-    const yValues = timeSeriesData.flatMap(d =>
-      [d.eu, d.es, d.country].filter(v => v !== null)
-    ) as number[];
-    
-    const yMin = 0;
-    const yMax = Math.max(...yValues) * 1.05; // +5% para margen visual
-    
-    // Cálculo del porcentaje vertical
-    const yToPct = (v: number) => {
-      return ((yMax - v) / (yMax - yMin)) * 100;
-    };
-    
-    // Componente que coloca la bandera
-    const FlagStub = ({
-      yValue,
-      children
-    }: {
-      yValue: number | null;
-      children: React.ReactNode;
-    }) => {
-      if (yValue === null) return null;
-      
-      return (
-        <div
-          style={{
-            position: 'absolute',
-            top: `calc(${yToPct(yValue)}% - ${FLAG_SIZE / 2}px)`,
-            right: GAP,
-            pointerEvents: 'none',
-          }}
-        >
-          {children}
-        </div>
-      );
-    };
-    
-    return (
-      <>
-        <FlagStub yValue={lastDataPoint.eu}>
-          <FlagImage type="eu" strokeColor={LINE_COLORS.eu} />
-        </FlagStub>
-
-        <FlagStub yValue={lastDataPoint.es}>
-          <FlagImage type="es" strokeColor={LINE_COLORS.es} />
-        </FlagStub>
-
-        {selectedCountry && selectedCountry.code !== 'ES' && (
-          <FlagStub yValue={lastDataPoint.country}>
-            <FlagImage 
-              type="country" 
-              code={selectedCountry.code} 
-              strokeColor={LINE_COLORS.country} 
-            />
-          </FlagStub>
-        )}
-      </>
     );
   };
 
@@ -651,7 +758,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={timeSeriesData}
-                margin={{ top: 20, right: 50, left: 20, bottom: 10 }}
+                margin={{ top: 20, right: 60, left: 20, bottom: 10 }}
               >
                 <XAxis 
                   dataKey="year" 
@@ -710,11 +817,20 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
                     isAnimationActive={false}
                   />
                 )}
+                
+                {/* Banderas renderizadas dentro del SVG */}
+                <Customized
+                  component={(rechartProps: Record<string, unknown>) => (
+                    <FlagsCustomComponent
+                      {...rechartProps}
+                      data={timeSeriesData}
+                      selectedCountry={selectedCountry}
+                      texts={t}
+                    />
+                  )}
+                />
               </LineChart>
             </ResponsiveContainer>
-            
-            {/* Renderizar las banderas */}
-            {renderFlags()}
           </div>
           
           {/* Nueva leyenda en la parte inferior central */}
