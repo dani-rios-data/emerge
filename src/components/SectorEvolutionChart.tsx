@@ -442,20 +442,20 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
   }) => {
     if (!active || !payload || !payload.length) return null;
 
-    // Encontrar el índice del año actual en los datos
-    const yearIndex = timeSeriesData.findIndex(data => data.year === label);
-    
-    // Filtrar valores nulos y ordenarlos
-    const sortedPayload = [...payload]
-      .filter(entry => entry.value !== null)
-      .sort((a, b) => {
-        // Mostrar "total" primero, luego ordenar por valor
-        if (a.dataKey === 'total') return -1;
-        if (b.dataKey === 'total') return 1;
-        return b.value - a.value;
-      });
-    
-    return (
+      // Encontrar el índice del año actual en los datos
+      const yearIndex = timeSeriesData.findIndex(data => data.year === label);
+      
+      // Filtrar valores nulos y ordenarlos
+      const sortedPayload = [...payload]
+        .filter(entry => entry.value !== null)
+        .sort((a, b) => {
+          // Mostrar "total" primero, luego ordenar por valor
+          if (a.dataKey === 'total') return -1;
+          if (b.dataKey === 'total') return 1;
+          return b.value - a.value;
+        });
+      
+      return (
       <div className="bg-white/95 backdrop-blur-sm p-4 border border-gray-200/60 shadow-xl rounded-xl max-w-xs">
         <div className="border-b border-gray-100 pb-2 mb-3">
           <p className="text-sm font-semibold text-gray-800 flex items-center">
@@ -463,31 +463,31 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
             {`${selectedCommunity.localName} (${label})`}
           </p>
         </div>
-        <div className="space-y-2.5">
-          {sortedPayload.map((entry, index) => {
-            // Traducir el nombre del sector
-            const sectorName = t[entry.dataKey as keyof typeof t] || entry.name;
-            
-            // Calcular el cambio YoY
-            const yoyChange = calculateYoY(entry.value, entry.dataKey, yearIndex);
+          <div className="space-y-2.5">
+            {sortedPayload.map((entry, index) => {
+              // Traducir el nombre del sector
+              const sectorName = t[entry.dataKey as keyof typeof t] || entry.name;
+              
+              // Calcular el cambio YoY
+              const yoyChange = calculateYoY(entry.value, entry.dataKey, yearIndex);
             const yoyText = yoyChange !== null ? 
               `(${parseFloat(yoyChange) >= 0 ? '+' : ''}${yoyChange}%)` : '';
-            
-            return (
+              
+              return (
               <div key={index} className="flex items-center justify-between py-1">
                 <div className="flex items-center flex-1 min-w-0">
-                  <div 
+                      <div 
                     className="w-3 h-3 rounded-full mr-3 shadow-sm ring-1 ring-gray-200" 
-                    style={{ backgroundColor: entry.color }}
-                  ></div>
+                        style={{ backgroundColor: entry.color }}
+                      ></div>
                   <span className="text-sm font-medium text-gray-700 truncate">
                     {sectorName}
                   </span>
-                </div>
+                    </div>
                 <div className="flex items-center ml-3">
                   <span className="text-sm font-bold text-gray-900">
-                    {entry.value.toFixed(2)}%
-                  </span>
+                        {entry.value.toFixed(2)}%
+                      </span>
                   {yoyChange !== null && (
                     <span className={`ml-2 text-xs font-medium px-1.5 py-0.5 rounded-md ${
                       parseFloat(yoyChange) >= 0 
@@ -495,15 +495,15 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
                         : 'text-red-700 bg-red-50'
                     }`}>
                       {yoyText}
-                    </span>
-                  )}
+                        </span>
+                      )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
-    );
+      );
   };
   
   // Componente para mostrar la bandera de la comunidad
