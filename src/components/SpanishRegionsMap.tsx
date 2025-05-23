@@ -1062,17 +1062,35 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
         .scale(canariasScale) // Escala aumentada para Canarias
         .translate([containerWidth * 0.14, containerHeight * 0.82]); // Mover más arriba
       
+      // Crear proyección específica para Ceuta y Melilla (compartirán recuadro)
+      const projectionCeuta = d3.geoMercator()
+        .center([-5.3, 35.9])  // Centro en Ceuta
+        .scale(containerWidth * 22)     // Escala aumentada para que sea más grande
+        .translate([containerWidth * 0.78, containerHeight * 0.15]); // Posición en parte superior derecha
+      
+      const projectionMelilla = d3.geoMercator()
+        .center([-3.0, 35.3])  // Centro en Melilla
+        .scale(containerWidth * 22)     // Escala aumentada para que sea más grande
+        .translate([containerWidth * 0.90, containerHeight * 0.15]); // Posición en parte superior derecha
+      
       // Crear generador de path para península
       const pathGeneratorMainland = d3.geoPath().projection(projectionMainland);
       
       // Crear generador de path para Canarias
       const pathGeneratorCanarias = d3.geoPath().projection(projectionCanarias);
       
+      // Crear generador de path para Ceuta y Melilla
+      const pathGeneratorCeuta = d3.geoPath().projection(projectionCeuta);
+      const pathGeneratorMelilla = d3.geoPath().projection(projectionMelilla);
+      
       // Crear grupo para el mapa principal
       const mapGroup = svg.append('g');
       
       // Crear grupo para las Islas Canarias
       const canariasGroup = svg.append('g');
+      
+      // Crear grupo para Ceuta y Melilla
+      const ceutaMelillaGroup = svg.append('g');
       
       // Función para obtener el ranking de una comunidad
       const getCommunityRank = (feature: GeoJsonFeature): { rank: number, total: number } | null => {
@@ -1146,9 +1164,21 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
         return name.includes('Canarias') || name.includes('Canary');
       });
       
+      // Filtrar Ceuta y Melilla por separado
+      const ceutaFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return name.includes('Ceuta');
+      });
+      
+      const melillaFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return name.includes('Melilla');
+      });
+      
       const mainlandFeatures = geoJson.features.filter(feature => {
         const name = getCommunityName(feature, language);
-        return !name.includes('Canarias') && !name.includes('Canary');
+        return !name.includes('Canarias') && !name.includes('Canary') && 
+               !name.includes('Ceuta') && !name.includes('Melilla');
       });
       
       // Función para crear un tooltip de nivel global
@@ -1744,6 +1774,58 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           }
         });
       
+      // Dibujar Ceuta
+      ceutaMelillaGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.ceuta')
+        .data(ceutaFeatures)
+        .enter()
+        .append('path')
+        .attr('d', (d) => pathGeneratorCeuta(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language, dataDisplayType);
+          return getColorForValue(value, selectedSector, data, selectedYear.toString(), dataDisplayType);
+        })
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 0.5)
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-ceuta-${normalizarTexto(name)}`;
+        })
+        .attr('class', 'community ceuta')
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
+          }
+        });
+      
+      // Dibujar Melilla
+      ceutaMelillaGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.melilla')
+        .data(melillaFeatures)
+        .enter()
+        .append('path')
+        .attr('d', (d) => pathGeneratorMelilla(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language, dataDisplayType);
+          return getColorForValue(value, selectedSector, data, selectedYear.toString(), dataDisplayType);
+        })
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 0.5)
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-melilla-${normalizarTexto(name)}`;
+        })
+        .attr('class', 'community melilla')
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
+          }
+        });
+      
       // Dibujar el recuadro que contiene a las Islas Canarias
       if (canariasFeatures.length > 0) {
         // Fondo blanco translúcido para el recuadro - ajustar posición y tamaño
@@ -1769,6 +1851,44 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           .attr('fill', '#0077b6')
           .attr('class', 'canarias-label')
           .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
+      }
+      
+      // Dibujar el recuadro para Ceuta y Melilla
+      if (ceutaFeatures.length > 0 || melillaFeatures.length > 0) {
+        // Fondo blanco translúcido para el recuadro
+        ceutaMelillaGroup.append('rect')
+          .attr('x', containerWidth * 0.70)
+          .attr('y', containerHeight * 0.05)
+          .attr('width', containerWidth * 0.28)
+          .attr('height', containerHeight * 0.15)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', 'rgba(255, 255, 255, 0.8)')
+          .attr('stroke', '#0077b6')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,3')
+          .lower();
+        
+        // Etiquetas individuales para cada ciudad
+        // Etiqueta para Ceuta (parte izquierda)
+        ceutaMelillaGroup.append('text')
+          .attr('x', containerWidth * 0.78)
+          .attr('y', containerHeight * 0.10)
+          .attr('font-size', '9px')
+          .attr('text-anchor', 'middle')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#444')
+          .text('Ceuta');
+        
+        // Etiqueta para Melilla (parte derecha)
+        ceutaMelillaGroup.append('text')
+          .attr('x', containerWidth * 0.90)
+          .attr('y', containerHeight * 0.10)
+          .attr('font-size', '9px')
+          .attr('text-anchor', 'middle')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#444')
+          .text('Melilla');
       }
     };
     
@@ -1867,7 +1987,14 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
               })()}
             </div>
           </div>
-          <div className="h-[calc(100%-2rem)]">
+          <div 
+            className="border border-gray-200 rounded-lg bg-white overflow-hidden"
+            style={{ 
+              height: '500px', // Altura fija de 500px para coincidir con ResearchersSpanishRegionsMap y ResearchersCommunityRankingChart
+              width: '100%',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            }}
+          >
             <svg ref={svgRef} className="w-full h-full"></svg>
           </div>
         </>

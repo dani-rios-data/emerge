@@ -910,12 +910,12 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       // Crear proyección específica para Ceuta y Melilla (compartirán recuadro)
       const projectionCeuta = d3.geoMercator()
         .center([-5.3, 35.9])  // Centro en Ceuta
-        .scale(width * 20)     // Mayor escala para que sea más grande
+        .scale(width * 22)     // Escala aumentada para que sea más grande
         .translate([width * 0.78, height * 0.15]); // Posición en parte superior derecha
       
       const projectionMelilla = d3.geoMercator()
         .center([-3.0, 35.3])  // Centro en Melilla
-        .scale(width * 20)     // Mayor escala para que sea más grande
+        .scale(width * 22)     // Escala aumentada para que sea más grande
         .translate([width * 0.90, height * 0.15]); // Posición en parte superior derecha
       
       // Generadores de ruta

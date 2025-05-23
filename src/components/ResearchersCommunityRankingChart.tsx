@@ -13,7 +13,18 @@ import {
   Chart
 } from 'chart.js';
 import * as d3 from 'd3';
-import autonomous_communities_flags from '../logos/autonomous_communities_flags.json';
+import {
+  ResearchersCommunityData,
+  getCommunityValue,
+  getCommunityFlagUrl,
+  getSpainAveragePerCommunity,
+  getPreviousYearValue,
+  formatNumber,
+  getSectorId,
+  isSpainEntry,
+  getNormalizedCommunityName,
+  validarValor
+} from '../utils/spanishCommunitiesUtils';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -34,29 +45,6 @@ const RESEARCHER_SECTOR_COLORS = {
   nonprofit: '#5C6BC0'     // Azul índigo (antes para todos los sectores)
 };
 
-// Interfaz para los datos de investigadores por comunidades autónomas
-interface ResearchersCommunityData {
-  TERRITORIO: string;
-  TERRITORIO_CODE: string;
-  TIME_PERIOD: string;
-  TIME_PERIOD_CODE: string;
-  SEXO: string;
-  SEXO_CODE: string;
-  SECTOR_EJECUCION: string;
-  SECTOR_EJECUCION_CODE: string;
-  MEDIDAS: string;
-  MEDIDAS_CODE: string;
-  OBS_VALUE: string;
-  [key: string]: string;
-}
-
-// Interfaz para las banderas de comunidades autónomas
-interface CommunityFlag {
-  community: string;
-  code: string;
-  flag: string;
-}
-
 // Props del componente
 interface ResearchersCommunityRankingChartProps {
   data: ResearchersCommunityData[];
@@ -76,83 +64,12 @@ const CHART_PALETTE = {
   CANARIAS: '#FFD600', // Amarillo para Canarias
 };
 
-// Tabla de mapeo entre nombres de comunidades en el CSV y nombres normalizados
-const communityNameMapping: { [key: string]: { es: string, en: string } } = {
-  'Andalucía': { es: 'Andalucía', en: 'Andalusia' },
-  'Andalucia': { es: 'Andalucía', en: 'Andalusia' },
-  'Aragón': { es: 'Aragón', en: 'Aragon' },
-  'Aragon': { es: 'Aragón', en: 'Aragon' },
-  'Principado de Asturias': { es: 'Asturias', en: 'Asturias' },
-  'Asturias': { es: 'Asturias', en: 'Asturias' },
-  'Illes Balears / Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
-  'Islas Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
-  'Illes Balears': { es: 'Islas Baleares', en: 'Balearic Islands' },
-  'Baleares': { es: 'Islas Baleares', en: 'Balearic Islands' },
-  'Balearic Islands': { es: 'Islas Baleares', en: 'Balearic Islands' },
-  'Canarias': { es: 'Canarias', en: 'Canary Islands' },
-  'Islas Canarias': { es: 'Canarias', en: 'Canary Islands' },
-  'Canary Islands': { es: 'Canarias', en: 'Canary Islands' },
-  'Cantabria': { es: 'Cantabria', en: 'Cantabria' },
-  'Castilla - La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
-  'Castilla-La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
-  'Castilla La Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
-  'Castilla-la Mancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
-  'Castillalamancha': { es: 'Castilla-La Mancha', en: 'Castilla–La Mancha' },
-  'Castilla y León': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castilla y Leon': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castilla León': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castilla-León': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castilla-Leon': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castile and León': { es: 'Castilla y León', en: 'Castile and León' },
-  'Castile and Leon': { es: 'Castilla y León', en: 'Castile and León' },
-  'Cataluña': { es: 'Cataluña', en: 'Catalonia' },
-  'Cataluna': { es: 'Cataluña', en: 'Catalonia' },
-  'Catalunya': { es: 'Cataluña', en: 'Catalonia' },
-  'Catalonia': { es: 'Cataluña', en: 'Catalonia' },
-  'Comunidad Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
-  'C. Valenciana': { es: 'Com. Valenciana', en: 'Valencia' },
-  'Valencia': { es: 'Com. Valenciana', en: 'Valencia' },
-  'Valencian Community': { es: 'Com. Valenciana', en: 'Valencia' },
-  'Extremadura': { es: 'Extremadura', en: 'Extremadura' },
-  'Galicia': { es: 'Galicia', en: 'Galicia' },
-  'La Rioja': { es: 'La Rioja', en: 'La Rioja' },
-  'Rioja': { es: 'La Rioja', en: 'La Rioja' },
-  'Comunidad de Madrid': { es: 'Madrid', en: 'Madrid' },
-  'Madrid': { es: 'Madrid', en: 'Madrid' },
-  'Región de Murcia': { es: 'Murcia', en: 'Murcia' },
-  'Region de Murcia': { es: 'Murcia', en: 'Murcia' },
-  'Murcia': { es: 'Murcia', en: 'Murcia' },
-  'Comunidad Foral de Navarra': { es: 'Navarra', en: 'Navarre' },
-  'Navarra': { es: 'Navarra', en: 'Navarre' },
-  'Navarre': { es: 'Navarra', en: 'Navarre' },
-  'País Vasco': { es: 'País Vasco', en: 'Basque Country' },
-  'Pais Vasco': { es: 'País Vasco', en: 'Basque Country' },
-  'Euskadi': { es: 'País Vasco', en: 'Basque Country' },
-  'Basque Country': { es: 'País Vasco', en: 'Basque Country' },
-  'Ciudad Autónoma de Ceuta': { es: 'Ceuta', en: 'Ceuta' },
-  'Ceuta': { es: 'Ceuta', en: 'Ceuta' },
-  'Ciudad Autónoma de Melilla': { es: 'Melilla', en: 'Melilla' },
-  'Melilla': { es: 'Melilla', en: 'Melilla' }
-};
-
-// Función para normalizar texto (remover acentos y caracteres especiales)
-function normalizarTexto(texto: string | undefined): string {
-  if (!texto) return '';
-  return texto
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
-
-// Aseguramos el tipo correcto para el array de flags
-const communityFlags = autonomous_communities_flags as CommunityFlag[];
-
 const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChartProps> = ({
   data,
   selectedYear,
   selectedSector,
   language,
-  maxItems = 17, // Por defecto mostramos todas las comunidades autónomas
+  maxItems = 19, // Cambiado de 17 a 19 para incluir las 17 CCAA + 2 ciudades autónomas (Ceuta y Melilla)
 }) => {
   const chartRef = useRef<Chart<'bar', number[], string>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -390,336 +307,15 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
   // Ocultar el tooltip global
   const hideGlobalTooltip = (): void => {
     const tooltipEl = document.getElementById('global-chart-tooltip');
-    if (tooltipEl) {
-      tooltipEl.style.display = 'none';
-      tooltipEl.style.opacity = '0';
+        if (tooltipEl) {
+          tooltipEl.style.display = 'none';
+          tooltipEl.style.opacity = '0';
     }
   };
 
-  const getCommunityFlagUrl = (communityName: string): string => {
-    // Normalizar el nombre de la comunidad
-    const normalizedName = normalizarTexto(communityName);
-    
-    console.log(`Buscando bandera para: "${communityName}" (normalizado: "${normalizedName}")`);
-    
-    // CORRECCIÓN DIRECTA: detectar manualmente las comunidades problemáticas
-    // Esto se ejecuta primero para garantizar que estos casos específicos se manejen correctamente
-    if (normalizedName.includes('extrem') || communityName.includes('Extrem')) {
-      console.log('CORRECCIÓN DIRECTA: Extremadura detectada');
-      return 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg';
-    }
-    
-    if (normalizedName.includes('rioja') || communityName.includes('Rioja')) {
-      console.log('CORRECCIÓN DIRECTA: La Rioja detectada');
-      return 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg';
-    }
-    
-    if (normalizedName.includes('mancha') || 
-        normalizedName.includes('castilla-la') || 
-        normalizedName.includes('castilla la') ||
-        communityName.includes('Mancha') || 
-        communityName.includes('Castilla-La') || 
-        communityName.includes('Castilla La')) {
-      console.log('CORRECCIÓN DIRECTA: Castilla-La Mancha detectada');
-      return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg';
-    }
-    
-    if (normalizedName.includes('cantabr') || communityName.includes('Cantabr')) {
-      console.log('CORRECCIÓN DIRECTA: Cantabria detectada');
-      return 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg';
-    }
-    
-    // Mapa definitivo de banderas para todas las CCAA con URLs directas
-    // Esta es nuestra fuente de verdad para todas las banderas
-    const definitiveFlagMap: Record<string, string> = {
-      'andalucía': 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Andaluc%C3%ADa.svg',
-      'aragón': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg',
-      'asturias': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg',
-      'cantabria': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg',
-      'castilla-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
-      'castilla y león': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
-      'cataluña': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg',
-      'extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
-      'galicia': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Flag_of_Galicia.svg',
-      'islas baleares': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg',
-      'canarias': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Flag_of_the_Canary_Islands.svg',
-      'la rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
-      'madrid': 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_the_Community_of_Madrid.svg',
-      'murcia': 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Murcia.svg',
-      'navarra': 'https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Navarre.svg',
-      'país vasco': 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg',
-      'comunidad valenciana': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
-      'ceuta': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Flag_of_Ceuta.svg',
-      'melilla': 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Flag_of_Melilla.svg'
-    };
-    
-    // Búsqueda rápida: comprobar si ya tenemos el nombre en nuestro mapa definitivo
-    if (definitiveFlagMap[normalizedName]) {
-      console.log(`Bandera encontrada directamente para "${normalizedName}": ${definitiveFlagMap[normalizedName]}`);
-      return definitiveFlagMap[normalizedName];
-    }
-    
-    // Mapa completo de todos los posibles nombres para cada comunidad autónoma
-    const communityVariants: Record<string, string[]> = {
-      'andalucía': ['andalucía', 'andalucia', 'andalusia'],
-      'aragón': ['aragón', 'aragon'],
-      'asturias': ['asturias', 'principado de asturias', 'asturias principality'],
-      'cantabria': ['cantabria', 'cantabr'],
-      'castilla-la mancha': ['castilla-la mancha', 'castilla la mancha', 'castillalamancha', 'castilla–la mancha', 'mancha'],
-      'castilla y león': ['castilla y león', 'castilla y leon', 'castilla leon', 'castile and león', 'castile and leon'],
-      'cataluña': ['cataluña', 'cataluna', 'catalunya', 'catalonia'],
-      'extremadura': ['extremadura', 'extrem', 'extrema', 'extremad'],
-      'galicia': ['galicia'],
-      'islas baleares': ['islas baleares', 'illes balears', 'baleares', 'balearic islands'],
-      'canarias': ['canarias', 'islas canarias', 'canary islands'],
-      'la rioja': ['la rioja', 'rioja'],
-      'madrid': ['madrid', 'comunidad de madrid', 'community of madrid'],
-      'murcia': ['murcia', 'región de murcia', 'region de murcia'],
-      'navarra': ['navarra', 'comunidad foral de navarra', 'navarre'],
-      'país vasco': ['país vasco', 'pais vasco', 'euskadi', 'basque country'],
-      'comunidad valenciana': ['comunidad valenciana', 'com. valenciana', 'c. valenciana', 'valencia', 'valencian community'],
-      'ceuta': ['ceuta', 'ciudad autónoma de ceuta', 'ciudad autonoma de ceuta'],
-      'melilla': ['melilla', 'ciudad autónoma de melilla', 'ciudad autonoma de melilla']
-    };
-    
-    // Detectar a qué comunidad corresponde el nombre
-    let matchedCommunity = '';
-    
-    // 1. Intentar coincidencia directa con el nombre normalizado
-    for (const [community, variants] of Object.entries(communityVariants)) {
-      if (variants.some(variant => normalizarTexto(variant) === normalizedName)) {
-        matchedCommunity = community;
-        console.log(`Coincidencia directa encontrada: "${communityName}" -> "${community}"`);
-        break;
-      }
-    }
-    
-    // 2. Si no hay coincidencia directa, intentar coincidencia parcial
-    if (!matchedCommunity) {
-      for (const [community, variants] of Object.entries(communityVariants)) {
-        if (variants.some(variant => 
-          normalizarTexto(variant).includes(normalizedName) || 
-          normalizedName.includes(normalizarTexto(variant)))) {
-          matchedCommunity = community;
-          console.log(`Coincidencia parcial encontrada: "${communityName}" -> "${community}"`);
-          break;
-        }
-      }
-    }
-    
-    // 3. Si aún no hay coincidencia, buscar por fragmentos clave
-    if (!matchedCommunity) {
-      const keywordMap: Record<string, string> = {
-        'andalu': 'andalucía',
-        'arag': 'aragón',
-        'astur': 'asturias',
-        'cantab': 'cantabria',
-        'mancha': 'castilla-la mancha',
-        'castilla': 'castilla y león', // Por defecto, si solo menciona Castilla
-        'leon': 'castilla y león',
-        'catal': 'cataluña',
-        'extrem': 'extremadura',
-        'galic': 'galicia',
-        'balear': 'islas baleares',
-        'canar': 'canarias',
-        'rioja': 'la rioja',
-        'madrid': 'madrid',
-        'murc': 'murcia',
-        'navarr': 'navarra',
-        'vasco': 'país vasco',
-        'basque': 'país vasco',
-        'valen': 'comunidad valenciana',
-        'ceuta': 'ceuta',
-        'melill': 'melilla'
-      };
-      
-      for (const [keyword, community] of Object.entries(keywordMap)) {
-        if (normalizedName.includes(keyword)) {
-          matchedCommunity = community;
-          console.log(`Coincidencia por palabra clave "${keyword}": "${communityName}" -> "${community}"`);
-          break;
-        }
-      }
-    }
-    
-    // 4. Si encontramos una comunidad, devolver su bandera desde nuestro mapa definitivo
-    if (matchedCommunity && definitiveFlagMap[matchedCommunity]) {
-      console.log(`Bandera encontrada para ${matchedCommunity}: ${definitiveFlagMap[matchedCommunity]}`);
-      return definitiveFlagMap[matchedCommunity];
-    }
-    
-    // 5. Si todo lo anterior falla, intentar encontrar la bandera desde communityFlags
-    // (Este es un último recurso, pero mantenemos la compatibilidad)
-    const specificNameMapping: Record<string, string> = {
-      'extremadura': 'extremadura',
-      'castilla y leon': 'castilla y leon',
-      'castilla leon': 'castilla y leon',
-      'castilla-la mancha': 'castilla-la mancha',
-      'navarra': 'comunidad foral de navarra',
-      'asturias': 'principado de asturias',
-      'ceuta': 'ciudad autonoma de ceuta',
-      'melilla': 'ciudad autonoma de melilla',
-      'la rioja': 'la rioja',
-      'rioja': 'la rioja',
-      'cantabria': 'cantabria'
-    };
-    
-    // Si el nombre normalizado está en el mapa de conversión específico, usar ese nombre
-    const mappedName = specificNameMapping[normalizedName] || normalizedName;
-    
-    // Buscar en communityFlags con diferentes estrategias
-    let matchingFlag = communityFlags.find(flag => 
-      normalizarTexto(flag.community) === mappedName
-    );
-    
-    // Si no hay coincidencia exacta, probar con coincidencia parcial
-    if (!matchingFlag) {
-      matchingFlag = communityFlags.find(flag => {
-        const flagCommunity = normalizarTexto(flag.community);
-        return flagCommunity.includes(mappedName) || mappedName.includes(flagCommunity);
-      });
-    }
-    
-    // Si encontramos una bandera en communityFlags, usarla
-    if (matchingFlag) {
-      console.log(`Bandera encontrada en communityFlags: ${matchingFlag.flag}`);
-      return matchingFlag.flag;
-    }
-    
-    // 6. FALLBACK ABSOLUTO: Hacer una aproximación forzada basada en el nombre
-    // Intentamos adivinar la comunidad autónoma analizando fragmentos del nombre
-    // Esto solo debe ocurrir en casos muy extraños donde todo lo anterior falló
-    
-    console.log(`No se encontró coincidencia para "${communityName}" con métodos estándar, aplicando fallback forzado`);
-    
-    // FALLBACK DIRECTO para las comunidades problemáticas
-    if (normalizedName.includes('extrem')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg';
-    }
-    if (normalizedName.includes('rioja')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg';
-    }
-    if (normalizedName.includes('mancha') || normalizedName.includes('castilla-la') || normalizedName.includes('castilla la')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg';
-    }
-    if (normalizedName.includes('cantabr')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg';
-    }
-    
-    // Tabla de decisión final basada en fragmentos de texto
-    // Ordenados de más específicos a más generales
-    const fallbackDecisionTable: [string, string][] = [
-      ['rioja', 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg'],
-      ['mancha', 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg'],
-      ['castilla', 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg'],
-      ['leon', 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg'],
-      ['valen', 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg'],
-      ['vasco', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
-      ['basque', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
-      ['euskadi', 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg'],
-      ['madrid', 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_the_Community_of_Madrid.svg'],
-      ['andalu', 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Andaluc%C3%ADa.svg'],
-      ['astur', 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg'],
-      ['cantabr', 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg'],
-      ['aragon', 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg'],
-      ['catal', 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg'],
-      ['galicia', 'https://upload.wikimedia.org/wikipedia/commons/6/64/Flag_of_Galicia.svg'],
-      ['extrem', 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg'],
-      ['balear', 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg'],
-      ['canar', 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Flag_of_the_Canary_Islands.svg'],
-      ['navarr', 'https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Navarre.svg'],
-      ['murcia', 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Murcia.svg'],
-      ['ceuta', 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Flag_of_Ceuta.svg'],
-      ['melilla', 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Flag_of_Melilla.svg']
-    ];
-    
-    for (const [fragment, flagUrl] of fallbackDecisionTable) {
-      if (normalizedName.includes(fragment)) {
-        console.log(`FALLBACK: Coincidencia forzada por fragmento "${fragment}" -> ${flagUrl}`);
-        return flagUrl;
-      }
-    }
-    
-    // SOLUCIÓN FINAL: Mapeo directo de nombres más comunes (incluso con errores de escritura)
-    const directFlagUrlsForProblematicNames: Record<string, string> = {
-      'extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
-      'extramadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
-      'castila-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
-      'castilla-la mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
-      'la rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
-      'rioja': 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_La_Rioja.svg',
-      'cantabria': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg'
-    };
-    
-    // Verificar si el nombre original (sin normalizar) está en este mapa especial
-    if (directFlagUrlsForProblematicNames[communityName.toLowerCase()]) {
-      console.log(`ÚLTIMA SOLUCIÓN: Encontrada bandera directa para "${communityName.toLowerCase()}"`);
-      return directFlagUrlsForProblematicNames[communityName.toLowerCase()];
-    }
-    
-    console.log(`¡ATENCIÓN! No se pudo encontrar bandera para: "${communityName}" a pesar de todos los intentos.`);
-    
-    // Si nada funciona, devolver una URL de bandera de España genérica
-    return "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Spain.svg";
-  };
-
-  // Función para formatear números con separador de miles
-  const formatNumber = (value: number, decimals: number = 0) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', { 
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals 
-    }).format(value);
-  };
-
-  // Función para obtener el valor del año anterior para una comunidad
-  const getPreviousYearValue = (communityName: string, code: string): number | null => {
-    const prevYear = selectedYear - 1;
-    const sectorId = getSectorId();
-    
-    // Buscar datos del año anterior para la misma comunidad y sector
-    const prevYearData = data.filter(item => 
-      item.TIME_PERIOD === prevYear.toString() &&
-      item.SECTOR_EJECUCION_CODE === sectorId &&
-      item.SEXO_CODE === '_T' &&
-      item.MEDIDAS_CODE === 'INVESTIGADORES_EJC' &&
-      (normalizarTexto(item.TERRITORIO) === normalizarTexto(communityName) || 
-       item.TERRITORIO_CODE === code)
-    );
-    
-    if (prevYearData.length === 0) return null;
-    
-    const value = parseFloat(prevYearData[0].OBS_VALUE);
-    return isNaN(value) ? null : value;
-  };
-
-    // Mapear el sector seleccionado al código del sector en los datos
-  const getSectorId = () => {
-    let sectorId = '';
-    switch (selectedSector.toLowerCase()) {
-      case 'total':
-        sectorId = '_T';
-        break;
-      case 'business':
-        sectorId = 'EMPRESAS';
-        break;
-      case 'government':
-        sectorId = 'ADMINISTRACION_PUBLICA';
-        break;
-      case 'education':
-        sectorId = 'ENSENIANZA_SUPERIOR';
-        break;
-      case 'nonprofit':
-        sectorId = 'IPSFL';
-        break;
-      default:
-        sectorId = '_T'; // Total por defecto
-    }
-    return sectorId;
-  };
-
-  // Filtrar y procesar datos para el gráfico
+  // Filtrar y procesar datos para el gráfico usando la lógica unificada
   const getChartData = () => {
-    const sectorId = getSectorId();
+    const sectorId = getSectorId(selectedSector);
 
     // Filtrar datos por año, sector, sexo (total) y medida (INVESTIGADORES_EJC)
     const filteredData = data.filter(item => 
@@ -731,47 +327,56 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
     if (filteredData.length === 0) return [];
 
-    // Transformar los datos para el gráfico
-    const chartData = filteredData.map(item => {
-      // Obtener el nombre normalizado de la comunidad
-      const communityName = item.TERRITORIO;
-      const normalizedName = Object.keys(communityNameMapping).find(key => 
-        normalizarTexto(key) === normalizarTexto(communityName)
-      );
+    // Crear mapa de comunidades únicas excluyendo España
+    const communityMap = new Map<string, {
+      originalName: string,
+      displayName: string,
+      value: number | null,
+      code: string,
+      flag: string
+    }>();
+
+    filteredData.forEach(item => {
+      // Excluir España del ranking usando la función unificada
+      if (isSpainEntry(item)) {
+        return;
+      }
+
+      const originalName = item.TERRITORIO;
       
-      // Usar el nombre normalizado según el idioma
-      const displayName = normalizedName 
-        ? (language === 'es' ? communityNameMapping[normalizedName].es : communityNameMapping[normalizedName].en)
-        : communityName;
+      // Usar la función unificada para obtener el nombre normalizado
+      const displayName = getNormalizedCommunityName(originalName, language);
       
-      // Obtener la bandera de la comunidad si está disponible
-      const flagUrl = getCommunityFlagUrl(displayName);
+      // Usar directamente el valor del item actual en lugar de buscar nuevamente
+      const value = validarValor(item.OBS_VALUE);
       
-      return {
-        name: displayName,
-        originalName: communityName,
-        value: parseFloat(item.OBS_VALUE),
-        code: item.TERRITORIO_CODE,
-        flag: flagUrl
-      };
-    })
-    .filter(item => {
-      // Filtrar para eliminar entradas no válidas y España
-      if (isNaN(item.value)) return false;
+      // Obtener la bandera usando la función unificada
+      const flagUrl = getCommunityFlagUrl(displayName, language);
       
-      // Excluir España (puede aparecer como "España", "Spain", "ESPAÑA", etc.)
-      const normalizedName = normalizarTexto(item.name);
-      const normalizedOriginal = normalizarTexto(item.originalName);
-      
-      return !normalizedName.includes('españa') && 
-             !normalizedName.includes('spain') && 
-             !normalizedOriginal.includes('españa') && 
-             !normalizedOriginal.includes('spain') && 
-             item.code !== 'ES' && 
-             item.code !== 'ESPAÑA';
-    })
-    .sort((a, b) => b.value - a.value) // Ordenar de mayor a menor
-    .slice(0, maxItems); // Limitar número de elementos si es necesario
+      // Solo agregar si no existe ya o si el valor actual es mejor
+      if (!communityMap.has(displayName) || (value !== null && (communityMap.get(displayName)?.value === null || (communityMap.get(displayName)?.value || 0) < value))) {
+        communityMap.set(displayName, {
+          originalName,
+          displayName,
+          value,
+          code: item.TERRITORIO_CODE,
+          flag: flagUrl
+        });
+      }
+    });
+
+    // Convertir el mapa a array y filtrar valores válidos
+    const chartData = Array.from(communityMap.values())
+      .filter(item => item.value !== null && !isNaN(item.value))
+      .sort((a, b) => (b.value || 0) - (a.value || 0)) // Ordenar de mayor a menor
+      .slice(0, maxItems) // Limitar número de elementos
+      .map(item => ({
+        name: item.displayName,
+        originalName: item.originalName,
+        value: item.value || 0,
+        code: item.code,
+        flag: item.flag
+      }));
 
     return chartData;
   };
@@ -805,54 +410,17 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
           const rank = dataIndex + 1;
           const total = chartData.length;
           
-          // Obtener valor del año anterior para cálculo YoY
-          const prevYearValue = getPreviousYearValue(communityData.originalName, communityData.code);
+          // Obtener valor del año anterior para cálculo YoY usando la función unificada
+          const prevYearValue = getPreviousYearValue(communityData.name, data, selectedYear, selectedSector, language);
           const hasYoYData = value !== null && prevYearValue !== null;
           const yoyChange = hasYoYData ? ((value - prevYearValue) / prevYearValue) * 100 : null;
           const yoyIsPositive = yoyChange !== null && yoyChange > 0;
           
-          // Obtener el valor para toda España (para comparativas)
-          const spainData = data.find(item => 
-            (normalizarTexto(item.TERRITORIO) === 'espana' || 
-             normalizarTexto(item.TERRITORIO) === 'spain' ||
-             normalizarTexto(item.TERRITORIO) === 'total nacional' ||
-             item.TERRITORIO_CODE === '00' || 
-             item.TERRITORIO_CODE === 'ES') && 
-            item.TIME_PERIOD === selectedYear.toString() && 
-            item.SECTOR_EJECUCION_CODE === getSectorId() && 
-            item.SEXO_CODE === '_T' &&
-            item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
-          );
+          // Obtener media de España usando la función unificada
+          const spainAvg = getSpainAveragePerCommunity(data, selectedYear.toString(), selectedSector);
           
-          // Valor total de España
-          let spainValue: number | null = null;
-          if (spainData && spainData.OBS_VALUE) {
-            spainValue = parseFloat(spainData.OBS_VALUE);
-            if (isNaN(spainValue)) spainValue = null;
-          }
-          
-          // Calcular media por comunidad (excluyendo España)
-          let spainAvg: number | null = null;
-          if (spainValue !== null) {
-            // Obtener el número de comunidades (igual que en total)
-            spainAvg = spainValue / total;
-          }
-          
-          // Obtener datos de Canarias para comparativa
-          const canariasData = data.find(item => 
-            (normalizarTexto(item.TERRITORIO).includes('canarias') || 
-             normalizarTexto(item.TERRITORIO).includes('canary')) && 
-            item.TIME_PERIOD === selectedYear.toString() && 
-            item.SECTOR_EJECUCION_CODE === getSectorId() && 
-            item.SEXO_CODE === '_T' &&
-            item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
-          );
-          
-          let canariasValue: number | null = null;
-          if (canariasData && canariasData.OBS_VALUE) {
-            canariasValue = parseFloat(canariasData.OBS_VALUE);
-            if (isNaN(canariasValue)) canariasValue = null;
-          }
+          // Obtener datos de Canarias para comparativa usando la función unificada
+          const canariasValue = getCommunityValue('Canarias', data, selectedYear.toString(), selectedSector, language);
           
           // Construir contenido del tooltip con estilos inline para mayor compatibilidad
           let tooltipContent = '';
@@ -862,7 +430,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
             tooltipContent = `
               <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
                 <!-- Header con el nombre del país -->
-                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
                   ${communityData.flag ? `
                     <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
                       <img src="${communityData.flag}" class="w-full h-full object-cover" alt="${communityName}" />
@@ -898,30 +466,30 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
                     </div>
                   ` : ''}
                   <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
-                </div>
-                
-                <!-- Contenido principal -->
-                <div class="p-4">
-                  <!-- Métrica principal -->
-                  <div class="mb-3">
-                    <div class="flex items-center text-gray-500 text-sm mb-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                      <span>${t.researchers}:</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xl font-bold text-blue-700">${formatNumber(value)}</span>
-                    </div>
+              </div>
+              
+              <!-- Contenido principal -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-3">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <span>${t.researchers}:</span>
+                  </div>
+                  <div class="flex items-center">
+                      <span class="text-xl font-bold text-blue-700">${formatNumber(value, language)}</span>
+                  </div>
             `;
             
             // Añadir variación YoY si está disponible
             if (hasYoYData && yoyChange !== null) {
               tooltipContent += `
                 <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                     <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-                  </svg>
+                          </svg>
                   <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(1)}% vs ${selectedYear - 1}</span>
-                </div>
+                        </div>
               `;
             } else {
               tooltipContent += `
@@ -935,22 +503,22 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
                 </div>
               `;
             }
-            
+                
             tooltipContent += `</div>`;
             
             // Mostrar ranking
             tooltipContent += `
-              <div class="mb-4">
-                <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                    <circle cx="12" cy="8" r="6" />
-                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                  </svg>
-                  <span class="font-medium">Rank </span>
-                  <span class="font-bold text-lg mx-1">${rank}</span>
-                  <span class="text-gray-600">${language === 'es' ? `de ${total}` : `of ${total}`}</span>
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
+                    <span class="font-bold text-lg mx-1">${rank}</span>
+                    <span class="text-gray-600">${language === 'es' ? `de ${total}` : `of ${total}`}</span>
+                  </div>
                 </div>
-              </div>
             `;
             
             // Añadir comparativas si hay datos disponibles
@@ -965,8 +533,8 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
               comparisonsHtml += `
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs Media Nacional (${formatNumber(spainAvg)}):` : 
-                    `vs National Avg (${formatNumber(spainAvg)}):`}</span>
+                    `vs Media Nacional (${formatNumber(spainAvg, language)}):` : 
+                    `vs National Avg (${formatNumber(spainAvg, language)}):`}</span>
                   <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
                 </div>
               `;
@@ -983,8 +551,8 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
               comparisonsHtml += `
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs Canarias (${formatNumber(canariasValue)}):` : 
-                    `vs Canary Islands (${formatNumber(canariasValue)}):`}</span>
+                    `vs Canarias (${formatNumber(canariasValue, language)}):` : 
+                    `vs Canary Islands (${formatNumber(canariasValue, language)}):`}</span>
                   <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
                 </div>
               `;
@@ -1016,14 +584,16 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
   // Estilos para el contenedor con scroll
   const scrollContainerStyle: React.CSSProperties = {
-    height: '400px',
+    height: '500px', // Aumentado de 400px a 500px para coincidir con ResearchersSpanishRegionsMap
     overflowY: 'auto',
-    border: '1px solid #f0f0f0',
+    border: '1px solid #e5e7eb', // Cambiado a #e5e7eb para coincidir con border-gray-200
     borderRadius: '8px',
+    backgroundColor: 'white', // Añadido fondo blanco
     padding: '0 10px',
     scrollbarWidth: 'thin',
     scrollbarColor: '#d1d5db #f3f4f6',
     msOverflowStyle: 'none',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)', // Añadida sombra consistente
   } as React.CSSProperties;
 
   // Agregar estilos específicos para el scrollbar con CSS en useEffect
