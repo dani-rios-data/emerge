@@ -878,7 +878,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
           // Obtener dimensiones del contenedor con un tamaño fijo
       const containerWidth = mapRef.current?.clientWidth || 800;
-          const containerHeight = 500; // Altura fija aumentada para acomodar Ceuta y Melilla
+          const containerHeight = 400; // Reducido de 500px a 400px para consistencia con otros componentes
           
           // Definir la paleta de colores al inicio para evitar problemas de inicialización
           const mapPalette = getSectorPalette(selectedSector);
@@ -905,7 +905,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       const projectionCanarias = d3.geoMercator()
         .center([-15.5, 28.2])
             .scale(width * 2.5) // Aumentar escala para islas más grandes y visibles
-            .translate([width * 0.14, height * 0.78]); // Ajustar posición para mejor visualización
+            .translate([width * 0.14, height * 0.80]); // Ajustar posición vertical para centrar mejor en el cuadro
       
       // Crear proyección específica para Ceuta y Melilla (compartirán recuadro)
       const projectionCeuta = d3.geoMercator()
@@ -1784,9 +1784,28 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
       // Función para manejar el evento mouseout
       function handleMouseOut(this: d3.BaseType): void {
-        d3.select(this)
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 0.5);
+        const element = d3.select(this);
+        
+        // Obtener las clases CSS del elemento para determinar el tipo de región
+        const classes = element.attr('class') || '';
+        
+        // Restaurar el stroke original según el tipo de región
+        if (classes.includes('mainland')) {
+          // Regiones de la península: contorno blanco delgado
+          element
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 0.5);
+        } else if (classes.includes('canarias') || classes.includes('ceuta') || classes.includes('melilla')) {
+          // Canarias, Ceuta y Melilla: contorno negro más grueso para visibilidad
+          element
+            .attr('stroke', '#000')
+            .attr('stroke-width', 0.7);
+        } else {
+          // Fallback para cualquier otro caso
+          element
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 0.5);
+        }
         
         // Ocultar tooltip global
         const tooltipEl = globalTooltip;
@@ -1967,9 +1986,9 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
         // Fondo blanco translúcido para el recuadro
         canariasGroup.append('rect')
           .attr('x', width * 0.02)
-          .attr('y', height * 0.70)
+          .attr('y', height * 0.68) // Mover ligeramente hacia arriba
           .attr('width', width * 0.24)
-          .attr('height', height * 0.15) // Reducir altura del recuadro
+          .attr('height', height * 0.20) // Aumentar altura del recuadro de 0.15 a 0.20
           .attr('rx', 4)
           .attr('ry', 4)
           .attr('fill', 'rgba(255, 255, 255, 0.8)')
@@ -1981,7 +2000,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
         // Etiqueta para Canarias con mejor estilo
         canariasGroup.append('text')
           .attr('x', width * 0.04)
-          .attr('y', height * 0.73)
+          .attr('y', height * 0.71) // Ajustar posición Y de la etiqueta para que coincida con el nuevo recuadro
           .attr('font-size', '10px')
           .attr('font-weight', 'bold')
           .attr('fill', '#0077b6')
@@ -2192,7 +2211,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           <div 
             className="border border-gray-200 rounded-lg bg-white overflow-hidden"
             style={{ 
-              height: '500px', // Aumentar altura para acomodar Ceuta y Melilla
+              height: '400px', // Reducido de 500px a 400px para consistencia con otros componentes
               width: '100%',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}

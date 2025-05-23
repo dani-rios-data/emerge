@@ -6,6 +6,7 @@ import ResearchersTimelineChart from '../../components/ResearchersTimelineChart'
 import ResearchersBySectorChart from '../../components/ResearchersBySectorChart';
 import ResearchersSpanishRegionsMap from '../../components/ResearchersSpanishRegionsMap';
 import ResearchersCommunityRankingChart from '../../components/ResearchersCommunityRankingChart';
+import ResearchersCommunitiesTimelineChart from '../../components/ResearchersCommunitiesTimelineChart';
 import Papa from 'papaparse';
 
 interface ResearchersProps {
@@ -56,6 +57,7 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
   const [mapSector, setMapSector] = useState<string>('total');
   const [timelineSector, setTimelineSector] = useState<string>('total');
   const [communitySector, setCommunitySector] = useState<string>('total');
+  const [communityTimelineSector, setCommunityTimelineSector] = useState<string>('total');
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isCommunityLoading, setIsCommunityLoading] = useState<boolean>(true);
@@ -219,6 +221,10 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
   const handleCommunitySectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCommunitySector(e.target.value);
+  };
+
+  const handleCommunityTimelineSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCommunityTimelineSector(e.target.value);
   };
 
   // Componente para título de sección
@@ -550,6 +556,61 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
                 </div>
               </div>
             </>
+          )}
+        </div>
+
+        {/* Nueva subsección: Evolución por comunidades */}
+        <div className="mb-8">
+          <SubsectionTitle title={language === 'es' ? "Evolución por comunidades" : "Evolution by Communities"} />
+          
+          {isCommunityLoading ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+              <div className="text-center text-gray-400">
+                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-lg">{t.loadingData}</p>
+              </div>
+            </div>
+          ) : communityError ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
+              <div className="text-center text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg">{communityError}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg w-full">
+              {/* Filtros para la evolución por comunidades */}
+              <div className="mb-4 flex flex-wrap gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center">
+                  <label className="mr-2 text-sm font-medium text-gray-700">{t.sectorLabel}</label>
+                  <select 
+                    value={communityTimelineSector}
+                    onChange={handleCommunityTimelineSectorChange}
+                    className="rounded-md border border-gray-300 shadow-sm py-1 px-3 bg-white text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="total">{t.totalSector}</option>
+                    <option value="business">{t.businessSector}</option>
+                    <option value="government">{t.governmentSector}</option>
+                    <option value="education">{t.educationSector}</option>
+                    <option value="nonprofit">{t.nonprofitSector}</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Componente de evolución por comunidades */}
+              <div className="w-full min-h-[450px] bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                <ResearchersCommunitiesTimelineChart
+                  data={researchersCommunityData}
+                  language={language}
+                  selectedSector={mapSectorToCode(communityTimelineSector)}
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>

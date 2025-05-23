@@ -1047,8 +1047,8 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
         .attr('height', containerHeight);
       
       // MEJORA: Ajustar escala para utilizar más espacio disponible
-      const peninsulaScale = containerWidth * 3.2; // Aumentar escala
-      const canariasScale = containerWidth * 2.5; // Incrementar más la escala para islas más grandes
+      const peninsulaScale = containerWidth * 2.8; // Reducido de 3.2 a 2.8 para hacer el mapa más pequeño
+      const canariasScale = containerWidth * 2.3; // Aumentado de 2.0 a 2.3 para que las islas se vean más grandes
       
       // Crear proyección para España peninsular (centrada y escalada para maximizar el espacio)
       const projectionMainland = d3.geoMercator()
@@ -1059,18 +1059,18 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
       // Crear proyección específica para las Islas Canarias
       const projectionCanarias = d3.geoMercator()
         .center([-15.5, 28.2])
-        .scale(canariasScale) // Escala aumentada para Canarias
-        .translate([containerWidth * 0.14, containerHeight * 0.82]); // Mover más arriba
+        .scale(canariasScale) // Aumentado de 2.0 a 2.3 para que las islas se vean más grandes
+        .translate([containerWidth * 0.14, containerHeight * 0.74]); // Centrado perfecto en el recuadro (horizontal: 0.02 + 0.24/2 = 0.14, vertical: 0.66 + 0.16/2 = 0.74)
       
       // Crear proyección específica para Ceuta y Melilla (compartirán recuadro)
       const projectionCeuta = d3.geoMercator()
         .center([-5.3, 35.9])  // Centro en Ceuta
-        .scale(containerWidth * 22)     // Escala aumentada para que sea más grande
+        .scale(containerWidth * 16)     // Reducido de 22 a 16 para hacer Ceuta más pequeña
         .translate([containerWidth * 0.78, containerHeight * 0.15]); // Posición en parte superior derecha
       
       const projectionMelilla = d3.geoMercator()
         .center([-3.0, 35.3])  // Centro en Melilla
-        .scale(containerWidth * 22)     // Escala aumentada para que sea más grande
+        .scale(containerWidth * 16)     // Reducido de 22 a 16 para hacer Melilla más pequeña
         .translate([containerWidth * 0.90, containerHeight * 0.15]); // Posición en parte superior derecha
       
       // Crear generador de path para península
@@ -1831,9 +1831,9 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
         // Fondo blanco translúcido para el recuadro - ajustar posición y tamaño
         canariasGroup.append('rect')
           .attr('x', containerWidth * 0.02) // Más a la izquierda
-          .attr('y', containerHeight * 0.74) // Mover más arriba
+          .attr('y', containerHeight * 0.66) // Mover más arriba para que no se salga del contenedor
           .attr('width', containerWidth * 0.24) // Mantener ancho
-          .attr('height', containerHeight * 0.17) // Mantener altura
+          .attr('height', containerHeight * 0.16) // Aumentado de 0.12 a 0.16 para que las islas se vean completas
           .attr('rx', 4) 
           .attr('ry', 4)
           .attr('fill', 'rgba(255, 255, 255, 0.8)')
@@ -1845,7 +1845,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
         // Etiqueta para Canarias - ajustar posición
         canariasGroup.append('text')
           .attr('x', containerWidth * 0.04) 
-          .attr('y', containerHeight * 0.76) // Mover más arriba
+          .attr('y', containerHeight * 0.68) // Ajustar posición por recuadro movido más arriba
           .attr('font-size', '8px') 
           .attr('font-weight', 'bold')
           .attr('fill', '#0077b6')
@@ -1990,7 +1990,7 @@ const SpanishRegionsMap: React.FC<SpanishRegionsMapProps> = ({
           <div 
             className="border border-gray-200 rounded-lg bg-white overflow-hidden"
             style={{ 
-              height: '500px', // Altura fija de 500px para coincidir con ResearchersSpanishRegionsMap y ResearchersCommunityRankingChart
+              height: '400px', // Reducido de 500px a 400px para coincidir con RegionRankingChart
               width: '100%',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}

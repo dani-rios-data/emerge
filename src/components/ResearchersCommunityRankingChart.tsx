@@ -584,7 +584,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
   // Estilos para el contenedor con scroll
   const scrollContainerStyle: React.CSSProperties = {
-    height: '500px', // Aumentado de 400px a 500px para coincidir con ResearchersSpanishRegionsMap
+    height: '400px', // Cambiado de 500px a 400px para coincidir exactamente con ResearchersSpanishRegionsMap
     overflowY: 'auto',
     border: '1px solid #e5e7eb', // Cambiado a #e5e7eb para coincidir con border-gray-200
     borderRadius: '8px',
