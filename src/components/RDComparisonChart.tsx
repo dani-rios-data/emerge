@@ -5,7 +5,8 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  ResponsiveContainer
+  ResponsiveContainer,
+  Customized
 } from 'recharts';
 import { 
   ChevronDown
@@ -63,6 +64,34 @@ interface TimeSeriesDataPoint {
   country: number | null;
   [key: string]: string | number | null; // Para poder agregar dinámicamente el país seleccionado
 }
+
+// Interfaz para los textos de localización
+interface LocalizedTexts {
+  title: string;
+  canary: string;
+  euAverage: string;
+  selectSector: string;
+  selectCountry: string;
+  allSectors: string;
+  percentGDP: string;
+  year: string;
+  loading: string;
+  noData: string;
+  business: string;
+  government: string;
+  education: string;
+  nonprofit: string;
+}
+
+// Interfaz para las escalas de Recharts
+interface AxisScale {
+  scale: (value: unknown) => number;
+}
+
+// Parámetros para las banderas
+const FLAG_SIZE = 20;
+const FLAG_MARGIN = 6; // Separación del último punto
+const MIN_GAP = 24; // Mínima separación vertical entre banderas
 
 // Componente principal de la gráfica de comparación
 const RDComparisonChart: React.FC<RDComparisonChartProps> = ({ 
@@ -142,6 +171,50 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
     eu: "#4338ca", // Índigo para UE
     canary: "#3b82f6", // Azul para Canarias
     country: "#dc2626", // Rojo para el país seleccionado
+  };
+  
+  // Componente mejorado para renderizar banderas (UE, Canarias, y países) - para el selector
+  const FlagImage = ({ 
+    type, 
+    iso3, 
+    strokeColor,
+    size = 20
+  }: { 
+    type: 'eu' | 'canary' | 'country'; 
+    iso3?: string; 
+    strokeColor: string;
+    size?: number;
+  }) => {
+    let flagUrl = '';
+    
+    // Buscar la bandera adecuada según el tipo
+    if (type === 'eu') {
+      const euFlag = country_flags.find(flag => flag.iso3 === 'EUU');
+      flagUrl = euFlag?.flag || 'https://flagcdn.com/eu.svg';
+    } else if (type === 'canary') {
+      const canaryFlag = autonomous_communities_flags.find(flag => flag.code === 'CAN');
+      flagUrl = canaryFlag?.flag || '';
+    } else if (type === 'country' && iso3) {
+      const countryFlag = country_flags.find(flag => flag.iso3 === iso3);
+      flagUrl = countryFlag?.flag || '';
+    }
+    
+    if (!flagUrl) return null;
+    
+    return (
+      <img 
+        src={flagUrl} 
+        alt=""
+        width={size} 
+        height={Math.round(size * 0.67)} 
+        style={{ 
+          objectFit: 'cover',
+          border: `1px solid ${strokeColor}`,
+          borderRadius: 4,
+          boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
+        }}
+      />
+    );
   };
   
   // Efecto para cargar los países disponibles
@@ -370,116 +443,147 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
     return null;
   };
   
-  // Parámetros reutilizables
-  const FLAG_SIZE = 22;   // La bandera grande
-  const GAP = 4;         // +4 px → empuja la bandera a la IZQUIERDA
-  
-  // Componente mejorado para renderizar banderas (UE, Canarias, y países)
-  const FlagImage = ({ 
-    type, 
-    iso3, 
-    strokeColor,
-    size = FLAG_SIZE
-  }: { 
-    type: 'eu' | 'canary' | 'country'; 
-    iso3?: string; 
-    strokeColor: string;
-    size?: number;
+  // Componente para renderizar banderas dentro del SVG
+  const FlagsCustomComponent = (props: {
+    yAxisMap?: AxisScale[];
+    xAxisMap?: AxisScale[];
+    data?: TimeSeriesDataPoint[];
+    selectedCountry?: CountryOption;
+    texts?: LocalizedTexts;
+    lineColors?: typeof lineColors;
+    [key: string]: unknown;
   }) => {
-    let flagUrl = '';
+    const { yAxisMap, xAxisMap, data, selectedCountry, texts, lineColors } = props;
     
-    // Buscar la bandera adecuada según el tipo
-    if (type === 'eu') {
-      const euFlag = country_flags.find(flag => flag.iso3 === 'EUU');
-      flagUrl = euFlag?.flag || 'https://flagcdn.com/eu.svg';
-    } else if (type === 'canary') {
-      const canaryFlag = autonomous_communities_flags.find(flag => flag.code === 'CAN');
-      flagUrl = canaryFlag?.flag || '';
-    } else if (type === 'country' && iso3) {
-      const countryFlag = country_flags.find(flag => flag.iso3 === iso3);
-      flagUrl = countryFlag?.flag || '';
-    }
+    if (!data || !data.length || !yAxisMap || !xAxisMap || !selectedCountry || !texts || !lineColors) return null;
+
+    const xScale = xAxisMap[0]?.scale;
+    const yScale = yAxisMap[0]?.scale;
     
-    if (!flagUrl) return null;
-    
-    return (
-      <img 
-        src={flagUrl} 
-        alt=""
-        width={size} 
-        height={Math.round(size * 0.67)} 
-        style={{ 
-          objectFit: 'cover',
-          border: `1px solid ${strokeColor}`,
-          borderRadius: 4,
-          boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
-        }}
-      />
-    );
-  };
-  
-  // Componente para renderizar las banderas al final de las líneas
-  const renderFlags = () => {
-    if (!timeSeriesData.length) return null;
-    
+    if (!xScale || !yScale) return null;
+
     // Obtener el último punto de datos
-    const lastDataPoint = timeSeriesData[timeSeriesData.length - 1];
-    
-    // Calcular dinámicamente el rango visible del eje Y
-    const yValues = timeSeriesData.flatMap(d =>
-      [d.eu, d.canary, d.country].filter(v => v !== null)
-    ) as number[];
-    
-    const yMin = 0;
-    const yMax = Math.max(...yValues) * 1.05; // +5% para margen visual
-    
-    // Cálculo del porcentaje vertical
-    const yToPct = (v: number) => {
-      return ((yMax - v) / (yMax - yMin)) * 100;
+    const lastDataPoint = data[data.length - 1];
+    const lastX = xScale(lastDataPoint.year);
+
+    // Función para obtener URL de bandera
+    const getFlagUrl = (type: 'eu' | 'canary' | 'country', iso3?: string) => {
+      if (type === 'eu') {
+        const euFlag = country_flags.find(flag => flag.iso3 === 'EUU');
+        return euFlag?.flag || 'https://flagcdn.com/eu.svg';
+      } else if (type === 'canary') {
+        const canaryFlag = autonomous_communities_flags.find(flag => flag.code === 'CAN');
+        return canaryFlag?.flag || '';
+      } else if (type === 'country' && iso3) {
+        const countryFlag = country_flags.find(flag => flag.iso3 === iso3);
+        return countryFlag?.flag || '';
+      }
+      return '';
     };
+
+    // Preparar puntos de banderas
+    const flagPoints = [];
+
+    // UE
+    if (lastDataPoint.eu !== null) {
+      flagPoints.push({
+        key: 'eu',
+        x: lastX + FLAG_MARGIN,
+        y: yScale(lastDataPoint.eu),
+        originalY: yScale(lastDataPoint.eu),
+        flagUrl: getFlagUrl('eu'),
+        color: lineColors.eu,
+        label: texts.euAverage
+      });
+    }
+
+    // País seleccionado
+    if (lastDataPoint.country !== null) {
+      flagPoints.push({
+        key: 'country',
+        x: lastX + FLAG_MARGIN,
+        y: yScale(lastDataPoint.country),
+        originalY: yScale(lastDataPoint.country),
+        flagUrl: getFlagUrl('country', selectedCountry.iso3),
+        color: lineColors.country,
+        label: selectedCountry.name
+      });
+    }
+
+    // Canarias
+    if (lastDataPoint.canary !== null) {
+      flagPoints.push({
+        key: 'canary',
+        x: lastX + FLAG_MARGIN,
+        y: yScale(lastDataPoint.canary),
+        originalY: yScale(lastDataPoint.canary),
+        flagUrl: getFlagUrl('canary'),
+        color: lineColors.canary,
+        label: texts.canary
+      });
+    }
+
+    // Lógica de anti-solape: ordenar por Y y ajustar posiciones
+    flagPoints.sort((a, b) => a.originalY - b.originalY);
     
-    // Componente que coloca la bandera
-    const FlagStub = ({
-      yValue,
-      children
-    }: {
-      yValue: number | null;
-      children: React.ReactNode;
-    }) => {
-      if (yValue === null) return null;
+    for (let i = 1; i < flagPoints.length; i++) {
+      const currentFlag = flagPoints[i];
+      const previousFlag = flagPoints[i - 1];
       
-      return (
-        <div
-          style={{
-            position: 'absolute',
-            top: `calc(${yToPct(yValue)}% - ${FLAG_SIZE / 2}px)`,
-            right: GAP,          // +4 px → más a la izquierda
-            pointerEvents: 'none',
-          }}
-        >
-          {children}
-        </div>
-      );
-    };
-    
+      if (currentFlag.y - previousFlag.y < MIN_GAP) {
+        currentFlag.y = previousFlag.y + MIN_GAP;
+      }
+    }
+
     return (
-      <>
-        <FlagStub yValue={lastDataPoint.eu}>
-          <FlagImage type="eu" strokeColor={lineColors.eu} />
-        </FlagStub>
-
-        <FlagStub yValue={lastDataPoint.country}>
-          <FlagImage
-            type="country"
-            iso3={selectedCountry.iso3}
-            strokeColor={lineColors.country}
-          />
-        </FlagStub>
-
-        <FlagStub yValue={lastDataPoint.canary}>
-          <FlagImage type="canary" strokeColor={lineColors.canary} />
-        </FlagStub>
-      </>
+      <g>
+        {flagPoints.map(point => {
+          if (!point.flagUrl) return null;
+          
+          return (
+            <g key={point.key}>
+              {/* Línea conectora si la bandera se movió de su posición original */}
+              {Math.abs(point.y - point.originalY) > 2 && (
+                <line
+                  x1={point.x - 2}
+                  y1={point.originalY}
+                  x2={point.x - 2}
+                  y2={point.y}
+                  stroke={point.color}
+                  strokeWidth={1}
+                  strokeDasharray="2,2"
+                  opacity={0.5}
+                />
+              )}
+              
+              {/* Bandera */}
+              <image
+                href={point.flagUrl}
+                x={point.x}
+                y={point.y - FLAG_SIZE / 2}
+                width={FLAG_SIZE}
+                height={FLAG_SIZE * 0.67}
+                style={{ 
+                  cursor: 'pointer',
+                  filter: `drop-shadow(0 1px 2px rgba(0,0,0,0.1))`
+                }}
+              />
+              
+              {/* Borde de la bandera */}
+              <rect
+                x={point.x}
+                y={point.y - FLAG_SIZE / 2}
+                width={FLAG_SIZE}
+                height={FLAG_SIZE * 0.67}
+                fill="none"
+                stroke={point.color}
+                strokeWidth={1}
+                rx={2}
+              />
+            </g>
+          );
+        })}
+      </g>
     );
   };
 
@@ -559,7 +663,7 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={timeSeriesData}
-                margin={{ top: 20, right: 50, left: 20, bottom: 10 }}
+                margin={{ top: 20, right: 60, left: 20, bottom: 10 }}
               >
                 <XAxis 
                   dataKey="year" 
@@ -616,11 +720,21 @@ const RDComparisonChart: React.FC<RDComparisonChartProps> = ({
                   activeDot={{ r: 6, stroke: lineColors.country, strokeWidth: 1, fill: '#fff' }}
                   isAnimationActive={false}
                 />
+                
+                {/* Banderas renderizadas dentro del SVG */}
+                <Customized
+                  component={(rechartProps: Record<string, unknown>) => (
+                    <FlagsCustomComponent
+                      {...rechartProps}
+                      data={timeSeriesData}
+                      selectedCountry={selectedCountry}
+                      texts={t}
+                      lineColors={lineColors}
+                    />
+                  )}
+                />
               </LineChart>
             </ResponsiveContainer>
-            
-            {/* Renderizar las banderas */}
-            {renderFlags()}
           </div>
           
           {/* Nueva leyenda en la parte inferior central */}
