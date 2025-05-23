@@ -5,7 +5,8 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  ResponsiveContainer
+  ResponsiveContainer,
+  Customized
 } from 'recharts';
 import { ChevronDown } from 'lucide-react';
 import country_flags from '../logos/country_flags.json';
@@ -37,6 +38,21 @@ interface CommunityOption {
   flag?: string;
 }
 
+// Interfaz para los textos de localización
+interface LocalizedTexts {
+  noData: string;
+  researchersLabel: string;
+  loading: string;
+  spainAverage: string;
+  canarias: string;
+  selectCommunity: string;
+}
+
+// Interfaz para las escalas de Recharts
+interface AxisScale {
+  scale: (value: unknown) => number;
+}
+
 // Props del componente
 interface ResearchersCommunitiesTimelineChartProps {
   data: ResearchersCommunityData[];
@@ -54,13 +70,14 @@ interface TooltipPayload {
 // Colores para las líneas
 const LINE_COLORS = {
   spainAverage: "#dc2626",  // Rojo para la media de España
-  canarias: "#FFD600",      // Amarillo para Canarias
-  community: "#3b82f6"      // Azul para la comunidad seleccionada
+  canarias: "#3b82f6",      // Azul para Canarias (cambiado de amarillo a azul)
+  community: "#059669"      // Verde para la comunidad seleccionada (cambiado para diferenciarse)
 };
 
-// Parámetros para las banderas (igual que en ResearchersTimelineChart)
-const FLAG_SIZE = 22;
-const GAP = 4;
+// Parámetros para las banderas
+const FLAG_SIZE = 20;
+const FLAG_MARGIN = 6; // Separación del último punto
+const MIN_GAP = 24; // Mínima separación vertical entre banderas
 
 // Componente para renderizar banderas
 const FlagImage = ({ 
@@ -110,6 +127,154 @@ const FlagImage = ({
         boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
       }}
     />
+  );
+};
+
+// Componente para renderizar banderas dentro del SVG
+const FlagsCustomComponent = (props: {
+  yAxisMap?: AxisScale[];
+  xAxisMap?: AxisScale[];
+  data?: TimeSeriesDataPoint[];
+  selectedCommunity?: CommunityOption;
+  texts?: LocalizedTexts;
+  [key: string]: unknown;
+}) => {
+  const { yAxisMap, xAxisMap, data, selectedCommunity, texts } = props;
+  
+  if (!data || !data.length || !yAxisMap || !xAxisMap || !selectedCommunity || !texts) return null;
+
+  const xScale = xAxisMap[0]?.scale;
+  const yScale = yAxisMap[0]?.scale;
+  
+  if (!xScale || !yScale) return null;
+
+  // Obtener el último punto de datos
+  const lastDataPoint = data[data.length - 1];
+  const lastX = xScale(lastDataPoint.year);
+
+  // Función para obtener URL de bandera
+  const getFlagUrl = (type: 'country' | 'community', code?: string) => {
+    if (type === 'country' && code === 'ES') {
+      const esFlag = country_flags.find(flag => flag.code === 'ES' || flag.iso3 === 'ESP');
+      return esFlag?.flag || 'https://flagcdn.com/es.svg';
+    } else if (type === 'community' && code) {
+      if (code === 'canarias') {
+        const canaryFlag = autonomous_communities_flags.find(flag => flag.code === 'CAN');
+        return canaryFlag?.flag || '';
+      } else {
+        const communityFlag = autonomous_communities_flags.find(flag => 
+          flag.community.toLowerCase().includes(code.toLowerCase()) ||
+          flag.code.toLowerCase() === code.toLowerCase()
+        );
+        return communityFlag?.flag || '';
+      }
+    }
+    return '';
+  };
+
+  // Preparar puntos de banderas
+  const flagPoints = [];
+
+  // España
+  if (lastDataPoint.spainAverage !== null) {
+    flagPoints.push({
+      key: 'spain',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.spainAverage),
+      originalY: yScale(lastDataPoint.spainAverage),
+      flagUrl: getFlagUrl('country', 'ES'),
+      color: LINE_COLORS.spainAverage,
+      label: texts.spainAverage
+    });
+  }
+
+  // Canarias
+  if (lastDataPoint.canarias !== null) {
+    flagPoints.push({
+      key: 'canarias',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.canarias),
+      originalY: yScale(lastDataPoint.canarias),
+      flagUrl: getFlagUrl('community', 'canarias'),
+      color: LINE_COLORS.canarias,
+      label: texts.canarias
+    });
+  }
+
+  // Comunidad seleccionada
+  if (selectedCommunity && lastDataPoint.community !== null) {
+    flagPoints.push({
+      key: 'community',
+      x: lastX + FLAG_MARGIN,
+      y: yScale(lastDataPoint.community),
+      originalY: yScale(lastDataPoint.community),
+      flagUrl: getFlagUrl('community', selectedCommunity.name.toLowerCase()),
+      color: LINE_COLORS.community,
+      label: selectedCommunity.name
+    });
+  }
+
+  // Lógica de anti-solape: ordenar por Y y ajustar posiciones
+  flagPoints.sort((a, b) => a.originalY - b.originalY);
+  
+  for (let i = 1; i < flagPoints.length; i++) {
+    const currentFlag = flagPoints[i];
+    const previousFlag = flagPoints[i - 1];
+    
+    if (currentFlag.y - previousFlag.y < MIN_GAP) {
+      currentFlag.y = previousFlag.y + MIN_GAP;
+    }
+  }
+
+  return (
+    <g>
+      {flagPoints.map(point => {
+        if (!point.flagUrl) return null;
+        
+        return (
+          <g key={point.key}>
+            {/* Línea conectora si la bandera se movió de su posición original */}
+            {Math.abs(point.y - point.originalY) > 2 && (
+              <line
+                x1={point.x - 2}
+                y1={point.originalY}
+                x2={point.x - 2}
+                y2={point.y}
+                stroke={point.color}
+                strokeWidth={1}
+                strokeDasharray="2,2"
+                opacity={0.5}
+              />
+            )}
+            
+            {/* Bandera */}
+            <image
+              href={point.flagUrl}
+              x={point.x}
+              y={point.y - FLAG_SIZE / 2}
+              width={FLAG_SIZE}
+              height={FLAG_SIZE * 0.67}
+              style={{ 
+                cursor: 'pointer',
+                filter: `drop-shadow(0 1px 2px rgba(0,0,0,0.1))`
+              }}
+            />
+            
+            {/* Borde de la bandera */}
+            <rect
+              x={point.x}
+              y={point.y - FLAG_SIZE / 2}
+              width={FLAG_SIZE}
+              height={FLAG_SIZE * 0.67}
+              fill="none"
+              stroke={point.color}
+              strokeWidth={1}
+              rx={2}
+            />
+          </g>
+        );
+      })}
+    </g>
   );
 };
 
@@ -320,6 +485,19 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
     return value.toFixed(0);
   };
 
+  // Función para calcular el cambio año a año (YoY)
+  const calculateYoY = (currentValue: number | null, dataKey: string, currentYearIndex: number) => {
+    if (currentValue === null || currentYearIndex === 0) return null;
+    
+    const previousDataPoint = timeSeriesData[currentYearIndex - 1];
+    const previousValue = previousDataPoint[dataKey as keyof TimeSeriesDataPoint] as number | null;
+    
+    if (previousValue === null || previousValue === 0) return null;
+    
+    const yoyChange = ((currentValue - previousValue) / previousValue) * 100;
+    return yoyChange.toFixed(2);
+  };
+
   // Componente personalizado para el tooltip
   const CustomTooltip = ({ 
     active, 
@@ -331,92 +509,44 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
     label?: string 
   }) => {
     if (active && payload && payload.length) {
+      // Encontrar el índice del año actual para calcular YoY
+      const currentYearIndex = timeSeriesData.findIndex(d => d.year === label);
+      
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
           <p className="font-medium text-gray-800 mb-2">{label}</p>
-          {payload.map((entry: TooltipPayload, index: number) => (
-            <div key={index} className="flex items-center mb-1">
-              <div 
-                className="w-3 h-3 rounded-full mr-2" 
-                style={{ backgroundColor: entry.color }}
-              ></div>
-              <span className="text-sm text-gray-600 mr-2">{entry.name}:</span>
-              <span className="text-sm font-medium text-gray-800">
-                {entry.value ? formatNumber(entry.value, language, 0) : t.noData}
-              </span>
-            </div>
-          ))}
+          {payload.map((entry: TooltipPayload, index: number) => {
+            if (entry.value === null) return null;
+            
+            // Calcular YoY para esta entrada
+            const yoyChange = calculateYoY(entry.value, entry.name === t.spainAverage ? 'spainAverage' : 
+                                         entry.name === t.canarias ? 'canarias' : 'community', currentYearIndex);
+            
+            const yoyText = yoyChange !== null ? 
+              `(${parseFloat(yoyChange) >= 0 ? '+' : ''}${yoyChange}%)` : '';
+            
+            return (
+              <div key={index} className="flex items-center mb-1">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{ backgroundColor: entry.color }}
+                ></div>
+                <span className="text-sm text-gray-600 mr-2">{entry.name}:</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatNumber(entry.value, language, 0)}
+                  {yoyChange !== null && (
+                    <span className={`ml-1.5 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {yoyText}
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       );
     }
     return null;
-  };
-
-  // Componente para renderizar las banderas al final de las líneas (igual que en ResearchersTimelineChart)
-  const renderFlags = () => {
-    if (!timeSeriesData.length) return null;
-    
-    // Obtener el último punto de datos
-    const lastDataPoint = timeSeriesData[timeSeriesData.length - 1];
-    
-    // Calcular dinámicamente el rango visible del eje Y
-    const yValues = timeSeriesData.flatMap(d =>
-      [d.spainAverage, d.canarias, d.community].filter(v => v !== null)
-    ) as number[];
-    
-    const yMin = 0;
-    const yMax = Math.max(...yValues) * 1.05; // +5% para margen visual
-    
-    // Cálculo del porcentaje vertical
-    const yToPct = (v: number) => {
-      return ((yMax - v) / (yMax - yMin)) * 100;
-    };
-    
-    // Componente que coloca la bandera
-    const FlagStub = ({
-      yValue,
-      children
-    }: {
-      yValue: number | null;
-      children: React.ReactNode;
-    }) => {
-      if (yValue === null) return null;
-      
-      return (
-        <div
-          style={{
-            position: 'absolute',
-            top: `calc(${yToPct(yValue)}% - ${FLAG_SIZE / 2}px)`,
-            right: GAP,
-            pointerEvents: 'none',
-          }}
-        >
-          {children}
-        </div>
-      );
-    };
-    
-    return (
-      <>
-        <FlagStub yValue={lastDataPoint.spainAverage}>
-          <FlagImage type="country" code="ES" strokeColor={LINE_COLORS.spainAverage} />
-        </FlagStub>
-
-        <FlagStub yValue={lastDataPoint.canarias}>
-          <FlagImage type="community" code="canarias" strokeColor={LINE_COLORS.canarias} />
-        </FlagStub>
-
-        {selectedCommunity && (
-          <FlagStub yValue={lastDataPoint.community}>
-            <FlagImage 
-              type="community" 
-              code={selectedCommunity.name.toLowerCase()} 
-              strokeColor={LINE_COLORS.community} 
-            />
-          </FlagStub>
-        )}
-      </>
-    );
   };
 
   if (loading) {
@@ -494,11 +624,11 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
       </div>
 
       {/* Gráfica de líneas */}
-      <div ref={chartContainerRef} className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm relative">
+      <div ref={chartContainerRef} className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={timeSeriesData}
-            margin={{ top: 20, right: 50, left: 20, bottom: 10 }}
+            margin={{ top: 20, right: 60, left: 20, bottom: 10 }}
           >
             <XAxis 
               dataKey="year" 
@@ -557,11 +687,20 @@ const ResearchersCommunitiesTimelineChart: React.FC<ResearchersCommunitiesTimeli
                 isAnimationActive={false}
               />
             )}
+            
+            {/* Banderas renderizadas dentro del SVG */}
+            <Customized
+              component={(rechartProps: Record<string, unknown>) => (
+                <FlagsCustomComponent
+                  {...rechartProps}
+                  data={timeSeriesData}
+                  selectedCommunity={selectedCommunity}
+                  texts={t}
+                />
+              )}
+            />
           </LineChart>
         </ResponsiveContainer>
-        
-        {/* Renderizar las banderas al final de las líneas */}
-        {renderFlags()}
       </div>
       
       {/* Leyenda en la parte inferior central */}
