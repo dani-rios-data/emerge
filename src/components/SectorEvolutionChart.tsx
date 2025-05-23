@@ -139,7 +139,7 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
   // Textos localizados
   const texts = {
     es: {
-      title: "Evolución por sectores I+D",
+      title: "Evolución por sectores I+D (% PIB)",
       selectCommunity: "Seleccionar comunidad",
       percentGDP: "% del PIB",
       year: "Año",
@@ -153,7 +153,7 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
       nonprofit: "Inst. Privadas sin Fines de Lucro"
     },
     en: {
-      title: "R&D Evolution by Sectors",
+      title: "R&D Evolution by Sectors (% GDP)",
       selectCommunity: "Select community",
       percentGDP: "% of GDP",
       year: "Year",
@@ -455,9 +455,11 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
         });
       
       return (
-        <div className="bg-white p-3 rounded-lg shadow-md border border-gray-100">
-          <p className="font-medium text-gray-700 mb-2">{`${selectedCommunity.localName} (${label})`}</p>
-          <div className="space-y-2">
+        <div className="bg-white px-4 py-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="font-semibold text-gray-800 mb-3 text-sm">
+            {`${selectedCommunity.localName} (${label})`}
+          </p>
+          <div className="space-y-2.5">
             {sortedPayload.map((entry, index) => {
               // Traducir el nombre del sector
               const sectorName = t[entry.dataKey as keyof typeof t] || entry.name;
@@ -466,21 +468,25 @@ const SectorEvolutionChart: React.FC<SectorEvolutionChartProps> = ({
               const yoyChange = calculateYoY(entry.value, entry.dataKey, yearIndex);
               
               return (
-                <div key={index} className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div 
-                      className="w-3 h-3 rounded-full mr-2" 
-                      style={{ backgroundColor: entry.color }}
-                    ></div>
-                    <span className="text-sm font-medium">{sectorName}:</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-sm font-bold">{entry.value.toFixed(2)}%</span>
-                    {yoyChange && (
-                      <span className={`ml-2 text-xs ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {parseFloat(yoyChange) >= 0 ? '+' : ''}{yoyChange}%
+                <div key={index} className="min-w-[300px]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center flex-shrink-0">
+                      <div 
+                        className="w-2 h-2 rounded-full mr-3" 
+                        style={{ backgroundColor: entry.color }}
+                      ></div>
+                      <span className="text-sm text-gray-700">{sectorName}:</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {entry.value.toFixed(2)}%
                       </span>
-                    )}
+                      {yoyChange && (
+                        <span className={`ml-1 text-xs font-medium ${parseFloat(yoyChange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ({parseFloat(yoyChange) >= 0 ? '+' : ''}{yoyChange}%)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
