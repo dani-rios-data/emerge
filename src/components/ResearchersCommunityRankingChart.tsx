@@ -162,7 +162,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
   const texts = {
     es: {
       title: 'Ranking de Comunidades Autónomas por número de investigadores',
-      noData: 'No hay datos disponibles',
+      noData: 'Sin datos',
       researchersLabel: 'Investigadores',
       loading: 'Cargando...',
       researchers: 'Investigadores',
@@ -173,7 +173,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     },
     en: {
       title: 'Ranking of Autonomous Communities by number of researchers',
-      noData: 'No data available',
+      noData: 'No data',
       researchersLabel: 'Researchers',
       loading: 'Loading...',
       researchers: 'Researchers',
@@ -257,7 +257,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         fontSize: '14px',
         lineHeight: '1.5',
         color: '#333',
-        transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+        transition: 'opacity 0.15s ease-in-out'
       });
       
       document.body.appendChild(tooltipElement);
@@ -286,6 +286,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         #global-chart-tooltip .text-gray-800 { color: #1F2937; }
         #global-chart-tooltip .text-gray-600 { color: #4B5563; }
         #global-chart-tooltip .text-yellow-500 { color: #F59E0B; }
+        #global-chart-tooltip .text-orange-500 { color: #F97316; }
         #global-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
         #global-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         #global-chart-tooltip .p-3 { padding: 0.75rem; }
@@ -299,6 +300,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         #global-chart-tooltip .mr-2 { margin-right: 0.5rem; }
         #global-chart-tooltip .mt-1 { margin-top: 0.25rem; }
         #global-chart-tooltip .mt-3 { margin-top: 0.75rem; }
+        #global-chart-tooltip .ml-2 { margin-left: 0.5rem; }
         #global-chart-tooltip .text-xs { font-size: 0.75rem; }
         #global-chart-tooltip .text-sm { font-size: 0.875rem; }
         #global-chart-tooltip .text-lg { font-size: 1.125rem; }
@@ -312,6 +314,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         #global-chart-tooltip .h-6 { height: 1.5rem; }
         #global-chart-tooltip .w-36 { width: 9rem; }
         #global-chart-tooltip .w-48 { width: 12rem; }
+        #global-chart-tooltip .w-44 { width: 11rem; }
         #global-chart-tooltip .rounded { border-radius: 0.25rem; }
         #global-chart-tooltip .rounded-md { border-radius: 0.375rem; }
         #global-chart-tooltip .overflow-hidden { overflow: hidden; }
@@ -324,6 +327,10 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         #global-chart-tooltip .h-full { height: 100%; }
         #global-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
         #global-chart-tooltip .flag-container { min-width: 2rem; min-height: 1.5rem; }
+        #global-chart-tooltip .w-12 { width: 3rem; }
+        #global-chart-tooltip .h-12 { height: 3rem; }
+        #global-chart-tooltip .rounded-full { border-radius: 9999px; }
+        #global-chart-tooltip .bg-gray-100 { background-color: #F3F4F6; }
       `;
       document.head.appendChild(styleSheet);
     }
@@ -338,25 +345,14 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     // Actualizar contenido
     tooltipEl.innerHTML = content;
     
-    // Aplicar estilos base
+    // Aplicar estilos
     Object.assign(tooltipEl.style, {
       position: 'fixed',
       display: 'block',
-      opacity: '0',
+      opacity: '1',
       zIndex: '999999',
       pointerEvents: 'none',
-      backgroundColor: 'white',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-      borderRadius: '4px',
-      padding: '0',
-      minWidth: '150px',
-      maxWidth: '320px',
-      border: '1px solid #e2e8f0',
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
-      fontSize: '14px',
-      lineHeight: '1.5',
-      color: '#333',
-      transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
+      transition: 'opacity 0.15s'
     });
     
     const tooltipWidth = tooltipEl.offsetWidth;
@@ -366,50 +362,37 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     const mouseX = event.clientX;
     const mouseY = event.clientY;
     
-    // Posicionar más cerca del elemento - menos offset
-    let left = mouseX + 10;
-    let top = mouseY - (tooltipHeight / 2);
+    // Calcular posición del tooltip
+    let left = mouseX + 15;
+    let top = mouseY - tooltipHeight / 2;
     
     // Ajustar posición si se sale de la ventana
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
     if (left + tooltipWidth > windowWidth) {
-      left = mouseX - tooltipWidth - 10;
+      left = mouseX - tooltipWidth - 15;
     }
     
     if (top + tooltipHeight > windowHeight) {
-      top = windowHeight - tooltipHeight - 10;
+      top = mouseY - tooltipHeight - 15;
     }
     
-    if (top < 10) {
-      top = 10;
+    if (top < 0) {
+      top = 15;
     }
     
-    // Establecer posición y visibilidad con precisión
-    tooltipEl.style.left = `${Math.floor(left)}px`;
-    tooltipEl.style.top = `${Math.floor(top)}px`;
-    
-    // Agregar clase visible tras un pequeño delay para activar la animación
-    setTimeout(() => {
-      tooltipEl.classList.add('visible');
-    }, 10);
+    // Establecer posición y visibilidad
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
   };
 
   // Ocultar el tooltip global
   const hideGlobalTooltip = (): void => {
     const tooltipEl = document.getElementById('global-chart-tooltip');
     if (tooltipEl) {
-      // Quitar la clase visible primero para la animación
-      tooltipEl.classList.remove('visible');
-      
-      // Después de la transición, ocultar el tooltip
-      setTimeout(() => {
-        if (tooltipEl) {
-          tooltipEl.style.display = 'none';
-          tooltipEl.style.opacity = '0';
-        }
-      }, 150);
+      tooltipEl.style.display = 'none';
+      tooltipEl.style.opacity = '0';
     }
   };
 
@@ -816,69 +799,209 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
         if (chartData[dataIndex]) {
           const communityData = chartData[dataIndex];
           const communityName = communityData.name;
+          const value = communityData.value;
           
           // Obtener el rank
           const rank = dataIndex + 1;
           const total = chartData.length;
           
+          // Obtener valor del año anterior para cálculo YoY
+          const prevYearValue = getPreviousYearValue(communityData.originalName, communityData.code);
+          const hasYoYData = value !== null && prevYearValue !== null;
+          const yoyChange = hasYoYData ? ((value - prevYearValue) / prevYearValue) * 100 : null;
+          const yoyIsPositive = yoyChange !== null && yoyChange > 0;
+          
+          // Obtener el valor para toda España (para comparativas)
+          const spainData = data.find(item => 
+            (normalizarTexto(item.TERRITORIO) === 'espana' || 
+             normalizarTexto(item.TERRITORIO) === 'spain' ||
+             normalizarTexto(item.TERRITORIO) === 'total nacional' ||
+             item.TERRITORIO_CODE === '00' || 
+             item.TERRITORIO_CODE === 'ES') && 
+            item.TIME_PERIOD === selectedYear.toString() && 
+            item.SECTOR_EJECUCION_CODE === getSectorId() && 
+            item.SEXO_CODE === '_T' &&
+            item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
+          );
+          
+          // Valor total de España
+          let spainValue: number | null = null;
+          if (spainData && spainData.OBS_VALUE) {
+            spainValue = parseFloat(spainData.OBS_VALUE);
+            if (isNaN(spainValue)) spainValue = null;
+          }
+          
+          // Calcular media por comunidad (excluyendo España)
+          let spainAvg: number | null = null;
+          if (spainValue !== null) {
+            // Obtener el número de comunidades (igual que en total)
+            spainAvg = spainValue / total;
+          }
+          
+          // Obtener datos de Canarias para comparativa
+          const canariasData = data.find(item => 
+            (normalizarTexto(item.TERRITORIO).includes('canarias') || 
+             normalizarTexto(item.TERRITORIO).includes('canary')) && 
+            item.TIME_PERIOD === selectedYear.toString() && 
+            item.SECTOR_EJECUCION_CODE === getSectorId() && 
+            item.SEXO_CODE === '_T' &&
+            item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
+          );
+          
+          let canariasValue: number | null = null;
+          if (canariasData && canariasData.OBS_VALUE) {
+            canariasValue = parseFloat(canariasData.OBS_VALUE);
+            if (isNaN(canariasValue)) canariasValue = null;
+          }
+          
           // Construir contenido del tooltip con estilos inline para mayor compatibilidad
-          const tooltipContent = `
-            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-              <!-- Cabecera con bandera y nombre -->
-              <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
-                ${communityData.flag ? 
-                  `<div class="w-8 h-6 mr-2 rounded overflow-hidden border border-gray-200">
-                    <img src="${communityData.flag}" style="width: 100%; height: 100%; object-fit: cover;" alt="${communityName}" />
-                   </div>` 
-                  : ''}
-                <h3 class="text-lg font-bold text-gray-800">${communityName}</h3>
-              </div>
-              
-              <!-- Contenido principal -->
-              <div class="p-4">
-                <!-- Métrica principal -->
-                <div class="mb-3">
-                  <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
-                    <span>${t.researchers}:</span>
-                  </div>
-                  <div class="flex items-center">
-                    <span class="text-xl font-bold text-blue-700">
-                      ${formatNumber(communityData.value, 0)}
-                    </span>
-                  </div>
-                  ${(() => {
-                    // Obtener el valor del año anterior
-                    const prevValue = getPreviousYearValue(communityData.originalName, communityData.code);
-                    if (prevValue !== null) {
-                      const diff = communityData.value - prevValue;
-                      const percentage = (diff / prevValue) * 100;
-                      const isPositive = diff > 0;
-                      return `
-                        <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                            <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-                          </svg>
-                          <span>${isPositive ? '+' : ''}${percentage.toFixed(1)}% vs ${selectedYear - 1}</span>
-                        </div>
-                      `;
-                    }
-                    return '';
-                  })()}
+          let tooltipContent = '';
+          
+          if (value === 0) {
+            // Si el valor es exactamente 0, mostrar un mensaje especial
+            tooltipContent = `
+              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <!-- Header con el nombre del país -->
+                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                  ${communityData.flag ? `
+                    <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                      <img src="${communityData.flag}" class="w-full h-full object-cover" alt="${communityName}" />
+                    </div>
+                  ` : ''}
+                  <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
                 </div>
                 
-                <!-- Ranking -->
-                <div class="mb-4">
-                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                      <circle cx="12" cy="8" r="6" />
-                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                    </svg>
-                    <span class="font-medium">Rank </span>
-                    <span class="font-bold text-lg mx-1">${rank}</span>
-                    <span class="text-gray-600">${language === 'es' ? `de ${total}` : `of ${total}`}</span>
+                <!-- Contenido principal -->
+                <div class="p-4">
+                  <!-- Métrica principal para valor cero -->
+                  <div class="mb-3">
+                    <div class="flex items-center text-gray-500 text-sm mb-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                      <span>${t.researchers}:</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="text-xl font-bold text-orange-500">0</span>
+                      <span class="text-xs ml-2 text-orange-500">${language === 'es' ? 'Sin investigadores' : 'No researchers'}</span>
+                    </div>
                   </div>
                 </div>
+              </div>
+            `;
+          } else {
+            tooltipContent = `
+              <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <!-- Header con el nombre del país -->
+                <div class="flex items-center p-3 bg-blue-50 border-b border-blue-100">
+                  ${communityData.flag ? `
+                    <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                      <img src="${communityData.flag}" class="w-full h-full object-cover" alt="${communityName}" />
+                    </div>
+                  ` : ''}
+                  <h3 class="text-lg font-bold text-gray-800">${communityName || 'Desconocido'}</h3>
+                </div>
+                
+                <!-- Contenido principal -->
+                <div class="p-4">
+                  <!-- Métrica principal -->
+                  <div class="mb-3">
+                    <div class="flex items-center text-gray-500 text-sm mb-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                      <span>${t.researchers}:</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="text-xl font-bold text-blue-700">${formatNumber(value)}</span>
+                    </div>
+            `;
+            
+            // Añadir variación YoY si está disponible
+            if (hasYoYData && yoyChange !== null) {
+              tooltipContent += `
+                <div class="${yoyIsPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                    <path d="${yoyIsPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                  </svg>
+                  <span>${yoyIsPositive ? '+' : ''}${yoyChange.toFixed(1)}% vs ${selectedYear - 1}</span>
+                </div>
+              `;
+            } else {
+              tooltipContent += `
+                <div class="text-gray-500 flex items-center mt-1 text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>Sin datos vs ${selectedYear - 1}</span>
+                </div>
+              `;
+            }
+            
+            tooltipContent += `</div>`;
+            
+            // Mostrar ranking
+            tooltipContent += `
+              <div class="mb-4">
+                <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                    <circle cx="12" cy="8" r="6" />
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                  </svg>
+                  <span class="font-medium">Rank </span>
+                  <span class="font-bold text-lg mx-1">${rank}</span>
+                  <span class="text-gray-600">${language === 'es' ? `de ${total}` : `of ${total}`}</span>
+                </div>
+              </div>
+            `;
+            
+            // Añadir comparativas si hay datos disponibles
+            let comparisonsHtml = '';
+            
+            // Comparativa con la media de España
+            if (spainAvg !== null && value !== null) {
+              const diffSpain = value - spainAvg;
+              const percentDiff = (diffSpain / spainAvg) * 100;
+              const isPositive = diffSpain > 0;
+              
+              comparisonsHtml += `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs Media Nacional (${formatNumber(spainAvg)}):` : 
+                    `vs National Avg (${formatNumber(spainAvg)}):`}</span>
+                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
+                </div>
+              `;
+            }
+            
+            // Comparativa con Canarias (solo si la comunidad actual no es Canarias)
+            if (canariasValue !== null && value !== null && 
+                !communityName.toLowerCase().includes('canarias') && 
+                !communityName.toLowerCase().includes('canary')) {
+              const diffCanarias = value - canariasValue;
+              const percentDiff = (diffCanarias / canariasValue) * 100;
+              const isPositive = diffCanarias > 0;
+              
+              comparisonsHtml += `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs Canarias (${formatNumber(canariasValue)}):` : 
+                    `vs Canary Islands (${formatNumber(canariasValue)}):`}</span>
+                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
+                </div>
+              `;
+            }
+            
+            // Añadir sección de comparativas si hay datos
+            if (comparisonsHtml) {
+              tooltipContent += `
+                <div class="space-y-2 border-t border-gray-100 pt-3">
+                  <div class="text-xs text-gray-500 mb-1">Comparativa</div>
+                  ${comparisonsHtml}
+                </div>
+              `;
+            }
+          }
+          
+          tooltipContent += `
               </div>
             </div>
           `;

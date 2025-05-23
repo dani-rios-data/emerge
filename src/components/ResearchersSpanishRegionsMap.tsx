@@ -578,7 +578,7 @@ function getValueRange(
       sectorId = '_T'; // Total por defecto
   }
   
-  // Filtrar datos por año, sector y sexo
+  // Filtrar datos por año, sector y sexo, asegurando INVESTIGADORES_EJC
   const filteredData = data.filter(item => {
     return item.TIME_PERIOD === year &&
            item.SECTOR_EJECUCION_CODE === sectorId &&
@@ -586,10 +586,28 @@ function getValueRange(
            item.MEDIDAS_CODE === 'INVESTIGADORES_EJC';
   });
   
+  // Excluir a España del cálculo del rango
+  const communityOnlyData = filteredData.filter(item => {
+    const isTerritorySpain = (
+      item.TERRITORIO_CODE === '00' || 
+      item.TERRITORIO_CODE === 'ES' || 
+      normalizarTexto(item.TERRITORIO) === 'espana' ||
+      normalizarTexto(item.TERRITORIO) === 'spain' ||
+      normalizarTexto(item.TERRITORIO) === 'total nacional'
+    );
+    return !isTerritorySpain;
+  });
+  
+  // Si después de filtrar no hay datos, salir con valores por defecto
+  if (communityOnlyData.length === 0) {
+    console.warn("No se encontraron valores para calcular el rango (después de excluir España)");
+    return { min: 0, max: 1, median: 0.5, quartiles: [0, 0.33, 0.66, 1] };
+  }
+  
   const values: number[] = [];
   
   // Extraer valores numéricos
-  filteredData.forEach(item => {
+  communityOnlyData.forEach(item => {
     if (item.OBS_VALUE) {
       const value = parseFloat(item.OBS_VALUE);
       if (!isNaN(value) && value > 0) { // Solo incluir valores positivos
@@ -600,7 +618,7 @@ function getValueRange(
   
   // Si no hay valores, retornar un rango por defecto
   if (values.length === 0) {
-    console.warn("No se encontraron valores para calcular el rango");
+    console.warn("No se encontraron valores válidos para calcular el rango");
     return { min: 0, max: 1, median: 0.5, quartiles: [0, 0.33, 0.66, 1] };
   }
   
@@ -637,7 +655,7 @@ function getValueRange(
     max
   ];
   
-  console.log(`Estadísticas calculadas (${values.length} valores):`);
+  console.log(`Estadísticas calculadas (${values.length} valores, excluyendo España):`);
   console.log(`Min: ${min}, Max: ${max}, Mediana: ${median}`);
   console.log(`Cuartiles: ${quartiles.join(', ')}`);
   
@@ -860,7 +878,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
           // Obtener dimensiones del contenedor con un tamaño fijo
       const containerWidth = mapRef.current?.clientWidth || 800;
-          const containerHeight = 400; // Altura fija de 400px
+          const containerHeight = 500; // Altura fija aumentada para acomodar Ceuta y Melilla
           
           // Definir la paleta de colores al inicio para evitar problemas de inicialización
           const mapPalette = getSectorPalette(selectedSector);
@@ -889,9 +907,22 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
             .scale(width * 2.5) // Aumentar escala para islas más grandes y visibles
             .translate([width * 0.14, height * 0.78]); // Ajustar posición para mejor visualización
       
+      // Crear proyección específica para Ceuta y Melilla (compartirán recuadro)
+      const projectionCeuta = d3.geoMercator()
+        .center([-5.3, 35.9])  // Centro en Ceuta
+        .scale(width * 20)     // Mayor escala para que sea más grande
+        .translate([width * 0.78, height * 0.15]); // Posición en parte superior derecha
+      
+      const projectionMelilla = d3.geoMercator()
+        .center([-3.0, 35.3])  // Centro en Melilla
+        .scale(width * 20)     // Mayor escala para que sea más grande
+        .translate([width * 0.90, height * 0.15]); // Posición en parte superior derecha
+      
       // Generadores de ruta
       const pathGeneratorMainland = d3.geoPath().projection(projectionMainland);
       const pathGeneratorCanarias = d3.geoPath().projection(projectionCanarias);
+      const pathGeneratorCeuta = d3.geoPath().projection(projectionCeuta);
+      const pathGeneratorMelilla = d3.geoPath().projection(projectionMelilla);
       
       // Configurar SVG
       svg.attr("width", width)
@@ -899,9 +930,10 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
          .attr("viewBox", `0 0 ${width} ${height}`)
              .attr("style", "width: 100%; height: 100%; margin-bottom: 10px;");
       
-      // Crear grupos para la península y Canarias
+      // Crear grupos para la península y las regiones especiales
       const mapGroup = svg.append("g").attr("class", "mainland");
       const canariasGroup = svg.append("g").attr("class", "canarias");
+      const ceutaMelillaGroup = svg.append("g").attr("class", "ceuta-melilla");
       
       // Crear tooltip global en lugar del tooltip interno
       const createGlobalTooltip = (): HTMLElement => {
@@ -1051,15 +1083,27 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
         tooltipEl.style.top = `${top}px`;
       };
       
-      // Filtrar características para península y Canarias
+      // Filtrar características para península y regiones especiales
       const canariasFeatures = geoJson.features.filter(feature => {
         const name = getCommunityName(feature, language);
         return name.includes('Canarias') || name.includes('Canary');
       });
       
+      // Filtrar Ceuta y Melilla por separado
+      const ceutaFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return name.includes('Ceuta');
+      });
+      
+      const melillaFeatures = geoJson.features.filter(feature => {
+        const name = getCommunityName(feature, language);
+        return name.includes('Melilla');
+      });
+      
       const mainlandFeatures = geoJson.features.filter(feature => {
         const name = getCommunityName(feature, language);
-        return !name.includes('Canarias') && !name.includes('Canary');
+        return !name.includes('Canarias') && !name.includes('Canary') && 
+               !name.includes('Ceuta') && !name.includes('Melilla');
       });
       
       // Función para formatear el valor
@@ -1252,10 +1296,6 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
       // Función para obtener el valor del país/comunidad
       const getSpainValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
-        // Obtener el valor de España sumando todas las comunidades
-        let totalResearchers = 0;
-        let communityCount = 0;
-        
         // Mapear el sector seleccionado al código del sector en el CSV
         let sectorId = '';
         switch (sector.toLowerCase()) {
@@ -1278,24 +1318,62 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
             sectorId = '_T'; // Total por defecto
         }
         
-        // Filtrar los datos por año y sector
-        const filteredData = data.filter(item => 
+        // 1. Buscar el valor total para España en los datos
+        const spainData = data.find(item => 
+          (normalizarTexto(item.TERRITORIO) === 'espana' || 
+           normalizarTexto(item.TERRITORIO) === 'spain' ||
+           normalizarTexto(item.TERRITORIO) === 'total nacional' ||
+           item.TERRITORIO_CODE === '00' || 
+           item.TERRITORIO_CODE === 'ES') && 
           item.TIME_PERIOD === year && 
           item.SECTOR_EJECUCION_CODE === sectorId && 
           item.SEXO_CODE === '_T' &&
           item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
         );
         
-        // Sumar los valores
-        filteredData.forEach(item => {
-          const value = parseFloat(item.OBS_VALUE);
-          if (!isNaN(value)) {
-            totalResearchers += value;
-            communityCount++;
-          }
-        });
+        // Si no encontramos un valor para España, retornar null
+        if (!spainData) {
+          console.log(`No se encontró un valor total para España en el año ${year}, sector ${sectorId}`);
+          return null;
+        }
         
-        return communityCount > 0 ? totalResearchers : null;
+        // Valor total de investigadores para España
+        const totalResearchersInSpain = parseFloat(spainData.OBS_VALUE);
+        if (isNaN(totalResearchersInSpain)) {
+          console.log(`El valor para España no es numérico: ${spainData.OBS_VALUE}`);
+          return null;
+        }
+        
+        // 2. Contar el número de comunidades autónomas con datos para el mismo sector y año
+        // para dividir correctamente el total (excluyendo España)
+        const communitiesData = data.filter(item => 
+          !(normalizarTexto(item.TERRITORIO) === 'espana' || 
+            normalizarTexto(item.TERRITORIO) === 'spain' ||
+            normalizarTexto(item.TERRITORIO) === 'total nacional' ||
+            item.TERRITORIO_CODE === '00' || 
+            item.TERRITORIO_CODE === 'ES') && 
+          item.TIME_PERIOD === year && 
+          item.SECTOR_EJECUCION_CODE === sectorId && 
+          item.SEXO_CODE === '_T' &&
+          item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
+        );
+        
+        // Número de comunidades autónomas y ciudades con datos
+        const numberOfCommunities = communitiesData.length;
+        
+        if (numberOfCommunities === 0) {
+          console.log(`No se encontraron datos de comunidades autónomas para el año ${year}, sector ${sectorId}`);
+          return null;
+        }
+        
+        // Calcular la media como el total de España dividido por el número de comunidades
+        const averageValue = totalResearchersInSpain / numberOfCommunities;
+        
+        console.log(`Total de investigadores en España: ${totalResearchersInSpain}`);
+        console.log(`Número de comunidades: ${numberOfCommunities}`);
+        console.log(`Media por comunidad: ${averageValue}`);
+        
+        return averageValue;
       };
       
       // Función para obtener el valor de una comunidad específica (por ejemplo Canarias)
@@ -1322,7 +1400,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
             sectorId = '_T'; // Total por defecto
         }
         
-        // Buscar datos de Canarias
+        // Buscar datos de Canarias asegurándose que son INVESTIGADORES_EJC
         const canariasData = data.find(item => 
           normalizarTexto(item.TERRITORIO).includes('canarias') && 
           item.TIME_PERIOD === year && 
@@ -1331,7 +1409,13 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
         );
         
-        return canariasData ? parseFloat(canariasData.OBS_VALUE) : null;
+        if (canariasData) {
+          console.log(`Valor de Canarias encontrado: ${canariasData.OBS_VALUE} (${canariasData.MEDIDAS})`);
+          return parseFloat(canariasData.OBS_VALUE);
+        } else {
+          console.log(`No se encontraron datos de investigadores para Canarias en ${year}, sector ${sectorId}`);
+          return null;
+        }
       };
       
       // Función para manejar el evento mouseover común para ambas regiones
@@ -1470,7 +1554,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
 
         // Obtener valores para comparativas
         const spainValue = getSpainValue(data, selectedYear.toString(), selectedSector);
-        const spainAvg = spainValue !== null ? spainValue / 17 : null; // 17 comunidades autónomas
+        const spainAvg = spainValue; // Ya es el valor medio por comunidad
         const canariasValue = getCanariasValue(data, selectedYear.toString(), selectedSector);
         
         // Obtener valor del año anterior para cálculo YoY
@@ -1618,8 +1702,8 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Media España (${formatValue(spainAvg)}):` : 
-                  `vs Spain Avg (${formatValue(spainAvg)}):`}</span>
+                  `vs Media Nacional (${formatValue(spainAvg)}):` : 
+                  `vs National Avg (${formatValue(spainAvg)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${!isNaN(percentDiff) ? percentDiff.toFixed(1) + '%' : t.noData}</span>
               </div>
             `;
@@ -1795,6 +1879,89 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           }
         });
       
+      // Dibujar Ceuta y Melilla en la parte superior derecha del mapa
+      // Dibujar Ceuta
+      ceutaMelillaGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.ceuta')
+        .data(ceutaFeatures)
+        .enter()
+        .append('path')
+        // @ts-expect-error - Suppress typing error with d3 geo path
+        .attr('d', (d) => pathGeneratorCeuta(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+          const communityName = getCommunityName(d, language);
+          
+          if (value === null) {
+            console.log(`Ceuta sin datos: ${communityName}, usando color #f5f5f5 DIRECTO`);
+            return "#f5f5f5"; // Color gris claro para regiones sin datos
+          } else if (value === 0) {
+            // Color específico para regiones con valor exactamente 0
+            return mapPalette.ZERO;
+          }
+          
+          const color = getColorForValue(value, selectedSector, data, selectedYear.toString(), mapPalette);
+          return color;
+        })
+        .attr('stroke', '#000')  // Borde más oscuro para mejor visibilidad
+        .attr('stroke-width', 0.7)  // Borde ligeramente más grueso para destacar
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-ceuta-${normalizarTexto(name)}`;
+        })
+        .attr('class', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+          return value === null ? 'community ceuta no-data' : 'community ceuta';
+        })
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
+          }
+        });
+      
+      // Dibujar Melilla
+      ceutaMelillaGroup.selectAll<SVGPathElement, GeoJsonFeature>('path.melilla')
+        .data(melillaFeatures)
+        .enter()
+        .append('path')
+        // @ts-expect-error - Suppress typing error with d3 geo path
+        .attr('d', (d) => pathGeneratorMelilla(d) as string)
+        .attr('fill', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+          const communityName = getCommunityName(d, language);
+          
+          if (value === null) {
+            console.log(`Melilla sin datos: ${communityName}, usando color #f5f5f5 DIRECTO`);
+            return "#f5f5f5"; // Color gris claro para regiones sin datos
+          } else if (value === 0) {
+            // Color específico para regiones con valor exactamente 0
+            return mapPalette.ZERO;
+          }
+          
+          const color = getColorForValue(value, selectedSector, data, selectedYear.toString(), mapPalette);
+          return color;
+        })
+        .attr('stroke', '#000')  // Borde más oscuro para mejor visibilidad
+        .attr('stroke-width', 0.7)  // Borde ligeramente más grueso para destacar
+        .attr('id', (d: GeoJsonFeature) => {
+          const name = getCommunityName(d, language);
+          return `community-melilla-${normalizarTexto(name)}`;
+        })
+        .attr('class', (d: GeoJsonFeature) => {
+          const value = getCommunityValue(d, data, selectedYear.toString(), selectedSector, language);
+          return value === null ? 'community melilla no-data' : 'community melilla';
+            })
+        .on('mouseover', handleMouseOver)
+        .on('mousemove', handleMouseMove)
+        .on('mouseout', handleMouseOut)
+        .on('click', function(event: MouseEvent, d: GeoJsonFeature) {
+          if (onClick) {
+            onClick(getCommunityName(d, language));
+          }
+        });
+      
       // Dibujar el recuadro que contiene a las Islas Canarias con mejor estilo
       if (canariasFeatures.length > 0) {
         // Fondo blanco translúcido para el recuadro
@@ -1802,7 +1969,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           .attr('x', width * 0.02)
           .attr('y', height * 0.70)
           .attr('width', width * 0.24)
-          .attr('height', height * 0.18)
+          .attr('height', height * 0.15) // Reducir altura del recuadro
           .attr('rx', 4)
           .attr('ry', 4)
           .attr('fill', 'rgba(255, 255, 255, 0.8)')
@@ -1820,6 +1987,44 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           .attr('fill', '#0077b6')
           .attr('class', 'canarias-label')
           .text(language === 'es' ? 'Islas Canarias' : 'Canary Islands');
+      }
+      
+      // Dibujar el recuadro para Ceuta y Melilla
+      if (ceutaFeatures.length > 0 || melillaFeatures.length > 0) {
+        // Fondo blanco translúcido para el recuadro
+        ceutaMelillaGroup.append('rect')
+          .attr('x', width * 0.70)
+          .attr('y', height * 0.05)
+          .attr('width', width * 0.28)
+          .attr('height', height * 0.15) // Reducir altura del recuadro
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', 'rgba(255, 255, 255, 0.8)')
+          .attr('stroke', '#0077b6')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '3,3')
+          .lower();
+        
+        // Etiquetas individuales para cada ciudad
+        // Etiqueta para Ceuta (parte izquierda)
+        ceutaMelillaGroup.append('text')
+          .attr('x', width * 0.78)
+          .attr('y', height * 0.10)
+          .attr('font-size', '9px')
+          .attr('text-anchor', 'middle')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#444')
+          .text('Ceuta');
+        
+        // Etiqueta para Melilla (parte derecha)
+        ceutaMelillaGroup.append('text')
+          .attr('x', width * 0.90)
+          .attr('y', height * 0.10)
+          .attr('font-size', '9px')
+          .attr('text-anchor', 'middle')
+          .attr('font-weight', 'bold')
+          .attr('fill', '#444')
+          .text('Melilla');
       }
       
           // Añadir depuración justo antes de crear la leyenda
@@ -1855,6 +2060,36 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
                   element.setAttribute('fill', '#f5f5f5');
                   element.setAttribute('class', 'community canarias no-data');
                   console.log(`Marcando región sin datos (Canarias): ${name}`);
+                }
+            }
+          });
+          
+          // Lo mismo para Ceuta y Melilla
+          ceutaFeatures.forEach(feature => {
+            const value = getCommunityValue(feature, data, selectedYear.toString(), selectedSector, language);
+            if (value === null) {
+              const name = getCommunityName(feature, language);
+              const id = `community-ceuta-${normalizarTexto(name)}`;
+              const element = document.getElementById(id);
+              if (element) {
+                element.setAttribute('fill', '#f5f5f5');
+                element.setAttribute('class', 'community ceuta no-data');
+                console.log(`Marcando región sin datos (Ceuta): ${name}`);
+              }
+            }
+          });
+          
+          // Lo mismo para Melilla
+          melillaFeatures.forEach(feature => {
+            const value = getCommunityValue(feature, data, selectedYear.toString(), selectedSector, language);
+            if (value === null) {
+              const name = getCommunityName(feature, language);
+              const id = `community-melilla-${normalizarTexto(name)}`;
+              const element = document.getElementById(id);
+              if (element) {
+                element.setAttribute('fill', '#f5f5f5');
+                element.setAttribute('class', 'community melilla no-data');
+                console.log(`Marcando región sin datos (Melilla): ${name}`);
                 }
             }
           });
@@ -1957,7 +2192,7 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
           <div 
             className="border border-gray-200 rounded-lg bg-white overflow-hidden"
             style={{ 
-              height: '450px', // Aumentar altura para mejor visualización
+              height: '500px', // Aumentar altura para acomodar Ceuta y Melilla
               width: '100%',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
             }}
