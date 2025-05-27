@@ -371,11 +371,9 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
         alt=""
         width={size} 
         height={Math.round(size * 0.67)} 
+        className="object-cover rounded border border-gray-400 shadow-sm"
         style={{ 
-          objectFit: 'cover',
-          border: '1px solid rgba(229, 231, 235, 0.5)',
-          borderRadius: 4,
-          boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
+          boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)'
         }}
       />
     );

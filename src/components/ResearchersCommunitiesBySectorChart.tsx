@@ -270,8 +270,12 @@ const ResearchersCommunitiesBySectorChart: React.FC<ResearchersCommunitiesBySect
       <img 
         src={flagUrl} 
         alt="" 
-        className="inline-block object-cover rounded-sm"
-        style={{ width: size, height: size * 0.67 }}
+        className="inline-block object-cover rounded-sm border border-gray-400 shadow-sm"
+        style={{ 
+          width: size, 
+          height: size * 0.67,
+          boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)'
+        }}
         onError={(e) => {
           e.currentTarget.style.display = 'none';
         }}
@@ -399,7 +403,10 @@ const ResearchersCommunitiesBySectorChart: React.FC<ResearchersCommunitiesBySect
                   <img 
                     src={community.flag || ''} 
                     alt="" 
-                    className="w-5 h-3 object-cover rounded-sm mr-3"
+                    className="w-5 h-3 object-cover rounded-sm border border-gray-400 shadow-sm mr-3"
+                    style={{
+                      boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)'
+                    }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}

@@ -775,7 +775,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     <div className="relative h-full" ref={containerRef}>
       <div className="mb-2 text-center">
         <h3 className="text-sm font-semibold text-gray-800">
-          {language === 'es' ? `Ranking de investigadores por CCAA · ${selectedYear}` : `Researchers Ranking by Region · ${selectedYear}`}
+          {language === 'es' ? `Ranking de investigadores por comunidades autónomas · ${selectedYear}` : `Researchers Ranking by Autonomous Communities · ${selectedYear}`}
         </h3>
         <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
              style={{ backgroundColor: `${d3.color(RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total)?.copy({ opacity: 0.15 })}` }}>

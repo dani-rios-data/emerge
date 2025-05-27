@@ -247,18 +247,40 @@ export function getCommunityFlagUrl(communityName: string, language: 'es' | 'en'
     }
   }
   
-  // Buscar en las banderas disponibles
-  const flagObj = communityFlags.find(flag => 
-    possibleNames.some(name => 
-      normalizarTexto(flag.community) === normalizarTexto(name) ||
-      flag.community.includes(name) || 
-      normalizarTexto(flag.community).includes(normalizarTexto(name))
-    ) ||
-    // Casos especiales
-    (communityName.includes('Valencia') && flag.community.includes('Valenciana')) ||
-    (communityName === 'País Vasco' && flag.community.includes('Vasco')) ||
-    (communityName === 'Basque Country' && flag.community.includes('Vasco'))
-  );
+  // Agregar variaciones de nombres para mejorar la búsqueda
+  const normalizedInput = normalizarTexto(communityName);
+  
+  // Casos especiales para Castilla-La Mancha
+  if (normalizedInput.includes('castilla') && normalizedInput.includes('mancha')) {
+    possibleNames.push('Castilla - La Mancha', 'Castilla-La Mancha', 'Castilla La Mancha');
+  }
+  
+  // Casos especiales para Comunidad Valenciana
+  if (normalizedInput.includes('valencia') || normalizedInput.includes('valencian')) {
+    possibleNames.push('Comunidad Valenciana', 'Com. Valenciana', 'Valencia');
+  }
+  
+  // Buscar en las banderas disponibles con lógica mejorada
+  const flagObj = communityFlags.find(flag => {
+    const flagCommunityNormalized = normalizarTexto(flag.community);
+    
+    return possibleNames.some(name => {
+      const nameNormalized = normalizarTexto(name);
+      
+      // Búsqueda exacta
+      if (flagCommunityNormalized === nameNormalized) return true;
+      
+      // Búsqueda por inclusión
+      if (flagCommunityNormalized.includes(nameNormalized) || nameNormalized.includes(flagCommunityNormalized)) return true;
+      
+      // Casos especiales específicos
+      if (nameNormalized.includes('mancha') && flagCommunityNormalized.includes('mancha')) return true;
+      if (nameNormalized.includes('valencia') && flagCommunityNormalized.includes('valencia')) return true;
+      if (nameNormalized.includes('vasco') && flagCommunityNormalized.includes('vasco')) return true;
+      
+      return false;
+    });
+  });
   
   // URLs directas para banderas problemáticas
   if (!flagObj) {
@@ -268,7 +290,8 @@ export function getCommunityFlagUrl(communityName: string, language: 'es' | 'en'
       'Aragón': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg',
       'Asturias': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag_of_Asturias.svg',
       'Cantabria': 'https://upload.wikimedia.org/wikipedia/commons/d/df/Flag_of_Cantabria.svg',
-      'Castilla-La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+      'Castilla-La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_Castile-La_Mancha.svg',
+      'Castilla - La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_Castile-La_Mancha.svg',
       'Castilla y León': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
       'Cataluña': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg',
       'Extremadura': 'https://upload.wikimedia.org/wikipedia/commons/4/48/Flag_of_Extremadura_%28with_coat_of_arms%29.svg',
@@ -281,13 +304,14 @@ export function getCommunityFlagUrl(communityName: string, language: 'es' | 'en'
       'Navarra': 'https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Navarre.svg',
       'País Vasco': 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Flag_of_the_Basque_Country.svg',
       'Com. Valenciana': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
+      'Comunidad Valenciana': 'https://upload.wikimedia.org/wikipedia/commons/1/16/Flag_of_the_Valencian_Community_%282x3%29.svg',
       'Ceuta': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Flag_of_Ceuta.svg',
       'Melilla': 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Flag_of_Melilla.svg',
       
       // Nombres en inglés
       'Andalusia': 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Andaluc%C3%ADa.svg',
       'Aragon': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Flag_of_Aragon.svg',
-      'Castilla–La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Bandera_de_Castilla-La_Mancha.svg',
+      'Castilla–La Mancha': 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_Castile-La_Mancha.svg',
       'Castile and León': 'https://upload.wikimedia.org/wikipedia/commons/1/13/Flag_of_Castile_and_Le%C3%B3n.svg',
       'Catalonia': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Flag_of_Catalonia.svg',
       'Balearic Islands': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Flag_of_the_Balearic_Islands.svg',
@@ -306,8 +330,8 @@ export function getCommunityFlagUrl(communityName: string, language: 'es' | 'en'
     
     // Búsqueda por fragmentos clave si no se encuentra directamente
     const normalizedName = normalizarTexto(communityName);
-    if (normalizedName.includes('mancha')) return directFlagUrls['Castilla-La Mancha'];
-    if (normalizedName.includes('valen')) return directFlagUrls['Com. Valenciana'];
+    if (normalizedName.includes('mancha') || (normalizedName.includes('castilla') && normalizedName.includes('la'))) return directFlagUrls['Castilla-La Mancha'];
+    if (normalizedName.includes('valen') || normalizedName.includes('valencia')) return directFlagUrls['Com. Valenciana'];
     if (normalizedName.includes('vasco') || normalizedName.includes('basque') || normalizedName.includes('euskadi')) return directFlagUrls['País Vasco'];
     if (normalizedName.includes('andalu')) return directFlagUrls['Andalucía'];
     if (normalizedName.includes('astur')) return directFlagUrls['Asturias'];

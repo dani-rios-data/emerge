@@ -1153,27 +1153,7 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     return RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
   };
 
-  // Obtener título del gráfico
-  const getChartTitle = () => {
-    let sectorText = t.allSectors;
-    
-    switch(selectedSector) {
-      case 'business':
-        sectorText = t.sector_business;
-        break;
-      case 'government':
-        sectorText = t.sector_government;
-        break;
-      case 'education':
-        sectorText = t.sector_education;
-        break;
-      case 'nonprofit':
-        sectorText = t.sector_nonprofit;
-        break;
-    }
-    
-    return `${t.title}: ${sectorText} (${selectedYear})`;
-  };
+
 
   // Función para obtener el color del sector para el título
   const getSectorTitleColor = () => {
@@ -1366,7 +1346,7 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     <div ref={containerRef} className="relative h-full w-full">
       <div className="mb-2 text-center">
         <h3 className="text-sm font-semibold text-gray-800">
-          {getChartTitle()}
+          {t.title} · {selectedYear}
         </h3>
         <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
              style={{ backgroundColor: `${d3.color(getSectorTitleColor())?.copy({ opacity: 0.15 })}` }}>

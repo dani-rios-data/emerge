@@ -557,7 +557,7 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
         {/* Nueva subsección: Evolución por comunidades */}
         <div className="mb-8">
-          <SubsectionTitle title={language === 'es' ? "Evolución por comunidades" : "Evolution by Communities"} />
+          <SubsectionTitle title={language === 'es' ? "Evolución por comunidades autónomas" : "Evolution by Autonomous Communities"} />
           
           {isCommunityLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
