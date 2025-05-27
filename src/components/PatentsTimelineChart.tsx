@@ -45,6 +45,7 @@ interface PatentsTimelineChartProps {
   data: PatentsData[];
   language: 'es' | 'en';
   selectedSector: string;
+  onCountryChange?: (country: CountryOption) => void;
 }
 
 // Interfaz para los textos localizados
@@ -220,6 +221,7 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
   data,
   language,
   selectedSector,
+  onCountryChange
 }) => {
   const [selectedCountry, setSelectedCountry] = useState<CountryOption | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -363,6 +365,45 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
   };
 
   const sectorCode = getSectorCode(selectedSector);
+
+  // Efecto para establecer el país con más patentes como selección por defecto
+  useEffect(() => {
+    if (availableCountries.length > 0 && !selectedCountry) {
+      // Encontrar el país con más patentes en el último año disponible
+      const lastYear = Math.max(...data.map(item => parseInt(item.TIME_PERIOD)).filter(year => !isNaN(year)));
+      
+      let maxPatents = 0;
+      let countryWithMostPatents: CountryOption | null = null;
+      
+      availableCountries.forEach(country => {
+        const countryData = data.find(item => 
+          item.geo === country.code && 
+          item.TIME_PERIOD === lastYear.toString() && 
+          item.sectperf === sectorCode
+        );
+        
+        if (countryData && countryData.OBS_VALUE) {
+          const patents = parseFloat(countryData.OBS_VALUE);
+          if (!isNaN(patents) && patents > maxPatents) {
+            maxPatents = patents;
+            countryWithMostPatents = country;
+          }
+        }
+      });
+      
+      // Si no se encuentra ningún país con datos, usar Alemania por defecto
+      if (!countryWithMostPatents) {
+        countryWithMostPatents = availableCountries.find(c => c.code === 'DE') || availableCountries[0];
+      }
+      
+      if (countryWithMostPatents) {
+        setSelectedCountry(countryWithMostPatents);
+        if (onCountryChange) {
+          onCountryChange(countryWithMostPatents);
+        }
+      }
+    }
+  }, [availableCountries, data, sectorCode, selectedCountry, onCountryChange]);
 
   // Formatear números en el eje Y
   const formatYAxis = (value: number) => {
@@ -570,15 +611,12 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
 
   return (
     <div className="w-full">
-      {/* Título y selector de país */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        <h3 className="text-lg font-semibold text-gray-800">{texts.title}</h3>
-        
-        {/* Selector de país */}
+      {/* Selector de país */}
+      <div className="flex justify-end mb-6">
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center justify-between w-full sm:w-64 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex items-center justify-between w-64 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <span className="flex items-center">
               {selectedCountry ? (
@@ -618,6 +656,9 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
                   onClick={() => {
                     setSelectedCountry(country);
                     setIsDropdownOpen(false);
+                    if (onCountryChange) {
+                      onCountryChange(country);
+                    }
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 flex items-center"
                 >

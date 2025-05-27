@@ -270,7 +270,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
   const texts = {
     es: {
       title: "Evolución temporal",
-      euAverage: "UE (total)",
+      euAverage: "Media UE",
       spain: "España",
       country: selectedCountry ? (language === 'es' ? selectedCountry.localName : selectedCountry.name) : "País seleccionado",
       researchersCount: "Número de investigadores",
@@ -287,7 +287,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
     },
     en: {
       title: "Timeline Evolution",
-      euAverage: "EU (total)",
+      euAverage: "Avg EU",
       spain: "Spain",
       country: selectedCountry ? (language === 'es' ? selectedCountry.localName : selectedCountry.name) : "Selected Country",
       researchersCount: "Number of researchers",
