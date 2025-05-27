@@ -44,6 +44,7 @@ interface ResearchersTimelineChartProps {
   data: ResearchersData[];
   language: 'es' | 'en';
   selectedSector: string;
+  onCountryChange?: (country: CountryOption) => void;
 }
 
 // Interfaz para los textos de localización
@@ -241,6 +242,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
   data,
   language,
   selectedSector,
+  onCountryChange
 }) => {
   // Estado para los datos procesados de la línea de tiempo
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesDataPoint[]>([]);
@@ -718,6 +720,9 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
                     onClick={() => {
                       setSelectedCountry(country);
                       setDropdownOpen(false);
+                      if (onCountryChange) {
+                        onCountryChange(country);
+                      }
                     }}
                   >
                     <FlagImage 

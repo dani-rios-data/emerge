@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PatentsEuropeanMap from '../../components/PatentsEuropeanMap';
 import PatentsRankingChart from '../../components/PatentsRankingChart';
+import PatentsTimelineChart from '../../components/PatentsTimelineChart';
 import Papa from 'papaparse';
 
-// Definir la interfaz para los datos de investigadores
-interface ResearchersData {
+// Definir la interfaz para los datos de patentes
+interface PatentsData {
   sectperf: string;  // Sector of performance
   geo: string;       // Geopolitical entity (ISO code)
   TIME_PERIOD: string; // Año
-  OBS_VALUE: string;   // Número de investigadores
+  OBS_VALUE: string;   // Número de patentes
   OBS_FLAG?: string;   // Flag de observación
   [key: string]: string | undefined;
 }
@@ -21,7 +22,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
   const language = props.language || 'es';
   
   // Estados para los datos y filtros
-  const [researchersData, setResearchersData] = useState<ResearchersData[]>([]);
+  const [patentsData, setPatentsData] = useState<PatentsData[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(2022);
   
@@ -36,7 +37,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
   const texts = {
     es: {
       title: "Patentes",
-      subtitle: "Análisis de investigadores por país y sector",
+      subtitle: "Análisis de patentes por país y sector",
       year: "Año:",
       sector: "Sector:",
       loading: "Cargando datos...",
@@ -44,9 +45,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
       keyMetricsTitle: "Métricas clave",
       euComparisonTitle: "Comparación entre la UE y países",
       spanishRegionsTitle: "Comparación por comunidades autónomas de España",
-      geographicalDistribution: "Distribución geográfica de investigadores",
-      timelineTitle: "Evolución temporal de investigadores",
-      regionalDistribution: "Distribución regional de investigadores",
+      geographicalDistribution: "Distribución geográfica de patentes",
+      timelineTitle: "Evolución temporal de patentes",
+      regionalDistribution: "Distribución regional de patentes",
       // Sectores
       allSectors: "Todos los sectores",
       businessSector: "Sector empresarial",
@@ -56,7 +57,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
     },
     en: {
       title: "Patents",
-      subtitle: "Analysis of researchers by country and sector",
+      subtitle: "Analysis of patents by country and sector",
       year: "Year:",
       sector: "Sector:",
       loading: "Loading data...",
@@ -64,9 +65,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
       keyMetricsTitle: "Key Metrics",
       euComparisonTitle: "EU and Countries Comparison",
       spanishRegionsTitle: "Spanish Autonomous Communities Comparison",
-      geographicalDistribution: "Geographical Distribution of Researchers",
-      timelineTitle: "Researchers Timeline Evolution",
-      regionalDistribution: "Regional Distribution of Researchers",
+      geographicalDistribution: "Geographical Distribution of Patents",
+      timelineTitle: "Patents Timeline Evolution",
+      regionalDistribution: "Regional Distribution of Patents",
       // Sectores
       allSectors: "All sectors",
       businessSector: "Business enterprise sector",
@@ -78,9 +79,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
 
   const t = texts[language];
 
-  // Cargar datos de investigadores
+  // Cargar datos de patentes
   useEffect(() => {
-    const loadResearchersData = async () => {
+    const loadPatentsData = async () => {
       setIsLoading(true);
       try {
         const response = await fetch('./data/researchers/europa_researchers.csv');
@@ -95,8 +96,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
         });
 
         // Convertir los datos parseados al formato que necesitamos
-        const parsedData = result.data as ResearchersData[];
-        setResearchersData(parsedData);
+        const parsedData = result.data as PatentsData[];
+        setPatentsData(parsedData);
 
         // Extraer años disponibles y ordenar de más reciente a más antiguo
         const years = Array.from(new Set(parsedData.map(item => 
@@ -114,14 +115,14 @@ const Patents: React.FC<PatentsProps> = (props) => {
 
         setError(null);
       } catch (err) {
-        console.error('Error loading researchers data:', err);
+        console.error('Error loading patents data:', err);
         setError(t.error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadResearchersData();
+    loadPatentsData();
   }, [t.error]);
 
   // Handlers para cambios en los filtros
@@ -178,7 +179,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
       <div className="mb-12 mt-[-15px]">
         <SectionTitle title={t.keyMetricsTitle} />
         <div className="mb-8">
-          <SubsectionTitle title={language === 'es' ? "Estadísticas de investigadores" : "Researchers Statistics"} />
+          <SubsectionTitle title={language === 'es' ? "Estadísticas de patentes" : "Patents Statistics"} />
           <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[200px] flex items-center justify-center w-full">
             <div className="text-center text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -194,7 +195,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
       <div className="mb-12">
         <SectionTitle title={t.euComparisonTitle} />
         
-        {/* Subsección 2.1: Investigadores por país */}
+        {/* Subsección 2.1: Patentes por país */}
         <div className="mb-10">
           <SubsectionTitle title={t.geographicalDistribution} />
           
@@ -202,8 +203,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p>
               {language === 'es' 
-                ? "Número de investigadores (profesionales dedicados a la concepción/creación de nuevos conocimientos, productos, procesos, métodos y sistemas, y en la gestión de los proyectos relacionados), por sector de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Los datos de recuento (HC) miden el número total de investigadores que trabajan principal o parcialmente en I+D."
-                : "Number of researchers (professionals engaged in the conception/creation of new knowledge, products, processes, methods and systems, and in the management of the projects concerned), by sector of performance (business, government, higher education, private non profit). Head count (HC) data measure the total number of researchers who are mainly or partly employed on R&D."
+                ? "Número de patentes por sector de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Las patentes representan un indicador clave de la actividad innovadora y la capacidad de protección de la propiedad intelectual en cada territorio."
+                : "Number of patents by sector of performance (business, government, higher education, private non profit). Patents represent a key indicator of innovative activity and intellectual property protection capacity in each territory."
               }
             </p>
             <p className="mt-2 text-xs italic">
@@ -289,7 +290,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
                 {/* Mapa de Europa */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "660px" }}>
                   <PatentsEuropeanMap
-                    data={researchersData}
+                    data={patentsData}
                     selectedYear={selectedYear}
                     selectedSector={mapSector}
                     language={language}
@@ -298,10 +299,10 @@ const Patents: React.FC<PatentsProps> = (props) => {
                 
                 {/* Ranking de países */}
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "660px" }}>
-                  {researchersData.length > 0 ? (
+                  {patentsData.length > 0 ? (
                     <div className="h-full overflow-hidden">
                       <PatentsRankingChart
-                        data={researchersData}
+                        data={patentsData}
                         selectedYear={selectedYear}
                         selectedSector={mapSector}
                         language={language}
@@ -388,15 +389,11 @@ const Patents: React.FC<PatentsProps> = (props) => {
               
               {/* Gráfico de evolución temporal */}
               <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-                <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
-                  <div className="text-center text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                    </svg>
-                    <p className="text-lg">{language === 'es' ? "Evolución histórica de investigadores" : "Historical researchers evolution"}</p>
-                    <p className="text-sm mt-2">{language === 'es' ? "En desarrollo" : "In development"}</p>
-                  </div>
-                </div>
+                <PatentsTimelineChart
+                  data={patentsData}
+                  language={language}
+                  selectedSector={timelineSector}
+                />
               </div>
             </div>
           )}

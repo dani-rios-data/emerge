@@ -42,6 +42,14 @@ interface ResearchersCommunityData {
   [key: string]: string;
 }
 
+// Interfaz para un país seleccionable
+interface CountryOption {
+  name: string;
+  localName: string;
+  code: string;
+  flag?: string;
+}
+
 const Researchers: React.FC<ResearchersProps> = (props) => {
   // Usar el language de props si está disponible, o del contexto si no
   const contextLanguage = useLanguage();
@@ -60,6 +68,22 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
   const [timelineSector, setTimelineSector] = useState<string>('total');
   const [communitySector, setCommunitySector] = useState<string>('total');
   const [communityTimelineSector, setCommunityTimelineSector] = useState<string>('total');
+  
+  // Estado para el país seleccionado en la timeline de la primera subsección
+  const [selectedTimelineCountry, setSelectedTimelineCountry] = useState<CountryOption>({
+    name: 'Germany',
+    localName: 'Alemania',
+    code: 'DE',
+    flag: undefined
+  });
+  
+  // Estado para el país seleccionado en la subsección "Timeline Evolution by Sectors"
+  const [selectedSectorTimelineCountry, setSelectedSectorTimelineCountry] = useState<CountryOption>({
+    name: 'Bosnia and Herzegovina',
+    localName: 'Bosnia y Herzegovina',
+    code: 'BA',
+    flag: undefined
+  });
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isCommunityLoading, setIsCommunityLoading] = useState<boolean>(true);
@@ -229,6 +253,16 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     setCommunityTimelineSector(e.target.value);
   };
 
+  // Manejador para el cambio de país en la timeline
+  const handleTimelineCountryChange = (country: CountryOption) => {
+    setSelectedTimelineCountry(country);
+  };
+
+  // Manejador para el cambio de país en la subsección "Timeline Evolution by Sectors"
+  const handleSectorTimelineCountryChange = (country: CountryOption) => {
+    setSelectedSectorTimelineCountry(country);
+  };
+
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
     <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
@@ -243,7 +277,33 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     </h3>
   );
 
-  // Textos según el idioma
+  // Componente para título de subsección con bandera (para Timeline Evolution by Sectors)
+  const SubsectionTitleWithFlag = ({ 
+    baseTitle, 
+    country, 
+    language 
+  }: { 
+    baseTitle: string; 
+    country: CountryOption; 
+    language: 'es' | 'en';
+  }) => {
+    return (
+      <div className="flex items-center mb-4 mt-8">
+        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
+        <h3 className="text-md font-semibold text-blue-700 flex items-center">
+          <span>{baseTitle}</span>
+          <span className="mx-3 text-blue-400">•</span>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <span className="text-sm font-medium text-blue-800">
+              {language === 'es' ? country.localName : country.name}
+            </span>
+          </div>
+        </h3>
+      </div>
+    );
+  };
+
+  // Textos localizados
   const texts = {
     es: {
       yearLabel: "Año:",
@@ -256,7 +316,7 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
       educationSector: "Enseñanza Superior",
       nonprofitSector: "Instituciones Privadas sin Fines de Lucro",
       timelineTitle: "Evolución temporal de investigadores",
-      sectorTimelineTitle: "Evolución temporal por sectores (España)",
+      sectorTimelineTitle: "Evolución temporal por sectores",
       communitySectorTimelineTitle: "Evolución sectorial por comunidades autónomas"
     },
     en: {
@@ -270,7 +330,7 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
       educationSector: "Higher education sector",
       nonprofitSector: "Private non-profit sector",
       timelineTitle: "Researchers Timeline Evolution",
-      sectorTimelineTitle: "Timeline Evolution by Sectors (Spain)",
+      sectorTimelineTitle: "Timeline Evolution by Sectors",
       communitySectorTimelineTitle: "Sectoral Evolution by Autonomous Communities"
     }
   };
@@ -444,6 +504,7 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
                   data={researchersData}
                   language={language}
                   selectedSector={mapSectorToCode(timelineSector)}
+                  onCountryChange={handleTimelineCountryChange}
                 />
               </div>
             </div>
@@ -452,7 +513,11 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
         {/* Nueva subsección: Evolución por sectores */}
         <div className="mb-8">
-          <SubsectionTitle title={t.sectorTimelineTitle} />
+          <SubsectionTitleWithFlag
+            baseTitle={t.sectorTimelineTitle}
+            country={selectedSectorTimelineCountry}
+            language={language}
+          />
           
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
@@ -477,8 +542,9 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
             <ResearchersBySectorChart
               data={researchersData}
               language={language}
-              countryCode="ES"
-                        />          )}        </div>      </div>            {/* Sección 3: Análisis por comunidades autónomas de España */}      <div className="mb-6">        <SectionTitle title={language === 'es' ? "Análisis por comunidades autónomas españolas" : "Analysis by Spanish Autonomous Communities"} />        <div className="mb-8">
+              countryCode={selectedSectorTimelineCountry.code}
+              onCountryChange={handleSectorTimelineCountryChange}
+            />          )}        </div>      </div>            {/* Sección 3: Análisis por comunidades autónomas de España */}      <div className="mb-6">        <SectionTitle title={language === 'es' ? "Análisis por comunidades autónomas españolas" : "Analysis by Spanish Autonomous Communities"} />        <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Distribución regional de investigadores" : "Regional Distribution of Researchers"} />
           
           {/* Descripción del dataset */}

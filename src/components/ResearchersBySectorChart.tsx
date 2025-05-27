@@ -46,6 +46,7 @@ interface ResearchersBySectorChartProps {
   data: ResearchersData[];
   language: 'es' | 'en';
   countryCode?: string; // Código del país para mostrar los datos (default: 'ES' para España)
+  onCountryChange?: (country: CountryOption) => void;
 }
 
 // Colores para las líneas de cada sector
@@ -68,7 +69,8 @@ const EUROPEAN_COUNTRY_CODES = [
 const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
   data,
   language,
-  countryCode = 'ES' // Por defecto, España
+  countryCode = 'ES', // Por defecto, España
+  onCountryChange
 }) => {
   // Estado para los datos procesados de la línea de tiempo
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesDataPoint[]>([]);
@@ -498,6 +500,9 @@ const ResearchersBySectorChart: React.FC<ResearchersBySectorChartProps> = ({
                   onClick={() => {
                     setSelectedCountry(country);
                     setDropdownOpen(false);
+                    if (onCountryChange) {
+                      onCountryChange(country);
+                    }
                   }}
                 >
                   <FlagImage code={country.code} size={18} />

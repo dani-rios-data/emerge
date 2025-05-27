@@ -1,0 +1,715 @@
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
+// Importando datos de country_flags.json
+import countryFlagsData from '../logos/country_flags.json';
+
+// Definir la interfaz para los datos de patentes
+interface PatentsData {
+  sectperf: string;  // Sector of performance
+  geo: string;       // Geopolitical entity (ISO code)
+  TIME_PERIOD: string; // Año
+  OBS_VALUE: string;   // Número de patentes
+  OBS_FLAG?: string;   // Flag de observación
+  // Otros campos opcionales que podrían ser necesarios
+  [key: string]: string | undefined;
+}
+
+// Interfaz para los puntos de datos de la serie temporal
+interface TimeSeriesDataPoint {
+  year: string;
+  eu: number | null;
+  es: number | null;
+  country: number | null;
+  [key: string]: string | number | null;
+}
+
+// Interfaz para las opciones de países
+interface CountryOption {
+  name: string;
+  localName: string;
+  code: string;
+  flag?: string;
+}
+
+// Interfaz para las props del componente
+interface PatentsTimelineChartProps {
+  data: PatentsData[];
+  language: 'es' | 'en';
+  selectedSector: string;
+}
+
+// Interfaz para los textos localizados
+interface LocalizedTexts {
+  title: string;
+  euAverage: string;
+  spain: string;
+  country: string;
+  patentsCount: string;
+  year: string;
+  loading: string;
+  noData: string;
+  selectCountry: string;
+  total: string;
+  business: string;
+  government: string;
+  education: string;
+  nonprofit: string;
+}
+
+// Interfaz para las escalas de los ejes
+interface AxisScale {
+  scale: (value: unknown) => number;
+}
+
+// Asegurar el tipo correcto para el array de flags
+const countryFlags = countryFlagsData as Array<{
+  country: string;
+  code: string;
+  iso3: string;
+  flag: string;
+}>;
+
+// Constantes para el diseño
+const FLAG_SIZE = 20;
+const FLAG_STROKE_WIDTH = 2;
+
+// Componente personalizado para mostrar banderas en el gráfico
+const FlagsCustomComponent = (props: {
+  yAxisMap?: AxisScale[];
+  xAxisMap?: AxisScale[];
+  data?: TimeSeriesDataPoint[];
+  selectedCountry?: CountryOption;
+  [key: string]: unknown;
+}) => {
+  const { yAxisMap, xAxisMap, data, selectedCountry } = props;
+  
+  if (!yAxisMap || !xAxisMap || !data || data.length === 0) {
+    return null;
+  }
+
+  const getFlagUrl = (type: 'eu' | 'es' | 'country', code?: string) => {
+    if (type === 'eu') {
+      return 'https://flagcdn.com/eu.svg';
+    }
+    if (type === 'es') {
+      return 'https://flagcdn.com/es.svg';
+    }
+    if (type === 'country' && code) {
+      // Buscar en el archivo de banderas
+      const foundFlag = countryFlags.find(flag => 
+        flag.code.toUpperCase() === code.toUpperCase() ||
+        flag.iso3.toUpperCase() === code.toUpperCase()
+      );
+      
+      if (foundFlag) {
+        return foundFlag.flag;
+      }
+      
+      // Fallback: usar flagcdn con código en minúsculas
+      const lowerCode = code.toLowerCase();
+      
+      // Mapeo especial para códigos que no coinciden
+      const codeMapping: Record<string, string> = {
+        'el': 'gr',  // Grecia
+        'uk': 'gb'   // Reino Unido
+      };
+      
+      const mappedCode = codeMapping[lowerCode] || lowerCode;
+      return `https://flagcdn.com/${mappedCode}.svg`;
+    }
+    return '';
+  };
+
+  // Obtener el último punto de datos válido para cada línea
+  const getLastValidPoint = (dataKey: string) => {
+    for (let i = data.length - 1; i >= 0; i--) {
+      const point = data[i];
+      const value = point[dataKey] as number | null;
+      if (value !== null && value !== undefined && !isNaN(value)) {
+        return { point, value, index: i };
+      }
+    }
+    return null;
+  };
+
+  const euPoint = getLastValidPoint('eu');
+  const esPoint = getLastValidPoint('es');
+  const countryPoint = selectedCountry ? getLastValidPoint('country') : null;
+
+  const renderFlag = (
+    point: { point: TimeSeriesDataPoint; value: number; index: number },
+    type: 'eu' | 'es' | 'country',
+    color: string,
+    code?: string
+  ) => {
+    const xScale = xAxisMap[0]?.scale;
+    const yScale = yAxisMap[0]?.scale;
+    
+    if (!xScale || !yScale) return null;
+
+    const x = xScale(point.point.year);
+    const y = yScale(point.value);
+    
+    if (isNaN(x) || isNaN(y)) return null;
+
+    const flagUrl = getFlagUrl(type, code);
+    
+    return (
+      <g key={`flag-${type}`}>
+        <circle
+          cx={x}
+          cy={y}
+          r={FLAG_SIZE / 2 + FLAG_STROKE_WIDTH}
+          fill="white"
+          stroke={color}
+          strokeWidth={FLAG_STROKE_WIDTH}
+        />
+        <foreignObject
+          x={x - FLAG_SIZE / 2}
+          y={y - FLAG_SIZE / 2}
+          width={FLAG_SIZE}
+          height={FLAG_SIZE}
+        >
+          <div style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img
+              src={flagUrl}
+              alt={`${type} flag`}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
+        </foreignObject>
+      </g>
+    );
+  };
+
+  return (
+    <g>
+      {euPoint && renderFlag(euPoint, 'eu', '#3B82F6')}
+      {esPoint && renderFlag(esPoint, 'es', '#EF4444')}
+      {countryPoint && selectedCountry && renderFlag(countryPoint, 'country', '#10B981', selectedCountry.code)}
+    </g>
+  );
+};
+
+const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
+  data,
+  language,
+  selectedSector,
+}) => {
+  const [selectedCountry, setSelectedCountry] = useState<CountryOption | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Textos localizados
+  const texts: LocalizedTexts = {
+    es: {
+      title: "Evolución temporal de patentes",
+      euAverage: "Media UE",
+      spain: "España",
+      country: "País seleccionado",
+      patentsCount: "Patentes",
+      year: "Año",
+      loading: "Cargando...",
+      noData: "Sin datos disponibles",
+      selectCountry: "Seleccionar país",
+      total: "Todos los sectores",
+      business: "Sector empresarial",
+      government: "Administración Pública",
+      education: "Enseñanza Superior",
+      nonprofit: "Instituciones Privadas sin Fines de Lucro"
+    },
+    en: {
+      title: "Patents Timeline Evolution",
+      euAverage: "EU Average",
+      spain: "Spain",
+      country: "Selected Country",
+      patentsCount: "Patents",
+      year: "Year",
+      loading: "Loading...",
+      noData: "No data available",
+      selectCountry: "Select country",
+      total: "All sectors",
+      business: "Business enterprise sector",
+      government: "Government sector",
+      education: "Higher education sector",
+      nonprofit: "Private non-profit sector"
+    }
+  }[language];
+
+  // Mapeo de códigos de país a nombres
+  const countryCodeMapping: Record<string, {es: string, en: string}> = {
+    'AT': {es: 'Austria', en: 'Austria'},
+    'BE': {es: 'Bélgica', en: 'Belgium'},
+    'BG': {es: 'Bulgaria', en: 'Bulgaria'},
+    'CY': {es: 'Chipre', en: 'Cyprus'},
+    'CZ': {es: 'República Checa', en: 'Czech Republic'},
+    'DE': {es: 'Alemania', en: 'Germany'},
+    'DK': {es: 'Dinamarca', en: 'Denmark'},
+    'EE': {es: 'Estonia', en: 'Estonia'},
+    'EL': {es: 'Grecia', en: 'Greece'},
+    'ES': {es: 'España', en: 'Spain'},
+    'FI': {es: 'Finlandia', en: 'Finland'},
+    'FR': {es: 'Francia', en: 'France'},
+    'HR': {es: 'Croacia', en: 'Croatia'},
+    'HU': {es: 'Hungría', en: 'Hungary'},
+    'IE': {es: 'Irlanda', en: 'Ireland'},
+    'IT': {es: 'Italia', en: 'Italy'},
+    'LT': {es: 'Lituania', en: 'Lithuania'},
+    'LU': {es: 'Luxemburgo', en: 'Luxembourg'},
+    'LV': {es: 'Letonia', en: 'Latvia'},
+    'MT': {es: 'Malta', en: 'Malta'},
+    'NL': {es: 'Países Bajos', en: 'Netherlands'},
+    'PL': {es: 'Polonia', en: 'Poland'},
+    'PT': {es: 'Portugal', en: 'Portugal'},
+    'RO': {es: 'Rumanía', en: 'Romania'},
+    'SE': {es: 'Suecia', en: 'Sweden'},
+    'SI': {es: 'Eslovenia', en: 'Slovenia'},
+    'SK': {es: 'Eslovaquia', en: 'Slovakia'},
+    'UK': {es: 'Reino Unido', en: 'United Kingdom'},
+    'NO': {es: 'Noruega', en: 'Norway'},
+    'CH': {es: 'Suiza', en: 'Switzerland'},
+    'IS': {es: 'Islandia', en: 'Iceland'},
+    'TR': {es: 'Turquía', en: 'Turkey'}
+  };
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Obtener países disponibles
+  const getAvailableCountries = (): CountryOption[] => {
+    const countryCodes = new Set<string>();
+    
+    data.forEach(item => {
+      if (item.geo && item.geo !== 'EU27_2020' && item.geo !== 'ES') {
+        countryCodes.add(item.geo);
+      }
+    });
+
+    return Array.from(countryCodes)
+      .map(code => {
+        const mapping = countryCodeMapping[code];
+        if (mapping) {
+          const flagInfo = countryFlags.find(flag => 
+            flag.code.toUpperCase() === code.toUpperCase() ||
+            flag.iso3.toUpperCase() === code.toUpperCase()
+          );
+          
+          return {
+            name: mapping.en,
+            localName: mapping[language],
+            code: code,
+            flag: flagInfo?.flag
+          };
+        }
+        return null;
+      })
+      .filter((country): country is CountryOption => country !== null)
+      .sort((a, b) => a.localName.localeCompare(b.localName));
+  };
+
+  const availableCountries = getAvailableCountries();
+
+  // Mapear sector seleccionado al código correcto
+  const getSectorCode = (sector: string): string => {
+    const sectorMapping: Record<string, string> = {
+      'total': 'TOTAL',
+      'business': 'BES',
+      'government': 'GOV',
+      'education': 'HES',
+      'nonprofit': 'PNP',
+      'TOTAL': 'TOTAL',
+      'BES': 'BES',
+      'GOV': 'GOV',
+      'HES': 'HES',
+      'PNP': 'PNP'
+    };
+    return sectorMapping[selectedSector] || 'TOTAL';
+  };
+
+  const sectorCode = getSectorCode(selectedSector);
+
+  // Formatear números en el eje Y
+  const formatYAxis = (value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toString();
+  };
+
+  // Función para obtener nombre del país desde código
+  function getCountryNameFromCode(code: string, lang: 'es' | 'en' = language): string {
+    return countryCodeMapping[code]?.[lang] || code;
+  }
+
+  // Preparar datos para el gráfico
+  const prepareTimeSeriesData = (): TimeSeriesDataPoint[] => {
+    // Obtener todos los años únicos
+    const years = Array.from(new Set(data.map(item => item.TIME_PERIOD)))
+      .filter(year => year && !isNaN(parseInt(year)))
+      .sort();
+
+    return years.map(year => {
+      const yearData: TimeSeriesDataPoint = {
+        year,
+        eu: null,
+        es: null,
+        country: null
+      };
+
+      // Obtener datos de la UE (promedio)
+      const euData = data.find(item => 
+        item.geo === 'EU27_2020' && 
+        item.TIME_PERIOD === year && 
+        item.sectperf === sectorCode
+      );
+      if (euData && euData.OBS_VALUE) {
+        const euValue = parseFloat(euData.OBS_VALUE);
+        yearData.eu = !isNaN(euValue) ? Math.round(euValue / 27) : null;
+      }
+
+      // Obtener datos de España
+      const esData = data.find(item => 
+        item.geo === 'ES' && 
+        item.TIME_PERIOD === year && 
+        item.sectperf === sectorCode
+      );
+      if (esData && esData.OBS_VALUE) {
+        const esValue = parseFloat(esData.OBS_VALUE);
+        yearData.es = !isNaN(esValue) ? esValue : null;
+      }
+
+      // Obtener datos del país seleccionado
+      if (selectedCountry) {
+        const countryData = data.find(item => 
+          item.geo === selectedCountry.code && 
+          item.TIME_PERIOD === year && 
+          item.sectperf === sectorCode
+        );
+        if (countryData && countryData.OBS_VALUE) {
+          const countryValue = parseFloat(countryData.OBS_VALUE);
+          yearData.country = !isNaN(countryValue) ? countryValue : null;
+        }
+      }
+
+      return yearData;
+    });
+  };
+
+  const timeSeriesData = prepareTimeSeriesData();
+
+  // Calcular variación interanual
+  const calculateYoY = (currentValue: number | null, dataKey: string, currentYearIndex: number) => {
+    if (currentValue === null || currentYearIndex === 0) return null;
+    
+    const previousValue = timeSeriesData[currentYearIndex - 1]?.[dataKey] as number | null;
+    if (previousValue === null || previousValue === 0) return null;
+    
+    return ((currentValue - previousValue) / previousValue) * 100;
+  };
+
+  // Tooltip personalizado
+  const CustomTooltip = ({ 
+    active, 
+    payload, 
+    label 
+  }: { 
+    active?: boolean; 
+    payload?: Array<{
+      value: number;
+      name: string;
+      dataKey: string;
+      color: string;
+    }>;
+    label?: string;
+  }) => {
+    if (active && payload && payload.length) {
+      const currentYearIndex = timeSeriesData.findIndex(d => d.year === label);
+      
+      return (
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-800 mb-2">{`${texts.year}: ${label}`}</p>
+          {payload.map((entry, index) => {
+            const yoyChange = calculateYoY(entry.value, entry.dataKey, currentYearIndex);
+            
+            return (
+              <div key={index} className="flex items-center justify-between mb-1">
+                <div className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-full mr-2" 
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm text-gray-600">{entry.name}:</span>
+                </div>
+                <div className="text-right ml-4">
+                  <span className="font-medium text-gray-800">
+                    {new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US').format(entry.value)}
+                  </span>
+                  {yoyChange !== null && (
+                    <div className={`text-xs ${yoyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {yoyChange >= 0 ? '+' : ''}{yoyChange.toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Componente para mostrar banderas
+  const FlagImage = ({ 
+    type, 
+    code, 
+    strokeColor,
+    size = FLAG_SIZE
+  }: { 
+    type: 'eu' | 'es' | 'country'; 
+    code?: string; 
+    strokeColor: string;
+    size?: number;
+  }) => {
+    const getFlagUrl = (type: 'eu' | 'es' | 'country', code?: string) => {
+      if (type === 'eu') return 'https://flagcdn.com/eu.svg';
+      if (type === 'es') return 'https://flagcdn.com/es.svg';
+      if (type === 'country' && code) {
+        const foundFlag = countryFlags.find(flag => 
+          flag.code.toUpperCase() === code.toUpperCase() ||
+          flag.iso3.toUpperCase() === code.toUpperCase()
+        );
+        
+        if (foundFlag) return foundFlag.flag;
+        
+        const lowerCode = code.toLowerCase();
+        const codeMapping: Record<string, string> = {
+          'el': 'gr',
+          'uk': 'gb'
+        };
+        
+        const mappedCode = codeMapping[lowerCode] || lowerCode;
+        return `https://flagcdn.com/${mappedCode}.svg`;
+      }
+      return '';
+    };
+
+    return (
+      <div 
+        className="inline-flex items-center justify-center rounded-full bg-white"
+        style={{
+          width: size,
+          height: size,
+          border: `2px solid ${strokeColor}`,
+          overflow: 'hidden'
+        }}
+      >
+        <img
+          src={getFlagUrl(type, code)}
+          alt={`${type} flag`}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Verificar si hay datos disponibles
+  const hasData = timeSeriesData.some(d => d.eu !== null || d.es !== null || d.country !== null);
+
+  if (!hasData) {
+    return (
+      <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: '400px' }}>
+        <div className="text-center text-gray-500">
+          <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="mt-2">{texts.noData}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      {/* Título y selector de país */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+        <h3 className="text-lg font-semibold text-gray-800">{texts.title}</h3>
+        
+        {/* Selector de país */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center justify-between w-full sm:w-64 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <span className="flex items-center">
+              {selectedCountry ? (
+                <>
+                  {selectedCountry.flag && (
+                    <img 
+                      src={selectedCountry.flag} 
+                      alt={selectedCountry.localName}
+                      className="w-4 h-4 mr-2 rounded-sm object-cover"
+                    />
+                  )}
+                  {selectedCountry.localName}
+                </>
+              ) : (
+                texts.selectCountry
+              )}
+            </span>
+            <svg className="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute right-0 z-10 w-full sm:w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+              <button
+                onClick={() => {
+                  setSelectedCountry(null);
+                  setIsDropdownOpen(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+              >
+                {texts.selectCountry}
+              </button>
+              {availableCountries.map((country) => (
+                <button
+                  key={country.code}
+                  onClick={() => {
+                    setSelectedCountry(country);
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 flex items-center"
+                >
+                  {country.flag && (
+                    <img 
+                      src={country.flag} 
+                      alt={country.localName}
+                      className="w-4 h-4 mr-2 rounded-sm object-cover"
+                    />
+                  )}
+                  {country.localName}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Gráfico */}
+      <div style={{ height: '400px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={timeSeriesData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis 
+              dataKey="year" 
+              stroke="#666"
+              fontSize={12}
+            />
+            <YAxis 
+              stroke="#666"
+              fontSize={12}
+              tickFormatter={formatYAxis}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend 
+              content={({ payload }) => (
+                <div className="flex flex-wrap justify-center gap-6 mt-4">
+                  {payload?.map((entry, index) => (
+                    <div key={index} className="flex items-center">
+                      {entry.dataKey === 'eu' && <FlagImage type="eu" strokeColor={entry.color} />}
+                      {entry.dataKey === 'es' && <FlagImage type="es" strokeColor={entry.color} />}
+                      {entry.dataKey === 'country' && selectedCountry && (
+                        <FlagImage type="country" code={selectedCountry.code} strokeColor={entry.color} />
+                      )}
+                      <span className="ml-2 text-sm text-gray-700">{entry.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            />
+            
+            <Line
+              type="monotone"
+              dataKey="eu"
+              stroke="#3B82F6"
+              strokeWidth={2}
+              dot={false}
+              name={texts.euAverage}
+              connectNulls={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="es"
+              stroke="#EF4444"
+              strokeWidth={2}
+              dot={false}
+              name={texts.spain}
+              connectNulls={false}
+            />
+            {selectedCountry && (
+              <Line
+                type="monotone"
+                dataKey="country"
+                stroke="#10B981"
+                strokeWidth={2}
+                dot={false}
+                name={selectedCountry.localName}
+                connectNulls={false}
+              />
+            )}
+            
+            <FlagsCustomComponent 
+              selectedCountry={selectedCountry}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+export default PatentsTimelineChart; 
