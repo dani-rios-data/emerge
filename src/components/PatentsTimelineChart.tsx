@@ -87,7 +87,7 @@ const FlagsCustomComponent = (props: {
   yAxisMap?: AxisScale[];
   xAxisMap?: AxisScale[];
   data?: TimeSeriesDataPoint[];
-  selectedCountry?: CountryOption;
+  selectedCountry?: CountryOption | null;
   [key: string]: unknown;
 }) => {
   const { yAxisMap, xAxisMap, data, selectedCountry } = props;
@@ -343,7 +343,7 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
             localName: mapping[language],
             code: code,
             flag: flagInfo?.flag
-          };
+          } as CountryOption;
         }
         return null;
       })
@@ -354,7 +354,7 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
   const availableCountries = getAvailableCountries();
 
   // Mapear sector seleccionado al código correcto
-  const getSectorCode = (sector: string): string => {
+  const getSectorCode = (selectedSector: string): string => {
     const sectorMapping: Record<string, string> = {
       'total': 'TOTAL',
       'business': 'BES',
@@ -379,7 +379,7 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
       const lastYear = Math.max(...data.map(item => parseInt(item.TIME_PERIOD)).filter(year => !isNaN(year)));
       
       let maxPatents = 0;
-      let countryWithMostPatents: CountryOption | null = null;
+      let countryWithMostPatents: CountryOption | undefined = undefined;
       
       availableCountries.forEach(country => {
         const countryData = data.find(item => 
@@ -417,11 +417,6 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
     return value.toString();
   };
-
-  // Función para obtener nombre del país desde código
-  function getCountryNameFromCode(code: string, lang: 'es' | 'en' = language): string {
-    return countryCodeMapping[code]?.[lang] || code;
-  }
 
   // Preparar datos para el gráfico
   const prepareTimeSeriesData = (): TimeSeriesDataPoint[] => {
