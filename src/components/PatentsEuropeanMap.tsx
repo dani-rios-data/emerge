@@ -412,13 +412,13 @@ const countryCodeMapping: Record<string, {es: string, en: string}> = {
 
 // Variables simplificadas eliminadas para esta versión básica
 
-// Definir colores específicos para los componentes de patentes - Paleta de innovación y tecnología
+// Definir colores específicos para los componentes de patentes - Paleta neutral profesional
 const PATENTS_SECTOR_COLORS = {
-  total: '#2E7D32',        // Verde tecnológico para el total (representa innovación sostenible)
-  business: '#FF6F00',     // Naranja vibrante para empresas (representa emprendimiento e innovación corporativa)
-  government: '#1565C0',   // Azul institucional para gobierno (representa políticas de innovación)
-  education: '#7B1FA2',    // Púrpura para educación (representa investigación académica avanzada)
-  nonprofit: '#D32F2F'     // Rojo para organizaciones sin fines de lucro (representa impacto social)
+  total: '#37474F',        // Gris azulado oscuro para el total (neutral y profesional)
+  business: '#FF7043',     // Naranja coral para empresas (innovación corporativa)
+  government: '#5E35B1',   // Púrpura profundo para gobierno (autoridad institucional)
+  education: '#1E88E5',    // Azul vibrante para educación (conocimiento y academia)
+  nonprofit: '#8D6E63'     // Marrón medio para organizaciones sin fines de lucro (estabilidad social)
 };
 
 // Textos localizados para el mapa
@@ -2018,7 +2018,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
 
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full" style={{ height: '620px' }}>
       <div className="mb-2 text-center">
         <h3 className="text-sm font-semibold text-gray-800">
           {getMapTitle()} · {selectedYear}
@@ -2029,39 +2029,41 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         </div>
       </div>
       
-      {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80">
-          <div className="text-center">
-            <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="text-gray-600">{t.loading}</p>
+      <div className="relative" style={{ height: '540px', border: '1px solid #f0f0f0', borderRadius: '8px', overflow: 'hidden' }}>
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80">
+            <div className="text-center">
+              <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="text-gray-600">{t.loading}</p>
+            </div>
           </div>
-        </div>
-      ) : error ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-white">
-          <div className="text-center text-red-500">{error}</div>
-        </div>
-      ) : (
-        <>
-          <svg 
-            ref={svgRef} 
-            className="w-full h-full min-h-[450px]" 
-            viewBox="0 0 1000 700"
-            preserveAspectRatio="xMidYMid meet"
-          />
-          <div 
-            ref={tooltipRef}
-            className="patents-country-tooltip"
-            style={{
-              display: 'none',
-              maxWidth: '350px',
-              transformOrigin: 'top left'
-            }}
-          />
-        </>
-      )}
+        ) : error ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white">
+            <div className="text-center text-red-500">{error}</div>
+          </div>
+        ) : (
+          <>
+            <svg 
+              ref={svgRef} 
+              className="w-full h-full" 
+              viewBox="0 0 1000 700"
+              preserveAspectRatio="xMidYMid meet"
+            />
+            <div 
+              ref={tooltipRef}
+              className="patents-country-tooltip"
+              style={{
+                display: 'none',
+                maxWidth: '350px',
+                transformOrigin: 'top left'
+              }}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 };
