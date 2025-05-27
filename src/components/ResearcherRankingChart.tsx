@@ -13,6 +13,7 @@ import {
   ChartEvent
 } from 'chart.js';
 import { EU_COLORS } from '../utils/colors';
+import { EUROPEAN_COUNTRY_CODES } from '../utils/europeanCountries';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
 
@@ -149,11 +150,17 @@ const labelDescriptions: Record<string, { es: string, en: string }> = {
 function getCountryFlagUrl(countryCode: string): string {  
   // Intentar diferentes enfoques para encontrar la bandera correcta
   
-  // Manejar el caso especial de Grecia (EL)
+  // Manejar casos especiales primero
   if (countryCode === 'EL') {
     // Buscar la bandera de Grecia usando el código estándar ISO (GR)
     const greeceFlag = countryFlags.find(flag => flag.code === 'GR' || flag.iso3 === 'GRC');
     return greeceFlag?.flag || 'https://flagcdn.com/gr.svg';
+  }
+  
+  if (countryCode === 'UK' || countryCode === 'GB') {
+    // Buscar la bandera del Reino Unido usando el código estándar ISO (GB)
+    const ukFlag = countryFlags.find(flag => flag.code === 'GB' || flag.iso3 === 'GBR');
+    return ukFlag?.flag || 'https://flagcdn.com/gb.svg';
   }
   
   // 1. Intentar directamente por ISO3
@@ -164,40 +171,31 @@ function getCountryFlagUrl(countryCode: string): string {
     // Mapeo de ISO3 a ISO2 para códigos comunes
     const iso3ToIso2: Record<string, string> = {
       'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'CYP': 'CY', 'CZE': 'CZ',
-      'DEU': 'DE', 'DNK': 'DK', 'EST': 'EE', 'GRC': 'EL', 'ESP': 'ES',
+      'DEU': 'DE', 'DNK': 'DK', 'EST': 'EE', 'GRC': 'GR', 'ESP': 'ES',
       'FIN': 'FI', 'FRA': 'FR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE',
       'ITA': 'IT', 'LTU': 'LT', 'LUX': 'LU', 'LVA': 'LV', 'MLT': 'MT',
       'NLD': 'NL', 'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'SWE': 'SE',
-      'SVN': 'SI', 'SVK': 'SK', 'GBR': 'UK'
+      'SVN': 'SI', 'SVK': 'SK', 'GBR': 'GB'
     };
     
     if (iso3ToIso2[countryCode]) {
-      // Si el código ISO2 es 'EL', usar 'GR' para la bandera
-      if (iso3ToIso2[countryCode] === 'EL') {
-        foundFlag = countryFlags.find(flag => flag.code === 'GR');
-      } else {
-        foundFlag = countryFlags.find(flag => flag.code === iso3ToIso2[countryCode]);
-      }
+      const iso2Code = iso3ToIso2[countryCode];
+      foundFlag = countryFlags.find(flag => flag.code === iso2Code);
     }
   }
   
   // 3. Si sigue sin encontrarse, buscar por código ISO2 directo
   if (!foundFlag && countryCode.length === 2) {
-    // Si el código es 'EL', buscar con 'GR'
-    if (countryCode === 'EL') {
-      foundFlag = countryFlags.find(flag => flag.code === 'GR');
-    } else {
-      foundFlag = countryFlags.find(flag => flag.code === countryCode);
-    }
+    foundFlag = countryFlags.find(flag => flag.code === countryCode);
   }
   
-  // 4. Si nada funciona, verificar casos especiales
+  // 4. Si nada funciona, verificar casos especiales de entidades supranacionales
   if (!foundFlag) {
     if (countryCode === 'EU27_2020') {
-      // Bandera de la UE - usar la misma URL que en EuropeanRDMap
+      // Bandera de la UE
       return "https://flagcdn.com/eu.svg";
     } else if (countryCode === 'EA19' || countryCode === 'EA20') {
-      // Bandera del Euro - usar la misma URL que en EuropeanRDMap
+      // Bandera del Euro
       return "https://flagcdn.com/eu.svg";
     }
   }
@@ -207,9 +205,13 @@ function getCountryFlagUrl(countryCode: string): string {
     return foundFlag.flag;
   }
   
-  // Último recurso: si es 'EL', usar la URL directa de la bandera de Grecia
+  // Fallbacks específicos para casos problemáticos
   if (countryCode === 'EL') {
     return 'https://flagcdn.com/gr.svg';
+  }
+  
+  if (countryCode === 'UK' || countryCode === 'GB') {
+    return 'https://flagcdn.com/gb.svg';
   }
   
   // Si no se encontró ninguna bandera, devolver un placeholder
@@ -593,19 +595,8 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
       numCountries?: number
     }>();
 
-    // Lista de códigos de países europeos
-    const europeanCountryCodes = [
-      'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
-      'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
-      'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
-      'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-      'XK', 'RU', 'EU27_2020', 'EA19', 'EA20',
-      // Incluir también los códigos ISO3
-      'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
-      'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
-      'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-      'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS'
-    ];
+    // Usar la lista centralizada de códigos de países europeos
+    const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
 
     // Procesar los datos para el gráfico
     countryDataForYear.forEach(item => {
@@ -787,7 +778,13 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           const flagCode = chartItem.obsFlag;
           const isAverage = chartItem.isAverage;
           const numCountries = chartItem.numCountries;
-          const rank = index + 1; // El índice ya indica la posición en el ranking
+          // Calcular el ranking excluyendo entidades supranacionales para coherencia con el mapa
+          let rank = index + 1;
+          if (!chartItem.isSupranational) {
+            // Contar solo países (no entidades supranacionales) antes de este elemento
+            const countriesBeforeThis = chartData.sortedItems.slice(0, index).filter(item => !item.isSupranational).length;
+            rank = countriesBeforeThis + 1;
+          }
           
           // Construir el contenido del tooltip
           const flagUrl = getCountryFlagUrl(country);
@@ -820,9 +817,10 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
           const spainItem = chartData.sortedItems.find(item => item.code === 'ES');
           let comparisonsHtml = '';
           
-                      // Comparativa con la UE (media)
+                      // Comparativa con la UE (media) - usar el mismo cálculo que en el mapa
           if (euItem && !chartItem.isSupranational) {
-            const euValue = euItem.isAverage ? euItem.value : (euItem.value / 27);
+            // Usar el valor promedio calculado (ya dividido por 27 en prepareChartData)
+            const euValue = euItem.value;
             const difference = value - euValue;
             const percentDiff = (difference / euValue) * 100;
             const formattedDiff = percentDiff.toFixed(1);
@@ -1206,51 +1204,158 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     msOverflowStyle: 'none',
   } as React.CSSProperties;
 
-  // Añadir YoY comparison por país
-  // Para poder añadir la funcionalidad YoY, debemos añadir una función que busque los datos del año anterior
-  // Esto se podría implementar como una función que busque en el dataset el mismo país pero del año anterior
+  // Función YoY mejorada para usar la misma lógica que ResearchersEuropeanMap
   const getYoyComparison = (country: string, value: number): string => {
-    // Buscar en chartData.sortedItems si hay datos de años anteriores
-    // Como enfoque simplificado, podríamos verificar si tenemos datos adicionales en las propiedades
     const yearValue = selectedYear - 1;
-    const previousYearData = data.filter(item => {
-      const isCountry = item.geo === country;
-      const isLastYear = parseInt(item.TIME_PERIOD) === yearValue;
-      
-      // Normalizar el sector para manejar diferentes valores
-      let sectorMatch = false;
-      if (selectedSector === 'total') {
-        sectorMatch = item.sectperf === 'TOTAL';
-      } else if (selectedSector === 'business') {
-        sectorMatch = item.sectperf === 'BES';
-      } else if (selectedSector === 'government') {
-        sectorMatch = item.sectperf === 'GOV';
-      } else if (selectedSector === 'education') {
-        sectorMatch = item.sectperf === 'HES';
-      } else if (selectedSector === 'nonprofit') {
-        sectorMatch = item.sectperf === 'PNP';
-      }
-      
-      return isCountry && isLastYear && sectorMatch;
-    });
     
-    // Si encontramos datos del año anterior
-    if (previousYearData.length > 0 && previousYearData[0].OBS_VALUE) {
-      const prevValue = parseFloat(previousYearData[0].OBS_VALUE);
-      if (!isNaN(prevValue) && prevValue > 0) {
-        const difference = value - prevValue;
-        const percentDiff = (difference / prevValue) * 100;
-        const formattedDiff = percentDiff.toFixed(1);
-        const isPositive = difference > 0;
+    // Crear un array de posibles códigos alternativos para el país (igual que en ResearchersEuropeanMap)
+    const possibleCodes = [country];
+    
+    // Códigos ISO mapeados más comunes (mismo mapeo que ResearchersEuropeanMap)
+    const codeMapping: Record<string, string[]> = {
+      'GRC': ['EL', 'GR'],
+      'GBR': ['UK', 'GB'],
+      'DEU': ['DE'],
+      'FRA': ['FR'],
+      'ESP': ['ES'],
+      'ITA': ['IT'],
+      'CZE': ['CZ'],
+      'SWE': ['SE'],
+      'DNK': ['DK'],
+      'FIN': ['FI'],
+      'AUT': ['AT'],
+      'BEL': ['BE'],
+      'BGR': ['BG'],
+      'HRV': ['HR'],
+      'CYP': ['CY'],
+      'EST': ['EE'],
+      'HUN': ['HU'],
+      'IRL': ['IE'],
+      'LVA': ['LV'],
+      'LTU': ['LT'],
+      'LUX': ['LU'],
+      'MLT': ['MT'],
+      'NLD': ['NL'],
+      'POL': ['PL'],
+      'PRT': ['PT'],
+      'ROU': ['RO'],
+      'SVK': ['SK'],
+      'SVN': ['SI'],
+      'CHE': ['CH'],
+      'NOR': ['NO'],
+      'ISL': ['IS'],
+      'TUR': ['TR'],
+      'MKD': ['MK'],
+      'SRB': ['RS'],
+      'MNE': ['ME'],
+      'ALB': ['AL'],
+      'BIH': ['BA'],
+      'UKR': ['UA'],
+      'RUS': ['RU']
+    };
+
+    // Mapeo inverso - ISO2 a ISO3
+    const codeMapping2to3: Record<string, string> = {
+      'EL': 'GRC',
+      'UK': 'GBR',
+      'GB': 'GBR',
+      'DE': 'DEU',
+      'FR': 'FRA',
+      'ES': 'ESP',
+      'IT': 'ITA',
+      'CZ': 'CZE',
+      'SE': 'SWE',
+      'DK': 'DNK',
+      'FI': 'FIN',
+      'AT': 'AUT',
+      'BE': 'BEL',
+      'BG': 'BGR',
+      'HR': 'HRV',
+      'CY': 'CYP',
+      'EE': 'EST',
+      'HU': 'HUN',
+      'IE': 'IRL',
+      'LV': 'LVA',
+      'LT': 'LTU',
+      'LU': 'LUX',
+      'MT': 'MLT',
+      'NL': 'NLD',
+      'PL': 'POL',
+      'PT': 'PRT',
+      'RO': 'ROU',
+      'SK': 'SVK',
+      'SI': 'SVN',
+      'CH': 'CHE',
+      'NO': 'NOR',
+      'IS': 'ISL',
+      'TR': 'TUR',
+      'MK': 'MKD',
+      'RS': 'SRB',
+      'ME': 'MNE',
+      'AL': 'ALB',
+      'BA': 'BIH',
+      'UA': 'UKR',
+      'RU': 'RUS'
+    };
+    
+    // Añadir códigos alternativos del mapeo
+    if (country.length === 3 && country in codeMapping) {
+      possibleCodes.push(...codeMapping[country]);
+    } else if (country.length === 2 && country in codeMapping2to3) {
+      possibleCodes.push(codeMapping2to3[country]);
+    }
+    
+    // Buscar datos del año anterior utilizando todos los códigos alternativos
+    for (const code of possibleCodes) {
+      const previousYearData = data.filter(item => {
+        const geoMatch = item.geo === code;
+        const yearMatch = parseInt(item.TIME_PERIOD) === yearValue;
         
-        return `
-          <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-              <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-            </svg>
-            <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${yearValue}</span>
-          </div>
-        `;
+        // Normalizar el sector para manejar diferentes valores
+        let sectorMatch = false;
+        if (selectedSector === 'total') {
+          sectorMatch = item.sectperf === 'TOTAL';
+        } else if (selectedSector === 'business') {
+          sectorMatch = item.sectperf === 'BES';
+        } else if (selectedSector === 'government') {
+          sectorMatch = item.sectperf === 'GOV';
+        } else if (selectedSector === 'education') {
+          sectorMatch = item.sectperf === 'HES';
+        } else if (selectedSector === 'nonprofit') {
+          sectorMatch = item.sectperf === 'PNP';
+        }
+        
+        return geoMatch && yearMatch && sectorMatch;
+      });
+      
+      // Usar el primer resultado que coincida
+      if (previousYearData.length > 0 && previousYearData[0].OBS_VALUE) {
+        let prevValue = parseFloat(previousYearData[0].OBS_VALUE);
+        
+        // Aplicar el mismo cálculo de promedio para entidades supranacionales
+        if (code === 'EU27_2020') {
+          prevValue = Math.round(prevValue / 27);
+        } else if (code === 'EA19') {
+          prevValue = Math.round(prevValue / 19);
+        } else if (code === 'EA20') {
+          prevValue = Math.round(prevValue / 20);
+        }
+        
+        if (!isNaN(prevValue) && prevValue > 0) {
+          const difference = value - prevValue;
+          const percentDiff = (difference / prevValue) * 100;
+          const formattedDiff = percentDiff.toFixed(1);
+          const isPositive = difference > 0;
+          
+          return `
+            <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+              </svg>
+              <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${yearValue}</span>
+            </div>
+          `;
+        }
       }
     }
     

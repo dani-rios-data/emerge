@@ -17,31 +17,31 @@ const App: React.FC = () => {
 
   const texts = {
     es: {
-      title: "Islas Canarias Observatorio de I+D",
-      subtitle: "Análisis comparativo e histórico de indicadores de innovación",
+      title: "Observatorio de I+D de Canarias",
+      subtitle: "Análisis comparativo e histórico de indicadores de investigación, desarrollo e innovación",
       overview: "Visión General",
       investment: "Inversión en I+D",
       researchers: "Investigadores",
       patents: "Patentes",
-      patentsDescription: "Número de patentes registradas en Canarias por año, con desglose por sector.",
-      overviewDescription: "Información general sobre EMERGE y el panorama de I+D en Canarias, comparado con otras regiones españolas y países de la UE.",
-      investmentDescription: "Inversión total en I+D en Canarias, desglosada por sectores público y privado.",
-      researchersDescription: "Profesionales dedicados a la I+D en diferentes sectores (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Datos comparativos entre Europa, España y Canarias. ETC (Equivalente Tiempo Completo).",
-      sources: "Fuentes de Datos",
+      patentsDescription: "Análisis de la actividad de patentado como indicador de la capacidad innovadora del territorio, con datos comparativos regionales y sectoriales.",
+      overviewDescription: "Panorama general del ecosistema de I+D+i en Canarias con indicadores clave, contexto institucional y comparativas con el entorno español y europeo.",
+      investmentDescription: "Análisis del esfuerzo financiero en I+D como porcentaje del PIB, distribución sectorial y evolución temporal comparada.",
+      researchersDescription: "Capital humano dedicado a la investigación y desarrollo por sectores de actividad, con análisis territorial y evolución temporal. Datos en equivalencia a tiempo completo (ETC).",
+      sources: "Fuentes de datos",
       footerText: "Desarrollado por EMERGE - Asociación Canaria de Startups"
     },
     en: {
       title: "Canary Islands R&D Observatory",
-      subtitle: "Comparative and historical analysis of innovation indicators",
+      subtitle: "Comparative and historical analysis of research, development and innovation indicators",
       overview: "Overview",
       investment: "R&D Investment",
-      researchers: "Researchers",
-      patents: "Patents",
-      patentsDescription: "Number of patents registered in the Canary Islands per year, with sector breakdown.",
-      overviewDescription: "General information about EMERGE and the R&D landscape in the Canary Islands, compared to other Spanish regions and EU countries.",
-      investmentDescription: "Total R&D investment in the Canary Islands, broken down by public and private sectors.",
-      researchersDescription: "Professionals engaged in R&D across different sectors (business, government, higher education, private non-profit). Comparative data between Europe, Spain, and the Canary Islands. FTE (Full-Time Equivalent).",
-      sources: "Data Sources",
+      researchers: "Research Personnel",
+      patents: "Patents & Innovation",
+      patentsDescription: "Analysis of patenting activity as an indicator of territorial innovation capacity, with regional and sectoral comparative data.",
+      overviewDescription: "General overview of the R&D&I ecosystem in the Canary Islands with key indicators, institutional context and comparisons with the Spanish and European environment.",
+      investmentDescription: "Analysis of financial effort in R&D as a percentage of GDP, sectoral distribution and comparative temporal evolution.",
+      researchersDescription: "Human capital dedicated to research and development by activity sectors, with territorial analysis and temporal evolution. Data in full-time equivalent (FTE).",
+      sources: "Sources & Methodology",
       footerText: "Developed by EMERGE - Canary Islands Startup Association"
     }
   };

@@ -1,15 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SourcesSectionProps {
   language: 'es' | 'en';
 }
 
+type SubTabType = 'all' | 'investment' | 'researchers' | 'patents';
+
 const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
+  const [activeSubTab, setActiveSubTab] = useState<SubTabType>('all');
+
   // Textos en español e inglés
   const texts = {
     es: {
       title: "Fuentes de Datos",
       description: "El Observatorio de I+D en Canarias utiliza datos oficiales de diversas fuentes para garantizar la fiabilidad y verificabilidad de la información presentada.",
+      
+      // Sub-tabs
+      allTab: "Todos los Datasets",
+      investmentTab: "Inversión en I+D",
+      researchersTab: "Investigadores",
+      patentsTab: "Patentes",
+      
+      // Investment sources
       europeanInvestment: "Inversión en I+D en Europa",
       europeanInvestmentDesc: "Datos sobre el porcentaje del PIB invertido en actividades de I+D en países europeos.",
       spanishGDP: "Producto Interior Bruto en España",
@@ -18,18 +30,33 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       rdSpendingDesc: "Datos sobre el gasto en actividades de I+D por sectores en España y las comunidades autónomas.",
       rdSpendingRecent: "Periodo 2021-2023",
       rdSpendingHistorical: "Datos históricos (2007-2020)",
+      
+      // Researchers sources
       europeanResearchers: "Investigadores en Europa",
       europeanResearchersDesc: "Datos sobre el personal dedicado a la investigación en países europeos.",
-      spanishResearchers: "Investigadores en España y Canarias",
+      spanishResearchers: "Investigadores en España y comunidades autónomas",
       spanishResearchersDesc: "Datos sobre el personal dedicado a la investigación en España y sus comunidades autónomas.",
+      
+      // Patents sources
       europeanPatents: "Patentes en Europa",
       europeanPatentsDesc: "Datos sobre las patentes registradas en países europeos.",
       spanishPatents: "Patentes en España",
-      spanishPatentsDesc: "Datos sobre la evolución de solicitudes de patentes nacionales en España."
+      spanishPatentsDesc: "Datos sobre la evolución de solicitudes de patentes nacionales en España.",
+      
+      accessData: "Acceder a los datos",
+      attribution: "Todos los datos utilizados en este observatorio son de acceso público y han sido obtenidos de fuentes oficiales."
     },
     en: {
       title: "Data Sources",
       description: "The R&D Observatory of the Canary Islands uses official data from various sources to ensure the reliability and verifiability of the information presented.",
+      
+      // Sub-tabs
+      allTab: "All Datasets",
+      investmentTab: "R&D Investment",
+      researchersTab: "Researchers",
+      patentsTab: "Patents",
+      
+      // Investment sources
       europeanInvestment: "R&D Investment in Europe",
       europeanInvestmentDesc: "Data on the percentage of GDP invested in R&D activities in European countries.",
       spanishGDP: "Gross Domestic Product in Spain",
@@ -38,36 +65,45 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       rdSpendingDesc: "Data on spending on R&D activities by sectors in Spain and the autonomous communities.",
       rdSpendingRecent: "Period 2021-2023",
       rdSpendingHistorical: "Historical data (2007-2020)",
+      
+      // Researchers sources
       europeanResearchers: "Researchers in Europe",
       europeanResearchersDesc: "Data on research personnel in European countries.",
-      spanishResearchers: "Researchers in Spain and Canary Islands",
+      spanishResearchers: "Researchers in Spain and autonomous communities",
       spanishResearchersDesc: "Data on research personnel in Spain and its autonomous communities.",
+      
+      // Patents sources
       europeanPatents: "Patents in Europe",
       europeanPatentsDesc: "Data on registered patents in European countries.",
       spanishPatents: "Patents in Spain",
-      spanishPatentsDesc: "Data on the evolution of national patent applications in Spain."
+      spanishPatentsDesc: "Data on the evolution of national patent applications in Spain.",
+      
+      accessData: "Access data",
+      attribution: "All data used in this observatory are publicly accessible and have been obtained from official sources."
     }
   };
 
   const t = (key: keyof typeof texts.es) => texts[language][key];
 
-  // Fuentes de datos
-  const sources = [
+  // Fuentes de datos organizadas por categorías
+  const investmentSources = [
     {
-      id: "eurostat",
+      id: "eurostat-investment",
       title: t('europeanInvestment'),
       description: t('europeanInvestmentDesc'),
       url: "https://ec.europa.eu/eurostat/databrowser/view/tsc00001/default/table?lang=en",
       organization: "Eurostat",
-      logo: "/logos/eurostat.png"
+      logo: "/logos/eurostat.png",
+      category: "investment" as const
     },
     {
-      id: "ine",
+      id: "ine-gdp",
       title: t('spanishGDP'),
       description: t('spanishGDPDesc'),
       url: "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736167628&menu=resultados&idp=1254735576581",
       organization: "INE (Instituto Nacional de Estadística)",
-      logo: "/logos/ine.png"
+      logo: "/logos/ine.png",
+      category: "investment" as const
     },
     {
       id: "istac-recent",
@@ -75,7 +111,8 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       description: t('rdSpendingDesc'),
       url: "https://www3.gobiernodecanarias.org/istac/statistical-visualizer/visualizer/data.html?resourceType=dataset&agencyId=ISTAC&resourceId=E30057A_000002&version=~latest#visualization/table",
       organization: "ISTAC (Instituto Canario de Estadística)",
-      logo: "/logos/istac.png"
+      logo: "/logos/istac.png",
+      category: "investment" as const
     },
     {
       id: "istac-historical",
@@ -83,15 +120,20 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       description: t('rdSpendingDesc'),
       url: "https://www3.gobiernodecanarias.org/istac/statistical-visualizer/visualizer/data.html?resourceType=dataset&agencyId=ISTAC&resourceId=E30057A_000005&version=~latest",
       organization: "ISTAC (Instituto Canario de Estadística)",
-      logo: "/logos/istac.png"
-    },
+      logo: "/logos/istac.png",
+      category: "investment" as const
+    }
+  ];
+
+  const researchersSources = [
     {
       id: "eurostat-researchers",
       title: t('europeanResearchers'),
       description: t('europeanResearchersDesc'),
       url: "https://ec.europa.eu/eurostat/databrowser/view/tsc00004/default/table?lang=en&category=t_scitech.t_rd",
       organization: "Eurostat",
-      logo: "/logos/eurostat.png"
+      logo: "/logos/eurostat.png",
+      category: "researchers" as const
     },
     {
       id: "istac-researchers",
@@ -99,15 +141,20 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       description: t('spanishResearchersDesc'),
       url: "https://www3.gobiernodecanarias.org/istac/statistical-visualizer/visualizer/data.html?resourceType=dataset&agencyId=ISTAC&resourceId=E30057A_000001&version=~latest#visualization/table",
       organization: "ISTAC (Instituto Canario de Estadística)",
-      logo: "/logos/istac.png"
-    },
+      logo: "/logos/istac.png",
+      category: "researchers" as const
+    }
+  ];
+
+  const patentsSources = [
     {
       id: "eurostat-patents",
       title: t('europeanPatents'),
       description: t('europeanPatentsDesc'),
       url: "https://ec.europa.eu/eurostat/databrowser/view/sdg_09_40/default/table?lang=en",
       organization: "Eurostat",
-      logo: "/logos/eurostat.png"
+      logo: "/logos/eurostat.png",
+      category: "patents" as const
     },
     {
       id: "oepm-patents",
@@ -115,61 +162,243 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       description: t('spanishPatentsDesc'),
       url: "https://www.oepm.es/es/sobre-OEPM/estadisticas/graficos-evolucion-mensual-de-solicitudes-nacionales/graficos-de-evolucion-de-patentes/",
       organization: "OEPM (Oficina Española de Patentes y Marcas)",
-      logo: "/logos/oepm.png"
+      logo: "/logos/oepm.png",
+      category: "patents" as const
     }
   ];
+
+  // Todas las fuentes combinadas
+  const allSources = [...investmentSources, ...researchersSources, ...patentsSources];
+
+  // Función para obtener las fuentes según la pestaña activa
+  const getCurrentSources = () => {
+    switch (activeSubTab) {
+      case 'all':
+        return allSources;
+      case 'investment':
+        return investmentSources;
+      case 'researchers':
+        return researchersSources;
+      case 'patents':
+        return patentsSources;
+      default:
+        return allSources;
+    }
+  };
+
+  // Función para obtener el icono según la pestaña
+  const getTabIcon = (tab: SubTabType) => {
+    switch (tab) {
+      case 'all':
+        return (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+          </svg>
+        );
+      case 'investment':
+        return (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+          </svg>
+        );
+      case 'researchers':
+        return (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+          </svg>
+        );
+      case 'patents':
+        return (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+          </svg>
+        );
+    }
+  };
+
+  // Función para obtener el color de la categoría
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'investment':
+        return 'bg-blue-100 text-blue-800';
+      case 'researchers':
+        return 'bg-green-100 text-green-800';
+      case 'patents':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Función para obtener el nombre de la categoría
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'investment':
+        return language === 'es' ? 'Inversión' : 'Investment';
+      case 'researchers':
+        return language === 'es' ? 'Investigadores' : 'Researchers';
+      case 'patents':
+        return language === 'es' ? 'Patentes' : 'Patents';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="space-y-6 w-full min-h-[700px]">
       {/* Introducción */}
-      <div className="p-6 bg-blue-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 w-full">
+      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 w-full">
         <div className="flex items-start">
-          <svg className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <p className="text-sm font-medium text-gray-700 leading-relaxed">{t('description')}</p>
+          <div className="p-2 bg-blue-100 rounded-lg mr-4 flex-shrink-0">
+            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">
+              {language === 'es' ? 'Información sobre las fuentes' : 'Information about sources'}
+            </h3>
+            <p className="text-sm font-medium text-gray-700 leading-relaxed">{t('description')}</p>
+          </div>
         </div>
       </div>
 
-      {/* Lista de fuentes */}
-      <div className="space-y-4 w-full">
-        {sources.map(source => (
-          <div 
-            key={source.id}
-            className="bg-white p-6 rounded-lg shadow-md border border-gray-100 transition-all hover:shadow-lg w-full"
-          >
-            <div className="flex items-start">
-              <div className="flex-grow">
-                <h4 className="text-lg font-bold text-gray-800 mb-2">{source.title}</h4>
-                <p className="text-sm text-gray-600 mb-3">{source.description}</p>
-                <p className="text-xs text-gray-500 mb-3">
-                  <span className="font-medium">{source.organization}</span>
-                </p>
-                <a 
-                  href={source.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-dashboard-primary hover:underline inline-flex items-center"
-                >
-                  {language === 'es' ? 'Acceder a los datos' : 'Access data'}
-                  <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                  </svg>
-                </a>
+      {/* Subpestañas */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <nav className="flex space-x-0" aria-label="Tabs">
+            {/* All Tab */}
+            <button
+              onClick={() => setActiveSubTab('all')}
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 first:rounded-tl-xl ${
+                activeSubTab === 'all'
+                  ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
+              }`}
+            >
+              {getTabIcon('all')}
+              <span>{t('allTab')}</span>
+              {activeSubTab === 'all' && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
+              )}
+            </button>
+
+            {/* Investment Tab */}
+            <button
+              onClick={() => setActiveSubTab('investment')}
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 ${
+                activeSubTab === 'investment'
+                  ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
+              }`}
+            >
+              {getTabIcon('investment')}
+              <span>{t('investmentTab')}</span>
+              {activeSubTab === 'investment' && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
+              )}
+            </button>
+
+            {/* Researchers Tab */}
+            <button
+              onClick={() => setActiveSubTab('researchers')}
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 ${
+                activeSubTab === 'researchers'
+                  ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
+              }`}
+            >
+              {getTabIcon('researchers')}
+              <span>{t('researchersTab')}</span>
+              {activeSubTab === 'researchers' && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
+              )}
+            </button>
+
+            {/* Patents Tab */}
+            <button
+              onClick={() => setActiveSubTab('patents')}
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 last:rounded-tr-xl ${
+                activeSubTab === 'patents'
+                  ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
+              }`}
+            >
+              {getTabIcon('patents')}
+              <span>{t('patentsTab')}</span>
+              {activeSubTab === 'patents' && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
+              )}
+            </button>
+          </nav>
+        </div>
+
+        {/* Contenido de las pestañas */}
+        <div className="p-8">
+          <div className="space-y-6 w-full">
+            {getCurrentSources().map(source => (
+              <div 
+                key={source.id}
+                className="group bg-gradient-to-r from-white to-gray-50 p-6 rounded-xl border border-gray-200 transition-all duration-300 hover:shadow-lg hover:from-white hover:to-blue-50 hover:border-blue-200 w-full"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-grow pr-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="text-lg font-bold text-gray-800 group-hover:text-blue-900 transition-colors duration-200">
+                        {source.title}
+                      </h4>
+                      {activeSubTab === 'all' && (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(source.category)}`}>
+                          {getCategoryName(source.category)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">{source.description}</p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          <span className="font-medium text-gray-700">{source.organization}</span>
+                        </p>
+                      </div>
+                      
+                      <a 
+                        href={source.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="group/btn inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        <span>{t('accessData')}</span>
+                        <svg className="ml-2 w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       {/* Nota de atribución */}
-      <div className="text-right w-full">
-        <p className="text-xs text-gray-500 italic">
-          {language === 'es' 
-            ? 'Todos los datos utilizados en este observatorio son de acceso público y han sido obtenidos de fuentes oficiales.'
-            : 'All data used in this observatory are publicly accessible and have been obtained from official sources.'}
-        </p>
+      <div className="text-center w-full">
+        <div className="inline-flex items-center px-4 py-2 bg-gray-50 rounded-full border border-gray-200">
+          <svg className="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <p className="text-xs text-gray-500 italic">
+            {t('attribution')}
+          </p>
+        </div>
       </div>
     </div>
   );

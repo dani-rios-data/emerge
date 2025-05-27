@@ -5,6 +5,7 @@ import { Feature, Geometry } from 'geojson';
 import countryFlagsData from '../logos/country_flags.json';
 // Importar las funciones de mapeo de países
 import { getIso3FromCountryName, isSupranationalEntity as isSupranationalFromMapping } from '../utils/countryMapping';
+import { EUROPEAN_COUNTRY_CODES } from '../utils/europeanCountries';
 
 // Definir colores específicos para los componentes de investigadores
 const RESEARCHER_SECTOR_COLORS = {
@@ -332,21 +333,8 @@ function getValueRange(
   
   const values: number[] = [];
   
-  // Lista ampliada de códigos de países europeos (excluyendo entidades supranacionales)
-  const europeanCountryCodes = [
-    // Códigos ISO2
-    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
-    'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
-    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
-    'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-    'XK', 'RU', 'EU27_2020', 'EA19', 'EA20', 'GR', 'BY', 'VA',
-    // Códigos ISO3
-    'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
-    'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
-    'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-    'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
-    'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
-  ];
+  // Usar la lista centralizada de códigos de países europeos
+  const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
   
   // Filtrar datos por año y sector, solo países europeos y excluir entidades supranacionales
   const filteredData = data.filter(item => {
@@ -1051,32 +1039,92 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
       // Función para obtener el ranking de un país (se usará después de dibujar los países)
       const getCountryRank = (feature: GeoJsonFeature, countryValuesMap: Map<string, number>): { rank: number, total: number } | null => {
         const countryName = getCountryName(feature);
+        const countryIso3 = getCountryIso3(feature);
+        const countryIso2 = feature.properties?.iso_a2 as string;
         
         // Si es una entidad supranacional, no mostrar ranking
         if (isSupranationalEntity(countryName)) return null;
         
-        // Obtener el valor usando el mapa de valores
-        const featureId = feature.properties?.iso_a3 || countryName;
-        if (!countryValuesMap.has(featureId)) return null;
+        // Mapeo de códigos GeoJSON a códigos de datos
+        const codeMapping: Record<string, string> = {
+          'GRC': 'EL',
+          'GBR': 'UK',
+          'DEU': 'DE',
+          'FRA': 'FR',
+          'ESP': 'ES',
+          'ITA': 'IT',
+          'CZE': 'CZ',
+          'SWE': 'SE',
+          'DNK': 'DK',
+          'FIN': 'FI',
+          'AUT': 'AT',
+          'BEL': 'BE',
+          'BGR': 'BG',
+          'HRV': 'HR',
+          'CYP': 'CY',
+          'EST': 'EE',
+          'HUN': 'HU',
+          'IRL': 'IE',
+          'LVA': 'LV',
+          'LTU': 'LT',
+          'LUX': 'LU',
+          'MLT': 'MT',
+          'NLD': 'NL',
+          'POL': 'PL',
+          'PRT': 'PT',
+          'ROU': 'RO',
+          'SVK': 'SK',
+          'SVN': 'SI',
+          'CHE': 'CH',
+          'NOR': 'NO',
+          'ISL': 'IS',
+          'TUR': 'TR',
+          'MKD': 'MK',
+          'RUS': 'RU',
+          'SRB': 'RS',
+          'MNE': 'ME',
+          'ALB': 'AL',
+          'BIH': 'BA',
+          'MDA': 'MD',
+          'UKR': 'UA',
+          'XKX': 'XK'
+        };
         
-        // Crear lista ordenada excluyendo entidades supranacionales
+        // Buscar el código correcto en el mapa de valores
+        const possibleCodes = [countryIso2, countryIso3];
+        if (countryIso3 && codeMapping[countryIso3]) {
+          possibleCodes.push(codeMapping[countryIso3]);
+        }
+        
+        let currentValue: number | null = null;
+        let matchedCode: string | null = null;
+        
+        for (const code of possibleCodes) {
+          if (code && countryValuesMap.has(code)) {
+            currentValue = countryValuesMap.get(code)!;
+            matchedCode = code;
+            break;
+          }
+        }
+        
+        if (currentValue === null || matchedCode === null) return null;
+        
+        // Crear lista ordenada excluyendo entidades supranacionales (igual que ResearcherRankingChart)
         const sortedValues: [string, number][] = [];
-        countryValuesMap.forEach((val, id) => {
+        countryValuesMap.forEach((val, code) => {
           // Verificar si es un país (no una entidad supranacional)
-          const featureForId = europeanMapData!.features.find(f => 
-            f.properties?.iso_a3 === id || getCountryName(f) === id
-          );
+          const isSupranational = code === 'EU27_2020' || code === 'EA19' || code === 'EA20';
           
-          if (featureForId && !isSupranationalEntity(getCountryName(featureForId))) {
-            sortedValues.push([id, val]);
+          if (!isSupranational) {
+            sortedValues.push([code, val]);
           }
         });
         
         // Ordenar por valor (mayor a menor)
         sortedValues.sort((a, b) => b[1] - a[1]);
         
-        // Buscar la posición en el ranking
-        const position = sortedValues.findIndex(([id]) => id === featureId);
+        // Buscar la posición en el ranking usando el valor actual
+        const position = sortedValues.findIndex(([, val]) => val === currentValue);
         
         if (position === -1) return null;
         
@@ -1185,19 +1233,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const iso3 = getCountryIso3(feature);
         const iso2 = feature.properties?.iso_a2 as string;
         
-        // Lista de códigos de países europeos
-        const europeanCountryCodes = [
-          'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
-          'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
-          'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
-          'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-          'XK', 'RU', 'GR', 'BY', 'VA',
-          'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
-          'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
-          'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
-          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
-        ];
+        // Usar la lista centralizada de códigos de países europeos
+        const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
         
         // Verificar si el país es europeo de forma más permisiva
         // Solo excluir si ambos códigos (iso2 e iso3) no están en la lista
@@ -1319,35 +1356,72 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         const countryName = getLocalizedCountryName(countryIso3 || countryIso2, language);
         const value = getCountryValue(feature, data, selectedYear, selectedSector);
         
-        // Recopilar todos los valores primero en un Map para calcular el ranking
+        // Recopilar todos los valores basándose en los datos reales, no en el GeoJSON
         const countryValuesMap = new Map<string, number>();
         
-        // Primero recopilamos los valores para todos los países
-        europeanMapData!.features.forEach(f => {
-          const val = getCountryValue(f, data, selectedYear, selectedSector);
-          if (val !== null) {
-            const featureId = f.properties?.iso_a3 || getCountryName(f);
-            countryValuesMap.set(featureId, val);
+        // Usar la misma lógica que ResearcherRankingChart para obtener los países con datos
+        const countryDataForYear = data.filter(item => {
+          const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
+          
+          // Normalizar el sector
+          let sectorMatch = false;
+          if (selectedSector === 'total') {
+            sectorMatch = item.sectperf === 'TOTAL';
+          } else if (selectedSector === 'business') {
+            sectorMatch = item.sectperf === 'BES';
+          } else if (selectedSector === 'government') {
+            sectorMatch = item.sectperf === 'GOV';
+          } else if (selectedSector === 'education') {
+            sectorMatch = item.sectperf === 'HES';
+          } else if (selectedSector === 'nonprofit') {
+            sectorMatch = item.sectperf === 'PNP';
           }
+          
+          // Verificar si es un país europeo usando la lista centralizada
+          const isEuropean = EUROPEAN_COUNTRY_CODES.includes(item.geo);
+          
+          return yearMatch && sectorMatch && isEuropean;
+        });
+        
+        // Procesar los datos para crear el mapa de valores (igual que en ResearcherRankingChart)
+        const tempCountryMap = new Map<string, {code: string, value: number, isSupranational: boolean}>();
+        
+        countryDataForYear.forEach(item => {
+          const countryCode = item.geo;
+          let value = parseFloat(item.OBS_VALUE || '0');
+          if (isNaN(value)) return;
+          
+          // Aplicar el mismo cálculo de promedios para entidades supranacionales
+          if (countryCode === 'EU27_2020') {
+            value = Math.round(value / 27);
+          } else if (countryCode === 'EA19') {
+            value = Math.round(value / 19);
+          } else if (countryCode === 'EA20') {
+            value = Math.round(value / 20);
+          }
+          
+          const isSupranational = countryCode === 'EU27_2020' || countryCode === 'EA19' || countryCode === 'EA20';
+          tempCountryMap.set(countryCode, {code: countryCode, value: value, isSupranational: isSupranational});
+        });
+        
+        // Ordenar y limitar a 25 elementos (igual que ResearcherRankingChart)
+        let sortedData = Array.from(tempCountryMap.values())
+          .sort((a, b) => b.value - a.value);
+        
+        // Limitar a un máximo de 25 entidades en total (sean países o entidades supranacionales)
+        sortedData = sortedData.slice(0, 25);
+        
+        // Crear el mapa final de valores solo con los 25 primeros
+        sortedData.forEach(item => {
+          countryValuesMap.set(item.code, item.value);
         });
         
         // Ahora podemos obtener el ranking usando el mapa de valores
         const rankInfo = !isSupranationalEntity(countryName) ? 
           getCountryRank(feature, countryValuesMap) : null;
         
-        // Lista de códigos de países europeos - usar la misma que está definida en otra parte del código
-        const europeanCountryCodes = [
-          'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 
-          'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 
-          'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'UK', 'GB', 'CH', 
-          'NO', 'IS', 'TR', 'ME', 'MK', 'AL', 'RS', 'BA', 'MD', 'UA', 
-          'XK', 'RU', 'GR', 'BY', 'VA',
-          'AUT', 'BEL', 'BGR', 'CYP', 'CZE', 'DEU', 'DNK', 'EST', 'GRC', 'ESP',
-          'FIN', 'FRA', 'HRV', 'HUN', 'IRL', 'ITA', 'LTU', 'LUX', 'LVA', 'MLT',
-          'NLD', 'POL', 'PRT', 'ROU', 'SWE', 'SVN', 'SVK', 'GBR', 'CHE', 'NOR',
-          'ISL', 'TUR', 'MNE', 'MKD', 'ALB', 'SRB', 'BIH', 'MDA', 'UKR', 'RUS',
-          'BLR', 'VAT', 'KOS', 'MCO', 'SMR', 'AND', 'LIE', 'XKX'
-        ];
+        // Usar la lista centralizada de códigos de países europeos
+        const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
         
         // Verificar si el país es europeo de forma más flexible
         if ((countryIso2 && !europeanCountryCodes.includes(countryIso2)) && 
@@ -1504,7 +1578,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         
         // Obtener valores para comparativas
         const euValue = !isEU ? getEUValue(data, selectedYear, selectedSector) : null;
-        const euAverageValue = euValue !== null ? euValue / 27 : null;
+        const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
         const spainValue = !isSpain ? getSpainValue(data, selectedYear, selectedSector) : null;
         
         // Obtener el valor del año anterior para la comparación YoY - mejorar búsqueda
@@ -1585,8 +1659,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Media UE (${formatNumberComplete(euAverageValue, 0, language)}):` : 
-                  `vs Avg UE (${formatNumberComplete(euAverageValue, 0, language)}):`}</span>
+                  `vs Media UE (${formatNumberComplete(Math.round(euAverageValue), 0, language)}):` : 
+                  `vs Avg UE (${formatNumberComplete(Math.round(euAverageValue), 0, language)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1602,8 +1676,8 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs España (${formatNumberComplete(spainValue, 0, language)}):` : 
-                  `vs Spain (${formatNumberComplete(spainValue, 0, language)}):`}</span>
+                  `vs España (${formatNumberComplete(Math.round(spainValue), 0, language)}):` : 
+                  `vs Spain (${formatNumberComplete(Math.round(spainValue), 0, language)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1651,7 +1725,7 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
                     <span>${t.researchers}:</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-blue-700">${formatNumberComplete(safeValue, 0, language)}</span>
+                    <span class="text-xl font-bold text-blue-700">${formatNumberComplete(Math.round(safeValue), 0, language)}</span>
                     ${countryData && countryData.OBS_FLAG ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${countryData.OBS_FLAG}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
