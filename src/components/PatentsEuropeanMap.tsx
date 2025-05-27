@@ -114,19 +114,7 @@ function getEUValue(data: ResearchersData[], year: number, sector: string): numb
   const euData = data.filter(item => {
     const isEU = item.geo === 'EU27_2020';
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    
-    let sectorMatch = false;
-    if (sector === 'All Sectors' || sector === 'total') {
-      sectorMatch = item.sectperf === 'TOTAL';
-    } else if (sector === 'Business enterprise sector' || sector === 'business') {
-      sectorMatch = item.sectperf === 'BES';
-    } else if (sector === 'Government sector' || sector === 'government') {
-      sectorMatch = item.sectperf === 'GOV';
-    } else if (sector === 'Higher education sector' || sector === 'education') {
-      sectorMatch = item.sectperf === 'HES';
-    } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
-      sectorMatch = item.sectperf === 'PNP';
-    }
+    const sectorMatch = item.sectperf === sector; // Ahora usamos directamente el código del sector
     
     return isEU && yearMatch && sectorMatch;
   });
@@ -145,19 +133,7 @@ function getSpainValue(data: ResearchersData[], year: number, sector: string): n
   const spainData = data.filter(item => {
     const isSpain = item.geo === 'ES';
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    
-    let sectorMatch = false;
-    if (sector === 'All Sectors' || sector === 'total') {
-      sectorMatch = item.sectperf === 'TOTAL';
-    } else if (sector === 'Business enterprise sector' || sector === 'business') {
-      sectorMatch = item.sectperf === 'BES';
-    } else if (sector === 'Government sector' || sector === 'government') {
-      sectorMatch = item.sectperf === 'GOV';
-    } else if (sector === 'Higher education sector' || sector === 'education') {
-      sectorMatch = item.sectperf === 'HES';
-    } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
-      sectorMatch = item.sectperf === 'PNP';
-    }
+    const sectorMatch = item.sectperf === sector; // Ahora usamos directamente el código del sector
     
     return isSpain && yearMatch && sectorMatch;
   });
@@ -184,19 +160,7 @@ function getPreviousYearValue(
   const previousYear = year - 1;
   console.log(`[Patents YoY Debug] Buscando datos para país=${countryCode}, año anterior=${previousYear}, sector=${sector}`);
   
-  // Normalizar el sector seleccionado para mejorar las coincidencias
-  let normalizedSector = sector.toLowerCase();
-  if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
-    normalizedSector = 'total';
-  } else if (normalizedSector === 'business enterprise sector' || normalizedSector === 'bes') {
-    normalizedSector = 'business';
-  } else if (normalizedSector === 'government sector' || normalizedSector === 'gov') {
-    normalizedSector = 'government';
-  } else if (normalizedSector === 'higher education sector' || normalizedSector === 'hes') {
-    normalizedSector = 'education';
-  } else if (normalizedSector === 'private non-profit sector' || normalizedSector === 'pnp') {
-    normalizedSector = 'nonprofit';
-  }
+  // Ahora usamos directamente el código del sector que viene ya normalizado
   
   // Crear un array de posibles códigos alternativos para el país
   const possibleCodes = [countryCode];
@@ -305,19 +269,8 @@ function getPreviousYearValue(
       const geoMatch = item.geo === code;
       const yearMatch = parseInt(item.TIME_PERIOD) === previousYear;
       
-      // Normalizar el sector para manejar diferentes valores
-      let sectorMatch = false;
-      if (normalizedSector === 'total') {
-        sectorMatch = item.sectperf === 'TOTAL';
-      } else if (normalizedSector === 'business') {
-        sectorMatch = item.sectperf === 'BES';
-      } else if (normalizedSector === 'government') {
-        sectorMatch = item.sectperf === 'GOV';
-      } else if (normalizedSector === 'education') {
-        sectorMatch = item.sectperf === 'HES';
-      } else if (normalizedSector === 'nonprofit') {
-        sectorMatch = item.sectperf === 'PNP';
-      }
+      // Usar directamente el código del sector
+      const sectorMatch = item.sectperf === sector;
       
       // Depuración detallada para diagnóstico
       if (geoMatch) {
@@ -718,6 +671,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
       'Germany': ['DE', 'DEU'],
       'Italy': ['IT', 'ITA'],
       'United Kingdom': ['UK', 'GBR'],
+      'Great Britain': ['UK', 'GBR'],
       'Poland': ['PL', 'POL'],
       'Netherlands': ['NL', 'NLD'],
       'Belgium': ['BE', 'BEL'],
@@ -730,7 +684,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
       'Denmark': ['DK', 'DNK'],
       'Finland': ['FI', 'FIN'],
       'Ireland': ['IE', 'IRL'],
+      'Iceland': ['IS', 'ISL'],
       'Czech Republic': ['CZ', 'CZE'],
+      'Czechia': ['CZ', 'CZE'],
       'Hungary': ['HU', 'HUN'],
       'Slovakia': ['SK', 'SVK'],
       'Slovenia': ['SI', 'SVN'],
@@ -744,10 +700,26 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
       'Bulgaria': ['BG', 'BGR'],
       'Romania': ['RO', 'ROU'],
       'Turkey': ['TR', 'TUR'],
+      'Türkiye': ['TR', 'TUR'],
       'Serbia': ['RS', 'SRB'],
       'Ukraine': ['UA', 'UKR'],
       'Russia': ['RU', 'RUS'],
-      'Republic of Moldova': ['MD', 'MDA']
+      'Russian Federation': ['RU', 'RUS'],
+      'Republic of Moldova': ['MD', 'MDA'],
+      'Moldova': ['MD', 'MDA'],
+      'North Macedonia': ['MK', 'MKD'],
+      'Macedonia': ['MK', 'MKD'],
+      'Montenegro': ['ME', 'MNE'],
+      'Albania': ['AL', 'ALB'],
+      'Bosnia and Herzegovina': ['BA', 'BIH'],
+      'Bosnia & Herzegovina': ['BA', 'BIH'],
+      'Kosovo': ['XK', 'XKX'],
+      'Belarus': ['BY', 'BLR'],
+      'Liechtenstein': ['LI', 'LIE'],
+      'Monaco': ['MC', 'MCO'],
+      'San Marino': ['SM', 'SMR'],
+      'Vatican': ['VA', 'VAT'],
+      'Andorra': ['AD', 'AND']
     };
     
     // Si no tenemos códigos ISO, buscar por nombre
@@ -756,6 +728,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     }
     
     console.log(`[Patents Map Debug] Códigos a buscar para ${countryName}: ${possibleCodes.join(', ')}`);
+    
+
     
     // Normalizar el sector seleccionado
     let sectorCode = 'TOTAL';
@@ -777,6 +751,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
       // Debug para matches encontrados
       if (geoMatch) {
         console.log(`[Patents Map Debug] Match encontrado para ${item.geo}: yearMatch=${yearMatch}, sectorMatch=${sectorMatch}, TIME_PERIOD=${item.TIME_PERIOD}, sectperf=${item.sectperf}, OBS_VALUE=${item.OBS_VALUE}`);
+
       }
       
       return geoMatch && yearMatch && sectorMatch;
@@ -864,6 +839,114 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     return finalColor;
   };
 
+  // Función auxiliar para validar si un país tiene datos disponibles
+  const validateCountryData = (feature: GeoJsonFeature): boolean => {
+    const countryName = getCountryName(feature);
+    const countryIso3 = getCountryIso3(feature);
+    const countryIso2 = feature.properties?.iso_a2 as string;
+    
+    // Verificar si es una entidad supranacional (siempre válida para mostrar)
+    if (isSupranationalEntity(countryName)) {
+      return true;
+    }
+    
+    // Verificar si está en la lista de países europeos
+    const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
+    const isEuropean = (countryIso2 && europeanCountryCodes.includes(countryIso2)) || 
+                      (countryIso3 && europeanCountryCodes.includes(countryIso3));
+    
+    if (!isEuropean) {
+      console.log(`[Tooltip Validation] País ${countryName} no es europeo, omitiendo tooltip`);
+      return false;
+    }
+    
+    // Verificar si tiene códigos válidos para búsqueda de datos
+    const codeMapping = getCountryCodeMapping();
+    const possibleCodes = [countryIso3, countryIso2];
+    
+    // Añadir códigos alternativos
+    if (countryIso3 && codeMapping[countryIso3]) {
+      possibleCodes.push(codeMapping[countryIso3]);
+    }
+    
+    // Mapeo de nombres como fallback
+    const countryNameMapping: Record<string, string[]> = {
+      'Iceland': ['IS', 'ISL'],
+      'Great Britain': ['UK', 'GBR'],
+      'United Kingdom': ['UK', 'GBR'],
+      'Czechia': ['CZ', 'CZE'],
+      'Czech Republic': ['CZ', 'CZE'],
+      'Türkiye': ['TR', 'TUR'],
+      'Turkey': ['TR', 'TUR'],
+      'North Macedonia': ['MK', 'MKD'],
+      'Macedonia': ['MK', 'MKD'],
+      'Bosnia and Herzegovina': ['BA', 'BIH'],
+      'Bosnia & Herzegovina': ['BA', 'BIH']
+    };
+    
+    if (possibleCodes.length === 0 && countryName && countryNameMapping[countryName]) {
+      possibleCodes.push(...countryNameMapping[countryName]);
+    }
+    
+    if (possibleCodes.filter(code => code && code !== 'undefined').length === 0) {
+      console.log(`[Tooltip Validation] No se encontraron códigos válidos para ${countryName}`);
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Función auxiliar para obtener el mapeo de códigos de países
+  const getCountryCodeMapping = (): Record<string, string> => ({
+    'GRC': 'EL',
+    'GBR': 'UK',
+    'DEU': 'DE',
+    'FRA': 'FR',
+    'ESP': 'ES',
+    'ITA': 'IT',
+    'CZE': 'CZ',
+    'SWE': 'SE',
+    'DNK': 'DK',
+    'FIN': 'FI',
+    'AUT': 'AT',
+    'BEL': 'BE',
+    'BGR': 'BG',
+    'HRV': 'HR',
+    'CYP': 'CY',
+    'EST': 'EE',
+    'HUN': 'HU',
+    'IRL': 'IE',
+    'LVA': 'LV',
+    'LTU': 'LT',
+    'LUX': 'LU',
+    'MLT': 'MT',
+    'NLD': 'NL',
+    'POL': 'PL',
+    'PRT': 'PT',
+    'ROU': 'RO',
+    'SVK': 'SK',
+    'SVN': 'SI',
+    'CHE': 'CH',
+    'NOR': 'NO',
+    'ISL': 'IS',
+    'TUR': 'TR',
+    'MKD': 'MK',
+    'RUS': 'RU',
+    'SRB': 'RS',
+    'MNE': 'ME',
+    'ALB': 'AL',
+    'BIH': 'BA',
+    'MDA': 'MD',
+    'UKR': 'UA',
+    'XKX': 'XK',
+    'BLR': 'BY',
+    'LIE': 'LI',
+    'MCO': 'MC',
+    'SMR': 'SM',
+    'VAT': 'VA',
+    'AND': 'AD'
+  });
+
   // Referencias para el tooltip
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -873,9 +956,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     const styleElement = document.createElement('style');
     styleElement.id = 'tooltip-patents-map-styles';
     
-    // Definir estilos CSS para el tooltip
+    // Definir estilos CSS para el tooltip usando el mismo formato que ResearchersEuropeanMap
     styleElement.textContent = `
-      .patents-tooltip {
+      .patents-country-tooltip {
         transform-origin: top left;
         transform: scale(0.95);
         transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
@@ -886,68 +969,69 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         border-radius: 8px;
       }
-      .patents-tooltip.visible {
+      .patents-country-tooltip.visible {
         opacity: 1 !important;
         transform: scale(1);
       }
-      .patents-tooltip .text-green-600 { color: #059669; }
-      .patents-tooltip .text-red-600 { color: #DC2626; }
-      .patents-tooltip .bg-green-50 { background-color: #ECFDF5; }
-      .patents-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
-      .patents-tooltip .border-green-100 { border-color: #DCFCE7; }
-      .patents-tooltip .border-gray-100 { border-color: #F3F4F6; }
-      .patents-tooltip .text-gray-500 { color: #6B7280; }
-      .patents-tooltip .text-green-700 { color: #15803D; }
-      .patents-tooltip .text-gray-800 { color: #1F2937; }
-      .patents-tooltip .text-gray-600 { color: #4B5563; }
-      .patents-tooltip .text-gray-400 { color: #9CA3AF; }
-      .patents-tooltip .text-yellow-500 { color: #F59E0B; }
-      .patents-tooltip .bg-gray-50 { background-color: #F9FAFB; }
-      .patents-tooltip .rounded-lg { border-radius: 0.5rem; }
-      .patents-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-      .patents-tooltip .p-3 { padding: 0.75rem; }
-      .patents-tooltip .p-4 { padding: 1rem; }
-      .patents-tooltip .p-2 { padding: 0.5rem; }
-      .patents-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-      .patents-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-      .patents-tooltip .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
-      .patents-tooltip .py-0\\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
-      .patents-tooltip .pt-3 { padding-top: 0.75rem; }
-      .patents-tooltip .mb-3 { margin-bottom: 0.75rem; }
-      .patents-tooltip .mb-1 { margin-bottom: 0.25rem; }
-      .patents-tooltip .mb-4 { margin-bottom: 1rem; }
-      .patents-tooltip .mr-1 { margin-right: 0.25rem; }
-      .patents-tooltip .mr-2 { margin-right: 0.5rem; }
-      .patents-tooltip .ml-2 { margin-left: 0.5rem; }
-      .patents-tooltip .mt-1 { margin-top: 0.25rem; }
-      .patents-tooltip .mt-3 { margin-top: 0.75rem; }
-      .patents-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
-      .patents-tooltip .text-xs { font-size: 0.75rem; }
-      .patents-tooltip .text-sm { font-size: 0.875rem; }
-      .patents-tooltip .text-lg { font-size: 1.125rem; }
-      .patents-tooltip .text-xl { font-size: 1.25rem; }
-      .patents-tooltip .font-bold { font-weight: 700; }
-      .patents-tooltip .font-medium { font-weight: 500; }
-      .patents-tooltip .flex { display: flex; }
-      .patents-tooltip .items-center { align-items: center; }
-      .patents-tooltip .justify-between { justify-content: space-between; }
-      .patents-tooltip .w-8 { width: 2rem; }
-      .patents-tooltip .h-6 { height: 1.5rem; }
-      .patents-tooltip .w-36 { width: 9rem; }
-      .patents-tooltip .w-44 { width: 11rem; }
-      .patents-tooltip .w-48 { width: 12rem; }
-      .patents-tooltip .rounded { border-radius: 0.25rem; }
-      .patents-tooltip .rounded-md { border-radius: 0.375rem; }
-      .patents-tooltip .overflow-hidden { overflow: hidden; }
-      .patents-tooltip .border-t { border-top-width: 1px; }
-      .patents-tooltip .border-b { border-bottom-width: 1px; }
-      .patents-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
-      .patents-tooltip .max-w-xs { max-width: 20rem; }
-      .patents-tooltip .w-full { width: 100%; }
-      .patents-tooltip .h-full { height: 100%; }
-      .patents-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
-      .patents-tooltip .relative { position: relative; }
-      .patents-tooltip .inline-block { display: inline-block; }
+      .patents-country-tooltip .text-green-600 { color: #059669; }
+      .patents-country-tooltip .text-red-600 { color: #DC2626; }
+      .patents-country-tooltip .text-orange-700 { color: #C2410C; }
+      .patents-country-tooltip .bg-orange-50 { background-color: #FFF7ED; }
+      .patents-country-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+      .patents-country-tooltip .bg-gray-50 { background-color: #F9FAFB; }
+      .patents-country-tooltip .border-orange-100 { border-color: #FFEDD5; }
+      .patents-country-tooltip .border-gray-100 { border-color: #F3F4F6; }
+      .patents-country-tooltip .text-gray-500 { color: #6B7280; }
+      .patents-country-tooltip .text-gray-800 { color: #1F2937; }
+      .patents-country-tooltip .text-gray-600 { color: #4B5563; }
+      .patents-country-tooltip .text-gray-400 { color: #9CA3AF; }
+      .patents-country-tooltip .text-yellow-500 { color: #F59E0B; }
+      .patents-country-tooltip .rounded-lg { border-radius: 0.5rem; }
+      .patents-country-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+      .patents-country-tooltip .p-3 { padding: 0.75rem; }
+      .patents-country-tooltip .p-4 { padding: 1rem; }
+      .patents-country-tooltip .p-2 { padding: 0.5rem; }
+      .patents-country-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+      .patents-country-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      .patents-country-tooltip .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+      .patents-country-tooltip .py-0\\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+      .patents-country-tooltip .pt-3 { padding-top: 0.75rem; }
+      .patents-country-tooltip .mb-3 { margin-bottom: 0.75rem; }
+      .patents-country-tooltip .mb-1 { margin-bottom: 0.25rem; }
+      .patents-country-tooltip .mb-4 { margin-bottom: 1rem; }
+      .patents-country-tooltip .mr-1 { margin-right: 0.25rem; }
+      .patents-country-tooltip .mr-2 { margin-right: 0.5rem; }
+      .patents-country-tooltip .ml-2 { margin-left: 0.5rem; }
+      .patents-country-tooltip .mt-1 { margin-top: 0.25rem; }
+      .patents-country-tooltip .mt-3 { margin-top: 0.75rem; }
+      .patents-country-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+      .patents-country-tooltip .text-xs { font-size: 0.75rem; }
+      .patents-country-tooltip .text-sm { font-size: 0.875rem; }
+      .patents-country-tooltip .text-lg { font-size: 1.125rem; }
+      .patents-country-tooltip .text-xl { font-size: 1.25rem; }
+      .patents-country-tooltip .font-bold { font-weight: 700; }
+      .patents-country-tooltip .font-medium { font-weight: 500; }
+      .patents-country-tooltip .flex { display: flex; }
+      .patents-country-tooltip .items-center { align-items: center; }
+      .patents-country-tooltip .justify-between { justify-content: space-between; }
+      .patents-country-tooltip .w-8 { width: 2rem; }
+      .patents-country-tooltip .h-6 { height: 1.5rem; }
+      .patents-country-tooltip .w-36 { width: 9rem; }
+      .patents-country-tooltip .w-44 { width: 11rem; }
+      .patents-country-tooltip .w-48 { width: 12rem; }
+      .patents-country-tooltip .rounded { border-radius: 0.25rem; }
+      .patents-country-tooltip .rounded-md { border-radius: 0.375rem; }
+      .patents-country-tooltip .overflow-hidden { overflow: hidden; }
+      .patents-country-tooltip .border-t { border-top-width: 1px; }
+      .patents-country-tooltip .border-b { border-bottom-width: 1px; }
+      .patents-country-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+      .patents-country-tooltip .space-y-1 > * + * { margin-top: 0.25rem; }
+      .patents-country-tooltip .max-w-xs { max-width: 20rem; }
+      .patents-country-tooltip .w-full { width: 100%; }
+      .patents-country-tooltip .h-full { height: 100%; }
+      .patents-country-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+      .patents-country-tooltip .relative { position: relative; }
+      .patents-country-tooltip .inline-block { display: inline-block; }
     `;
     
     // Añadir al head
@@ -1179,10 +1263,21 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
 
       // Función para obtener nombre localizado del país usando el mapeo global
       const getLocalizedCountryName = (countryCode: string): string => {
+        // Primero buscar directamente en el mapeo
         if (countryCode in countryCodeMapping) {
           return countryCodeMapping[countryCode][language];
         }
         
+        // Si es ISO3, convertir a ISO2 y buscar
+        const codeMapping = getCountryCodeMapping();
+        if (countryCode.length === 3 && countryCode in codeMapping) {
+          const iso2Code = codeMapping[countryCode];
+          if (iso2Code in countryCodeMapping) {
+            return countryCodeMapping[iso2Code][language];
+          }
+        }
+        
+        // Buscar en las banderas
         const flagInfo = countryFlags.find(flag => flag.code === countryCode || flag.iso3 === countryCode);
         if (flagInfo) {
           return flagInfo.country;
@@ -1197,55 +1292,22 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         const countryIso3 = getCountryIso3(feature);
         const countryIso2 = feature.properties?.iso_a2 as string;
         
-        if (isSupranationalEntity(countryName)) return null;
+        if (isSupranationalEntity(countryName)) {
+          return null;
+        }
         
-        const codeMapping: Record<string, string> = {
-          'GRC': 'EL',
-          'GBR': 'UK',
-          'DEU': 'DE',
-          'FRA': 'FR',
-          'ESP': 'ES',
-          'ITA': 'IT',
-          'CZE': 'CZ',
-          'SWE': 'SE',
-          'DNK': 'DK',
-          'FIN': 'FI',
-          'AUT': 'AT',
-          'BEL': 'BE',
-          'BGR': 'BG',
-          'HRV': 'HR',
-          'CYP': 'CY',
-          'EST': 'EE',
-          'HUN': 'HU',
-          'IRL': 'IE',
-          'LVA': 'LV',
-          'LTU': 'LT',
-          'LUX': 'LU',
-          'MLT': 'MT',
-          'NLD': 'NL',
-          'POL': 'PL',
-          'PRT': 'PT',
-          'ROU': 'RO',
-          'SVK': 'SK',
-          'SVN': 'SI',
-          'CHE': 'CH',
-          'NOR': 'NO',
-          'ISL': 'IS',
-          'TUR': 'TR',
-          'MKD': 'MK',
-          'RUS': 'RU',
-          'SRB': 'RS',
-          'MNE': 'ME',
-          'ALB': 'AL',
-          'BIH': 'BA',
-          'MDA': 'MD',
-          'UKR': 'UA',
-          'XKX': 'XK'
-        };
+        const codeMapping = getCountryCodeMapping();
         
         const possibleCodes = [countryIso2, countryIso3];
         if (countryIso3 && codeMapping[countryIso3]) {
           possibleCodes.push(codeMapping[countryIso3]);
+        }
+        
+        // Debug específico para Islandia
+        if (countryName.toLowerCase().includes('iceland') || possibleCodes.includes('IS') || possibleCodes.includes('ISL')) {
+          console.log(`[Rank Function Debug] Calculando ranking para Islandia`);
+          console.log(`[Rank Function Debug] possibleCodes: ${possibleCodes.join(', ')}`);
+          console.log(`[Rank Function Debug] countryValuesMap keys: ${Array.from(countryValuesMap.keys()).slice(0, 10).join(', ')}...`);
         }
         
         let currentValue: number | null = null;
@@ -1255,11 +1317,19 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           if (code && countryValuesMap.has(code)) {
             currentValue = countryValuesMap.get(code)!;
             matchedCode = code;
+            console.log(`[Rank Function Debug] Match encontrado para código ${code}: valor ${currentValue}`);
             break;
+          } else if (code) {
+            console.log(`[Rank Function Debug] Código ${code} NO encontrado en countryValuesMap`);
           }
         }
         
-        if (currentValue === null || matchedCode === null) return null;
+        if (currentValue === null || matchedCode === null) {
+          if (countryName.toLowerCase().includes('iceland') || possibleCodes.includes('IS') || possibleCodes.includes('ISL')) {
+            console.log(`[Rank Function Debug] ISLANDIA: No se encontró valor o código coincidente, retornando null`);
+          }
+          return null;
+        }
         
         const sortedValues: [string, number][] = [];
         countryValuesMap.forEach((val, code) => {
@@ -1274,7 +1344,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         
         const position = sortedValues.findIndex(([, val]) => val === currentValue);
         
-        if (position === -1) return null;
+        if (position === -1) {
+          return null;
+        }
         
         return {
           rank: position + 1,
@@ -1288,51 +1360,11 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         const countryIso3 = getCountryIso3(feature);
         const countryIso2 = feature.properties?.iso_a2 as string;
         
-        if (isSupranationalEntity(countryName)) return '';
+        if (isSupranationalEntity(countryName)) {
+          return '';
+        }
         
-        const codeMapping: Record<string, string> = {
-          'GRC': 'EL',
-          'GBR': 'UK',
-          'DEU': 'DE',
-          'FRA': 'FR',
-          'ESP': 'ES',
-          'ITA': 'IT',
-          'CZE': 'CZ',
-          'SWE': 'SE',
-          'DNK': 'DK',
-          'FIN': 'FI',
-          'AUT': 'AT',
-          'BEL': 'BE',
-          'BGR': 'BG',
-          'HRV': 'HR',
-          'CYP': 'CY',
-          'EST': 'EE',
-          'HUN': 'HU',
-          'IRL': 'IE',
-          'LVA': 'LV',
-          'LTU': 'LT',
-          'LUX': 'LU',
-          'MLT': 'MT',
-          'NLD': 'NL',
-          'POL': 'PL',
-          'PRT': 'PT',
-          'ROU': 'RO',
-          'SVK': 'SK',
-          'SVN': 'SI',
-          'CHE': 'CH',
-          'NOR': 'NO',
-          'ISL': 'IS',
-          'TUR': 'TR',
-          'MKD': 'MK',
-          'RUS': 'RU',
-          'SRB': 'RS',
-          'MNE': 'ME',
-          'ALB': 'AL',
-          'BIH': 'BA',
-          'MDA': 'MD',
-          'UKR': 'UA',
-          'XKX': 'XK'
-        };
+        const codeMapping = getCountryCodeMapping();
         
         const possibleCodes = [countryIso2, countryIso3];
         if (countryIso3 && codeMapping[countryIso3]) {
@@ -1402,7 +1434,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                 <path d="M8 3l4 8 5-5v7H3V6l5 5 4-8z"></path>
               </svg>
-              ${language === 'es' ? 'Competencia directa' : 'Direct competition'}
+              ${language === 'es' ? 'Comparación con el ranking' : 'Ranking comparison'}
             </div>
         `;
         
@@ -1417,17 +1449,37 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             'M12 19V5M5 12l7-7 7 7' : // Flecha hacia arriba
             'M12 5v14M5 12l7 7 7-7'; // Flecha hacia abajo
           
+          // Calcular la posición real en el ranking
+          const competitorPosition = isAbove ? currentPosition : currentPosition + 2;
+          
+          // Textos explicativos según la posición
+          const positionLabel = isAbove ? 
+            (language === 'es' ? 'Lugar superior' : 'Position above') :
+            (language === 'es' ? 'Lugar inferior' : 'Position below');
+          
+          const gapText = isAbove ?
+            (language === 'es' ? `+${percentDiff}% más` : `+${percentDiff}% more`) :
+            (language === 'es' ? `${percentDiff}% menos` : `${percentDiff}% less`);
+          
           competitorsHtml += `
-            <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded">
-              <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 ${isAbove ? 'text-red-500' : 'text-green-500'}">
-                  <path d="${arrowIcon}"></path>
-                </svg>
-                <span class="font-medium text-gray-700">${competitorName}</span>
+            <div class="bg-gray-50 p-2 rounded mb-1">
+              <div class="flex justify-between items-center text-xs">
+                <div class="flex items-center">
+                  <div class="flex items-center mr-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 ${isAbove ? 'text-red-500' : 'text-green-500'}">
+                      <path d="${arrowIcon}"></path>
+                    </svg>
+                    <span class="text-xs text-gray-500">#${competitorPosition}</span>
+                  </div>
+                  <span class="font-medium text-gray-700">${competitorName}</span>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-gray-800">${formattedValue}</div>
+                </div>
               </div>
-              <div class="text-right">
-                <div class="font-bold text-gray-800">${formattedValue}</div>
-                <div class="text-xs text-gray-500">${isAbove ? '+' : '-'}${percentDiff}%</div>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-xs text-gray-400">${positionLabel}</span>
+                <span class="text-xs font-medium ${isAbove ? 'text-red-600' : 'text-green-600'}">${gapText}</span>
               </div>
             </div>
           `;
@@ -1440,34 +1492,66 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
 
       // Funciones de interacción
       const handleMouseOver = (event: MouseEvent, feature: GeoJsonFeature) => {
+        // Validar si el país debe mostrar tooltip
+        if (!validateCountryData(feature)) {
+          return;
+        }
+        
         const countryIso3 = getCountryIso3(feature);
         const countryIso2 = feature.properties?.iso_a2 as string;
-        const countryName = getLocalizedCountryName(countryIso3 || countryIso2 || '');
+        const geoJsonCountryName = getCountryName(feature);
+        
+        // Intentar obtener el nombre localizado, con fallback al nombre del GeoJSON
+        let countryName = getLocalizedCountryName(countryIso3 || countryIso2 || '');
+        
+        // Si no se pudo localizar y tenemos el nombre del GeoJSON, usarlo
+        if (countryName === (countryIso3 || countryIso2 || '') && geoJsonCountryName) {
+          // Para Islandia específicamente, usar el nombre localizado correcto
+          if (geoJsonCountryName.toLowerCase() === 'iceland') {
+            countryName = language === 'es' ? 'Islandia' : 'Iceland';
+          } else {
+            countryName = geoJsonCountryName;
+          }
+        }
+        
         const value = getCountryValue(feature);
         
         // Recopilar todos los valores basándose en los datos reales
         const countryValuesMap = new Map<string, number>();
         
+        // Mapear el sector seleccionado al código correcto
+        let sectorCode = 'TOTAL';
+        if (selectedSector === 'BES' || selectedSector === 'business' || selectedSector === 'Business enterprise sector') {
+          sectorCode = 'BES';
+        } else if (selectedSector === 'GOV' || selectedSector === 'government' || selectedSector === 'Government sector') {
+          sectorCode = 'GOV';
+        } else if (selectedSector === 'HES' || selectedSector === 'education' || selectedSector === 'Higher education sector') {
+          sectorCode = 'HES';
+        } else if (selectedSector === 'PNP' || selectedSector === 'nonprofit' || selectedSector === 'Private non-profit sector') {
+          sectorCode = 'PNP';
+        }
+        
+        console.log(`[Patents Tooltip Debug] Selected sector: ${selectedSector} -> Mapped to: ${sectorCode}`);
+        
         const countryDataForYear = data.filter(item => {
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-          
-          let sectorMatch = false;
-          if (selectedSector === 'total') {
-            sectorMatch = item.sectperf === 'TOTAL';
-          } else if (selectedSector === 'business') {
-            sectorMatch = item.sectperf === 'BES';
-          } else if (selectedSector === 'government') {
-            sectorMatch = item.sectperf === 'GOV';
-          } else if (selectedSector === 'education') {
-            sectorMatch = item.sectperf === 'HES';
-          } else if (selectedSector === 'nonprofit') {
-            sectorMatch = item.sectperf === 'PNP';
-          }
-          
+          const sectorMatch = item.sectperf === sectorCode;
           const isEuropean = EUROPEAN_COUNTRY_CODES.includes(item.geo);
           
           return yearMatch && sectorMatch && isEuropean;
         });
+        
+        console.log(`[Patents Tooltip Debug] Countries found for year ${selectedYear} and sector ${sectorCode}:`, countryDataForYear.length);
+        
+        // Debug específico para verificar si Islandia está en los datos
+        const icelandiaData = countryDataForYear.filter(item => 
+          item.geo === 'IS' || item.geo === 'ISL' || item.geo === 'Iceland'
+        );
+        if (icelandiaData.length > 0) {
+          console.log(`[Debug Islandia] Datos encontrados para Islandia:`, icelandiaData);
+        } else {
+          console.log(`[Debug Islandia] NO se encontraron datos para Islandia en año ${selectedYear} y sector ${sectorCode}`);
+        }
         
         const tempCountryMap = new Map<string, {code: string, value: number, isSupranational: boolean}>();
         
@@ -1486,23 +1570,55 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           
           const isSupranational = countryCode === 'EU27_2020' || countryCode === 'EA19' || countryCode === 'EA20';
           tempCountryMap.set(countryCode, {code: countryCode, value: value, isSupranational: isSupranational});
+          
+          // Debug específico para Islandia
+          if (countryCode === 'IS' || countryCode === 'ISL') {
+            console.log(`[Debug Islandia] Añadido ${countryCode} al tempCountryMap con valor: ${value}`);
+          }
         });
         
-        let sortedData = Array.from(tempCountryMap.values())
+        const sortedData = Array.from(tempCountryMap.values())
           .sort((a, b) => b.value - a.value);
         
-        sortedData = sortedData.slice(0, 25);
-        
+        // NO limitar a top 25 para que el ranking funcione para todos los países
+        // Incluir todos los países para el ranking
         sortedData.forEach(item => {
           countryValuesMap.set(item.code, item.value);
         });
         
+        // Debug específico para ranking
+        if (countryName.toLowerCase().includes('iceland') || countryName.toLowerCase().includes('islandia')) {
+          console.log(`[Iceland Ranking Debug] *** DEBUGGING ISLANDIA RANKING ***`);
+          console.log(`[Iceland Ranking Debug] countryName: ${countryName}`);
+          console.log(`[Iceland Ranking Debug] countryIso2: ${countryIso2}, countryIso3: ${countryIso3}`);
+          console.log(`[Iceland Ranking Debug] value: ${value}`);
+          console.log(`[Iceland Ranking Debug] countryValuesMap size: ${countryValuesMap.size}`);
+          console.log(`[Iceland Ranking Debug] Países en countryValuesMap:`, Array.from(countryValuesMap.keys()));
+          console.log(`[Iceland Ranking Debug] ¿Islandia en mapa? IS: ${countryValuesMap.has('IS')}, ISL: ${countryValuesMap.has('ISL')}`);
+          if (countryValuesMap.has('IS')) {
+            console.log(`[Iceland Ranking Debug] Valor de IS en mapa: ${countryValuesMap.get('IS')}`);
+          }
+          if (countryValuesMap.has('ISL')) {
+            console.log(`[Iceland Ranking Debug] Valor de ISL en mapa: ${countryValuesMap.get('ISL')}`);
+          }
+        }
+        
         const rankInfo = !isSupranationalEntity(countryName) ? 
           getCountryRank(feature, countryValuesMap) : null;
+        
+        if (countryName.toLowerCase().includes('iceland') || countryName.toLowerCase().includes('islandia')) {
+          console.log(`[Iceland Ranking Debug] rankInfo resultado: ${JSON.stringify(rankInfo)}`);
+        }
+        
+        console.log(`[Patents Tooltip Debug] Final ranking info:`, rankInfo);
+        console.log(`[Patents Tooltip Debug] Country value:`, value);
+        console.log(`[Patents Tooltip Debug] Is supranational:`, isSupranationalEntity(countryName));
         
         // Obtener información de competencia
         const competitorsHtml = !isSupranationalEntity(countryName) && value !== null ? 
           getCompetitorCountries(feature, countryValuesMap) : '';
+        
+        console.log(`[Patents Tooltip Debug] Competitors HTML generated:`, competitorsHtml.length > 0);
         
         const europeanCountryCodes = EUROPEAN_COUNTRY_CODES;
         
@@ -1525,48 +1641,14 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         const countryData = data.find(item => {
           const possibleCodes = [countryIso3, countryIso2];
           
-          const codeMapping: Record<string, string[]> = {
-            'GRC': ['EL'],
-            'GBR': ['UK'],
-            'DEU': ['DE'],
-            'FRA': ['FR'],
-            'ESP': ['ES'],
-            'ITA': ['IT'],
-            'CZE': ['CZ'],
-            'SWE': ['SE'],
-            'DNK': ['DK'],
-            'FIN': ['FI'],
-            'AUT': ['AT'],
-            'BEL': ['BE'],
-            'BGR': ['BG'],
-            'HRV': ['HR'],
-            'CYP': ['CY'],
-            'EST': ['EE'],
-            'HUN': ['HU'],
-            'IRL': ['IE'],
-            'LVA': ['LV'],
-            'LTU': ['LT'],
-            'LUX': ['LU'],
-            'MLT': ['MT'],
-            'NLD': ['NL'],
-            'POL': ['PL'],
-            'PRT': ['PT'],
-            'ROU': ['RO'],
-            'SVK': ['SK'],
-            'SVN': ['SI'],
-            'CHE': ['CH'],
-            'NOR': ['NO'],
-            'ISL': ['IS'],
-            'TUR': ['TR'],
-            'MKD': ['MK'],
-            'UA': ['UKR'],
-            'RS': ['SRB'],
-            'ME': ['MNE'],
-            'AL': ['ALB'],
-            'BA': ['BIH'],
-            'XK': ['XKX'],
-            'RU': ['RUS']
-          };
+          // Usar el mapeo centralizado pero convertir a array de códigos alternativos
+          const codeMapping = getCountryCodeMapping();
+          
+          // Convertir el mapeo a formato de arrays para mantener compatibilidad
+          const codeMappingArrays: Record<string, string[]> = {};
+          Object.entries(codeMapping).forEach(([iso3, iso2]) => {
+            codeMappingArrays[iso3] = [iso2];
+          });
           
           const codeMapping2to3: Record<string, string> = {
             'EL': 'GRC',
@@ -1608,11 +1690,19 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             'ME': 'MNE',
             'AL': 'ALB',
             'BA': 'BIH',
-            'RU': 'RUS'
+            'RU': 'RUS',
+            'MD': 'MDA',
+            'XK': 'XKX',
+            'BY': 'BLR',
+            'LI': 'LIE',
+            'MC': 'MCO',
+            'SM': 'SMR',
+            'VA': 'VAT',
+            'AD': 'AND'
           };
           
-          if (countryIso3 && countryIso3.length === 3 && codeMapping[countryIso3]) {
-            possibleCodes.push(...codeMapping[countryIso3]);
+          if (countryIso3 && countryIso3.length === 3 && codeMappingArrays[countryIso3]) {
+            possibleCodes.push(...codeMappingArrays[countryIso3]);
           }
           if (countryIso2 && countryIso2.length === 2) {
             if (codeMapping2to3[countryIso2]) {
@@ -1623,12 +1713,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           const geoMatch = possibleCodes.some(code => item.geo === code);
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
           
-          let sectorMatch = false;
-          if (selectedSector === 'total' && item.sectperf === 'TOTAL') sectorMatch = true;
-          else if (selectedSector === 'business' && item.sectperf === 'BES') sectorMatch = true;
-          else if (selectedSector === 'government' && item.sectperf === 'GOV') sectorMatch = true;
-          else if (selectedSector === 'education' && item.sectperf === 'HES') sectorMatch = true;
-          else if (selectedSector === 'nonprofit' && item.sectperf === 'PNP') sectorMatch = true;
+          // Usar el mismo sectorCode que se calcula arriba para consistencia
+          const sectorMatch = item.sectperf === sectorCode;
           
           return geoMatch && yearMatch && sectorMatch;
         });
@@ -1636,16 +1722,28 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         // Buscar información adicional en los datos
         console.log(`[Patents Tooltip Debug] País: ${countryName}, ISO3: ${countryIso3}, geo data: ${countryData?.geo}, OBS_FLAG: ${countryData?.OBS_FLAG}, Objeto completo:`, countryData);
         
+        // Debug adicional para flags
+        if (countryData?.OBS_FLAG) {
+          console.log(`[Patents Flag Debug] ✅ Flag encontrada para ${countryName}: ${countryData.OBS_FLAG} - ${getLabelDescription(countryData.OBS_FLAG, language)}`);
+        } else {
+          console.log(`[Patents Flag Debug] ❌ No se encontró flag para ${countryName}`);
+        }
+        
         // Obtener la bandera del país
         const flagUrl = getCountryFlagUrl(countryName, feature);
+        console.log(`[Patents Tooltip Debug] Flag URL:`, flagUrl);
         
         // Verificar si es España o la UE para la visualización del tooltip
         const isSpain = countryIso2 === 'ES' || countryIso3 === 'ESP';
         const isEU = countryIso2 === 'EU' || countryData?.geo === 'EU27_2020';
         
-        const euValue = !isEU ? getEUValue(data, selectedYear, selectedSector) : null;
+        const euValue = !isEU ? getEUValue(data, selectedYear, sectorCode) : null;
         const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
-        const spainValue = !isSpain ? getSpainValue(data, selectedYear, selectedSector) : null;
+        const spainValue = !isSpain ? getSpainValue(data, selectedYear, sectorCode) : null;
+        
+        console.log(`[Patents Tooltip Debug] isSpain:`, isSpain, `isEU:`, isEU);
+        console.log(`[Patents Tooltip Debug] euValue:`, euValue, `euAverageValue:`, euAverageValue);
+        console.log(`[Patents Tooltip Debug] spainValue:`, spainValue);
         
         let previousYearValue = null;
         
@@ -1653,16 +1751,16 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         if (value !== null) {
           // Intentar primero con códigos más específicos
           if (countryData?.geo) {
-            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear, selectedSector);
+            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear, sectorCode);
           }
           
           // Si no se encontró, intentar con ISO3 e ISO2
           if (previousYearValue === null && countryIso3) {
-            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear, selectedSector);
+            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear, sectorCode);
           }
           
           if (previousYearValue === null && countryIso2) {
-            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear, selectedSector);
+            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear, sectorCode);
           }
           
           // Búsqueda adicional en los datos directamente
@@ -1712,6 +1810,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         // Construir comparaciones HTML
         let comparisonsHtml = '';
         
+        console.log(`[Patents Tooltip Debug] Building comparisons. Value:`, value);
+        
         // Solo mostrar comparaciones si el país actual tiene datos
         if (value !== null) {
           // Comparación con la UE
@@ -1751,10 +1851,18 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
 
         let tooltipContent = '';
         
+        console.log(`[Patents Tooltip Debug] Final variables before HTML construction:`);
+        console.log(`[Patents Tooltip Debug] - rankInfo:`, rankInfo);
+        console.log(`[Patents Tooltip Debug] - comparisonsHtml length:`, comparisonsHtml.length);
+        console.log(`[Patents Tooltip Debug] - competitorsHtml length:`, competitorsHtml.length);
+        console.log(`[Patents Tooltip Debug] - flagUrl:`, flagUrl);
+        console.log(`[Patents Tooltip Debug] - countryName:`, countryName);
+        console.log(`[Patents Tooltip Debug] - value:`, value);
+        
         if (value === null) {
           tooltipContent = `
             <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-              <div class="flex items-center p-3 bg-green-50 border-b border-green-100">
+              <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
                 <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
                   <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
                 </div>
@@ -1771,7 +1879,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           tooltipContent = `
             <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con el nombre del país -->
-              <div class="flex items-center p-3 bg-green-50 border-b border-green-100">
+              <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
                 <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
                   <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
                 </div>
@@ -1783,11 +1891,11 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
                 <!-- Métrica principal -->
                 <div class="mb-3">
                   <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m22 7-7.5 7.5-7-7L2 13"></path><path d="M16 7h6v6"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>${t.researchers}:</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-green-700">${formatNumberComplete(Math.round(safeValue), 0, language)}</span>
+                    <span class="text-xl font-bold text-orange-700">${formatNumberComplete(Math.round(safeValue), 0, language)}</span>
                     ${countryData && countryData.OBS_FLAG ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${countryData.OBS_FLAG}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
@@ -1945,7 +2053,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           />
           <div 
             ref={tooltipRef}
-            className="patents-tooltip"
+            className="patents-country-tooltip"
             style={{
               display: 'none',
               maxWidth: '350px',
