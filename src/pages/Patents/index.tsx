@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PatentsEuropeanMap from '../../components/PatentsEuropeanMap';
 import PatentsRankingChart from '../../components/PatentsRankingChart';
 import PatentsTimelineChart from '../../components/PatentsTimelineChart';
+import PatentsBySectorChart from '../../components/PatentsBySectorChart';
 import Papa from 'papaparse';
 
 // Definir la interfaz para los datos de patentes
@@ -29,6 +30,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Estados separados para cada sección
   const [mapSector, setMapSector] = useState<string>('TOTAL');
   const [timelineSector, setTimelineSector] = useState<string>('TOTAL');
+  const [sectorChartCountry, setSectorChartCountry] = useState<{name: string, localName: string, code: string} | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,6 +140,10 @@ const Patents: React.FC<PatentsProps> = (props) => {
     setTimelineSector(e.target.value);
   };
 
+  const handleSectorChartCountryChange = (country: {name: string, localName: string, code: string}) => {
+    setSectorChartCountry(country);
+  };
+
   // Función para obtener el nombre localizado del sector
   const getSectorName = (sectorCode: string): string => {
     switch (sectorCode) {
@@ -169,6 +175,36 @@ const Patents: React.FC<PatentsProps> = (props) => {
       {title}
     </h3>
   );
+
+  // Componente para título de subsección con país destacado (para Distribución por sectores)
+  const SubsectionTitleWithCountry = ({ 
+    baseTitle, 
+    country, 
+    language 
+  }: { 
+    baseTitle: string; 
+    country: {name: string, localName: string, code: string} | null; 
+    language: 'es' | 'en';
+  }) => {
+    if (!country) {
+      return <SubsectionTitle title={baseTitle} />;
+    }
+    
+    return (
+      <div className="flex items-center mb-4 mt-8">
+        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
+        <h3 className="text-md font-semibold text-blue-700 flex items-center">
+          <span>{baseTitle}</span>
+          <span className="mx-3 text-blue-400">•</span>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <span className="text-sm font-medium text-blue-800">
+              {language === 'es' ? country.localName : country.name}
+            </span>
+          </div>
+        </h3>
+      </div>
+    );
+  };
 
   // Sectores disponibles con códigos
   const availableSectors = ['TOTAL', 'BES', 'GOV', 'HES', 'PNP'];
@@ -401,21 +437,42 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 2.3: Análisis por sectores */}
         <div className="mb-8">
-          <SubsectionTitle title={language === 'es' ? "Distribución por sectores de investigación" : "Distribution by Research Sectors"} />
+          <SubsectionTitleWithCountry
+            baseTitle={language === 'es' ? "Distribución por sectores de investigación" : "Distribution by Research Sectors"}
+            country={sectorChartCountry}
+            language={language}
+          />
           
-          {/* Gráfico de sectores */}
-          <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[350px] flex items-center justify-center w-full">
+          {isLoading ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
               <div className="text-center text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p className="text-lg">{language === 'es' ? "Distribución sectorial" : "Sectoral distribution"}</p>
-                <p className="text-sm mt-2">{language === 'es' ? "En desarrollo" : "In development"}</p>
+                <p className="text-lg">{t.loading}</p>
               </div>
             </div>
-          </div>
+          ) : error ? (
+            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
+              <div className="text-center text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg">{error}</p>
+              </div>
+            </div>
+          ) : (
+            /* Gráfico de distribución por sectores */
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+              <PatentsBySectorChart
+                data={patentsData}
+                language={language}
+                countryCode="ES"
+                onCountryChange={handleSectorChartCountryChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 

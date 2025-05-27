@@ -333,10 +333,27 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
       .map(code => {
         const mapping = countryCodeMapping[code];
         if (mapping) {
-          const flagInfo = countryFlags.find(flag => 
-            flag.code.toUpperCase() === code.toUpperCase() ||
-            flag.iso3.toUpperCase() === code.toUpperCase()
-          );
+          // Manejo especial para códigos que no coinciden con los estándares ISO
+          let flagInfo;
+          if (code === 'UK') {
+            // Para Reino Unido, buscar con código GB
+            flagInfo = countryFlags.find(flag => 
+              flag.code.toUpperCase() === 'GB' ||
+              flag.iso3.toUpperCase() === 'GBR'
+            );
+          } else if (code === 'EL') {
+            // Para Grecia, buscar con código GR
+            flagInfo = countryFlags.find(flag => 
+              flag.code.toUpperCase() === 'GR' ||
+              flag.iso3.toUpperCase() === 'GRC'
+            );
+          } else {
+            // Para otros países, búsqueda normal
+            flagInfo = countryFlags.find(flag => 
+              flag.code.toUpperCase() === code.toUpperCase() ||
+              flag.iso3.toUpperCase() === code.toUpperCase()
+            );
+          }
           
           return {
             name: mapping.en,
@@ -560,11 +577,15 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
       const esFlag = countryFlags.find(flag => flag.code === 'ES' || flag.iso3 === 'ESP');
       flagUrl = esFlag?.flag || "https://flagcdn.com/es.svg";
     } else if (type === 'country' && code) {
-      // Manejar el caso especial de Grecia (EL)
+      // Manejar casos especiales
       if (code === 'EL') {
         // Buscar la bandera de Grecia usando el código estándar ISO (GR)
         const greeceFlag = countryFlags.find(flag => flag.code === 'GR' || flag.iso3 === 'GRC');
         flagUrl = greeceFlag?.flag || 'https://flagcdn.com/gr.svg';
+      } else if (code === 'UK') {
+        // Buscar la bandera de Reino Unido usando el código estándar ISO (GB)
+        const ukFlag = countryFlags.find(flag => flag.code === 'GB' || flag.iso3 === 'GBR');
+        flagUrl = ukFlag?.flag || 'https://flagcdn.com/gb.svg';
       } else {
         // Para otros países, buscar en el JSON de banderas
         const countryFlag = countryFlags.find(flag => flag.code === code || flag.iso3 === code);
