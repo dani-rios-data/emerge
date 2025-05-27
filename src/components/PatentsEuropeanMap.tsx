@@ -340,6 +340,24 @@ function getLabelDescription(label: string, language: 'es' | 'en'): string {
     : language === 'es' ? 'Desconocido' : 'Unknown';
 }
 
+// Formatear números con separador de miles y abreviaciones (K, M)
+function formatNumberWithThousandSeparator(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
+  // Verificar si el valor es muy grande y formatearlo adecuadamente
+  if (value >= 1000000) {
+    // Para valores de millones o más, mostrar en formato abreviado
+    return (value / 1000000).toFixed(1) + 'M';
+  } else if (value >= 1000) {
+    // Para valores de miles, mostrar en formato abreviado
+    return (value / 1000).toFixed(1) + 'K';
+  } else {
+    // Para valores menores a mil, usar formato normal
+    return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(value);
+  }
+}
+
 // Formatear números completos con separador de miles
 function formatNumberComplete(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
   return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
@@ -1187,8 +1205,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             .attr('stroke-width', 0.5);
           
           // Formatear números con separadores de miles
-          const formattedStart = new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US').format(rangeStart);
-          const formattedEnd = new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US').format(rangeEnd);
+          const formattedStart = formatNumberWithThousandSeparator(rangeStart, 0, language);
+          const formattedEnd = formatNumberWithThousandSeparator(rangeEnd, 0, language);
           
           legendGroup.append('text')
             .attr('x', 35)
