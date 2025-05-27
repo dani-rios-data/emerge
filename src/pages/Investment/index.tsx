@@ -573,11 +573,28 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Métrica 2: España y ranking */}
               <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                                      <div className="flex flex-col items-center mr-4">
-                    <div className="p-3 bg-red-50 rounded-lg mb-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-                      </svg>
+                  <div className="flex flex-col items-center mr-4">
+                    <div className="p-3 bg-red-50 rounded-lg mb-2 flex items-center justify-center">
+                      <img 
+                        src="https://flagcdn.com/es.svg" 
+                        alt="Bandera de España" 
+                        className="w-8 h-6 object-cover rounded border border-gray-300 shadow-sm"
+                        style={{ 
+                          boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)' 
+                        }}
+                        onError={(e) => {
+                          // Fallback al icono SVG si la imagen no carga
+                          e.currentTarget.style.display = 'none';
+                          const fallbackSvg = document.createElement('svg');
+                          fallbackSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                          fallbackSvg.setAttribute('class', 'h-8 w-8 text-red-600');
+                          fallbackSvg.setAttribute('fill', 'none');
+                          fallbackSvg.setAttribute('viewBox', '0 0 24 24');
+                          fallbackSvg.setAttribute('stroke', 'currentColor');
+                          fallbackSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />';
+                          e.currentTarget.parentNode?.appendChild(fallbackSvg);
+                        }}
+                      />
                     </div>
                   </div>
                   <div className="flex-1">

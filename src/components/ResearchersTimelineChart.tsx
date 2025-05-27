@@ -270,7 +270,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
       title: "Evolución temporal",
       euAverage: "UE (total)",
       spain: "España",
-      country: "País seleccionado",
+      country: selectedCountry ? (language === 'es' ? selectedCountry.localName : selectedCountry.name) : "País seleccionado",
       researchersCount: "Número de investigadores",
       year: "Año",
       loading: "Cargando datos...",
@@ -287,7 +287,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
       title: "Timeline Evolution",
       euAverage: "EU (total)",
       spain: "Spain",
-      country: "Selected Country",
+      country: selectedCountry ? (language === 'es' ? selectedCountry.localName : selectedCountry.name) : "Selected Country",
       researchersCount: "Number of researchers",
       year: "Year",
       loading: "Loading data...",
@@ -589,7 +589,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
             } else if (entry.dataKey === 'es') {
               name = t.spain;
             } else if (entry.dataKey === 'country' && selectedCountry) {
-              name = getCountryNameFromCode(selectedCountry.code);
+              name = language === 'es' ? selectedCountry.localName : selectedCountry.name;
             }
             
             // Calcular el cambio YoY
@@ -808,7 +808,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
                   <Line 
                     type="linear" 
                     dataKey="country" 
-                    name={language === 'es' ? selectedCountry.localName : selectedCountry.name}
+                    name={t.country}
                     stroke={LINE_COLORS.country} 
                     strokeWidth={2.5}
                     dot={false}
@@ -851,7 +851,7 @@ const ResearchersTimelineChart: React.FC<ResearchersTimelineChartProps> = ({
               <div className="flex items-center">
                 <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: LINE_COLORS.country }}></div>
                 <span className="text-sm font-medium text-gray-700">
-                  {language === 'es' ? selectedCountry.localName : selectedCountry.name}
+                  {t.country}
                 </span>
               </div>
             )}

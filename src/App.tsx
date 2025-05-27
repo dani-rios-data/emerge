@@ -35,13 +35,13 @@ const App: React.FC = () => {
       subtitle: "Comparative and historical analysis of research, development and innovation indicators",
       overview: "Overview",
       investment: "R&D Investment",
-      researchers: "Research Personnel",
-      patents: "Patents & Innovation",
+      researchers: "Researchers",
+      patents: "Patents",
       patentsDescription: "Analysis of patenting activity as an indicator of territorial innovation capacity, with regional and sectoral comparative data.",
       overviewDescription: "General overview of the R&D&I ecosystem in the Canary Islands with key indicators, institutional context and comparisons with the Spanish and European environment.",
       investmentDescription: "Analysis of financial effort in R&D as a percentage of GDP, sectoral distribution and comparative temporal evolution.",
       researchersDescription: "Human capital dedicated to research and development by activity sectors, with territorial analysis and temporal evolution. Data in full-time equivalent (FTE).",
-      sources: "Sources & Methodology",
+      sources: "Data Sources",
       footerText: "Developed by EMERGE - Canary Islands Startup Association"
     }
   };

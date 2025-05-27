@@ -481,6 +481,22 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
                         />          )}        </div>      </div>            {/* Sección 3: Análisis por comunidades autónomas de España */}      <div className="mb-6">        <SectionTitle title={language === 'es' ? "Análisis por comunidades autónomas españolas" : "Analysis by Spanish Autonomous Communities"} />        <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Distribución regional de investigadores" : "Regional Distribution of Researchers"} />
           
+          {/* Descripción del dataset */}
+          <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <p className="mb-2">
+              <strong>
+                {language === 'es' 
+                  ? 'Descripción de los datos:' 
+                  : 'Data description:'}
+              </strong>
+            </p>
+            <p>
+              {language === 'es'
+                ? 'Personal empleado en actividades de I+D en EJC según sexos y sectores de ejecución. Resultados basados en Empresa Estadística. España y comunidades autónomas por años en Investigadores empleados en actividades de I+D, en equivalencia a jornada completa (EJC).'
+                : 'Personnel employed in R&D activities in FTE by gender and performance sectors. Results based on Statistical Enterprise. Spain and autonomous communities by years in Researchers employed in R&D activities, in full-time equivalent (FTE).'}
+            </p>
+          </div>
+          
           {isCommunityLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
               <div className="text-center text-gray-600">
