@@ -164,10 +164,10 @@ const mapTexts = {
     noData: "Sin datos",
     researchers: "Investigadores",
     fullTimeEquivalent: "ETC (Equivalente Tiempo Completo)",
-    sector_business: "Empresas",
-    sector_government: "Gobierno",
-    sector_education: "Educación superior",
-    sector_nonprofit: "Organizaciones sin ánimo de lucro",
+    sector_business: "Sector empresarial",
+    sector_government: "Administración Pública",
+    sector_education: "Enseñanza Superior",
+    sector_nonprofit: "Instituciones Privadas sin Fines de Lucro",
     sector_total: "Todos los sectores",
     researchersByCountry: "Investigadores por país"
   },
@@ -178,10 +178,10 @@ const mapTexts = {
     noData: "No data",
     researchers: "Researchers",
     fullTimeEquivalent: "FTE (Full-Time Equivalent)",
-    sector_business: "Business enterprise",
-    sector_government: "Government",
-    sector_education: "Higher education",
-    sector_nonprofit: "Private non-profit",
+    sector_business: "Business enterprise sector",
+    sector_government: "Government sector",
+    sector_education: "Higher education sector",
+    sector_nonprofit: "Private non-profit sector",
     sector_total: "All sectors",
     researchersByCountry: "Researchers by Country"
   }
@@ -245,16 +245,28 @@ function getEUValue(data: ResearchersData[], year: number, sector: string): numb
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
     
     // Normalizar el sector para manejar diferentes valores
+    let normalizedSector = sector.toLowerCase();
+    if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+      normalizedSector = 'total';
+    if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
+      normalizedSector = 'business';
+    if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
+      normalizedSector = 'government';
+    if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
+      normalizedSector = 'education';
+    if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
+      normalizedSector = 'nonprofit';
+
     let sectorMatch = false;
-    if (sector === 'All Sectors' || sector === 'total') {
+    if (normalizedSector === 'total') {
       sectorMatch = item.sectperf === 'TOTAL';
-    } else if (sector === 'Business enterprise sector' || sector === 'business') {
+    } else if (normalizedSector === 'business') {
       sectorMatch = item.sectperf === 'BES';
-    } else if (sector === 'Government sector' || sector === 'government') {
+    } else if (normalizedSector === 'government') {
       sectorMatch = item.sectperf === 'GOV';
-    } else if (sector === 'Higher education sector' || sector === 'education') {
+    } else if (normalizedSector === 'education') {
       sectorMatch = item.sectperf === 'HES';
-    } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
+    } else if (normalizedSector === 'nonprofit') {
       sectorMatch = item.sectperf === 'PNP';
     }
     
@@ -279,16 +291,28 @@ function getSpainValue(data: ResearchersData[], year: number, sector: string): n
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
     
     // Normalizar el sector
+    let normalizedSector = sector.toLowerCase();
+    if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+      normalizedSector = 'total';
+    if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
+      normalizedSector = 'business';
+    if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
+      normalizedSector = 'government';
+    if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
+      normalizedSector = 'education';
+    if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
+      normalizedSector = 'nonprofit';
+
     let sectorMatch = false;
-    if (sector === 'All Sectors' || sector === 'total') {
+    if (normalizedSector === 'total') {
       sectorMatch = item.sectperf === 'TOTAL';
-    } else if (sector === 'Business enterprise sector' || sector === 'business') {
+    } else if (normalizedSector === 'business') {
       sectorMatch = item.sectperf === 'BES';
-    } else if (sector === 'Government sector' || sector === 'government') {
+    } else if (normalizedSector === 'government') {
       sectorMatch = item.sectperf === 'GOV';
-    } else if (sector === 'Higher education sector' || sector === 'education') {
+    } else if (normalizedSector === 'education') {
       sectorMatch = item.sectperf === 'HES';
-    } else if (sector === 'Private non-profit sector' || sector === 'nonprofit') {
+    } else if (normalizedSector === 'nonprofit') {
       sectorMatch = item.sectperf === 'PNP';
     }
     
@@ -656,17 +680,16 @@ function getPreviousYearValue(
   
   // Normalizar el sector seleccionado para mejorar las coincidencias
   let normalizedSector = sector.toLowerCase();
-  if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+  if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
     normalizedSector = 'total';
-  } else if (normalizedSector === 'business enterprise sector' || normalizedSector === 'bes') {
+  if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
     normalizedSector = 'business';
-  } else if (normalizedSector === 'government sector' || normalizedSector === 'gov') {
+  if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
     normalizedSector = 'government';
-  } else if (normalizedSector === 'higher education sector' || normalizedSector === 'hes') {
+  if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
     normalizedSector = 'education';
-  } else if (normalizedSector === 'private non-profit sector' || normalizedSector === 'pnp') {
+  if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
     normalizedSector = 'nonprofit';
-  }
   
   // Crear un array de posibles códigos alternativos para el país
   const possibleCodes = [countryCode];
@@ -838,22 +861,28 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
   
   // Obtener texto del sector
   const getSectorText = (): string => {
-    switch(selectedSector) {
+    // Normalizar el sector
+    let normalizedSector = selectedSector.toLowerCase();
+    
+    if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+      normalizedSector = 'total';
+    if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
+      normalizedSector = 'business';
+    if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
+      normalizedSector = 'government';
+    if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
+      normalizedSector = 'education';
+    if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
+      normalizedSector = 'nonprofit';
+    
+    switch(normalizedSector) {
       case 'business':
-      case 'Business enterprise sector':
-      case 'BES':
         return t.sector_business;
       case 'government':
-      case 'Government sector':
-      case 'GOV':
         return t.sector_government;
       case 'education':
-      case 'Higher education sector':
-      case 'HES':
         return t.sector_education;
       case 'nonprofit':
-      case 'Private non-profit sector':
-      case 'PNP':
         return t.sector_nonprofit;
       default:
         return t.sector_total;
@@ -864,16 +893,16 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
   const getSectorColor = (): string => {
     let normalizedId = selectedSector.toLowerCase();
     
-    // Mapear sectores a ids
-    if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total' || normalizedId === 'TOTAL') 
+    // Mapear sectores a ids (misma lógica que getSectorText)
+    if (normalizedId === 'total' || normalizedId === 'all sectors' || normalizedId === 'all') 
       normalizedId = 'total';
-    if (normalizedId === 'business enterprise sector' || normalizedId === 'bes') 
+    if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'business enterprise sector') 
       normalizedId = 'business';
-    if (normalizedId === 'government sector' || normalizedId === 'gov') 
+    if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'government sector') 
       normalizedId = 'government';
-    if (normalizedId === 'higher education sector' || normalizedId === 'hes') 
+    if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'higher education sector') 
       normalizedId = 'education';
-    if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') 
+    if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'private non-profit sector') 
       normalizedId = 'nonprofit';
     
     // Obtener color del sector usando los nuevos colores de investigadores
@@ -1252,17 +1281,16 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
         
         // Normalizar el sector seleccionado para mejorar las coincidencias
         let normalizedSector = sector.toLowerCase();
-        if (normalizedSector === 'all sectors' || normalizedSector === 'all' || normalizedSector === 'total') {
+        if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
           normalizedSector = 'total';
-        } else if (normalizedSector === 'business enterprise sector' || normalizedSector === 'bes') {
+        if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
           normalizedSector = 'business';
-        } else if (normalizedSector === 'government sector' || normalizedSector === 'gov') {
+        if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
           normalizedSector = 'government';
-        } else if (normalizedSector === 'higher education sector' || normalizedSector === 'hes') {
+        if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
           normalizedSector = 'education';
-        } else if (normalizedSector === 'private non-profit sector' || normalizedSector === 'pnp') {
+        if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
           normalizedSector = 'nonprofit';
-        }
         
         // Mapeo especial para códigos que no coinciden directamente
         const codeMapping: Record<string, string[]> = {
@@ -1364,16 +1392,28 @@ const ResearchersEuropeanMap: React.FC<ResearchersEuropeanMapProps> = ({
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
           
           // Normalizar el sector
+          let normalizedSector = selectedSector.toLowerCase();
+          if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+            normalizedSector = 'total';
+          if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
+            normalizedSector = 'business';
+          if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
+            normalizedSector = 'government';
+          if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
+            normalizedSector = 'education';
+          if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
+            normalizedSector = 'nonprofit';
+
           let sectorMatch = false;
-          if (selectedSector === 'total') {
+          if (normalizedSector === 'total') {
             sectorMatch = item.sectperf === 'TOTAL';
-          } else if (selectedSector === 'business') {
+          } else if (normalizedSector === 'business') {
             sectorMatch = item.sectperf === 'BES';
-          } else if (selectedSector === 'government') {
+          } else if (normalizedSector === 'government') {
             sectorMatch = item.sectperf === 'GOV';
-          } else if (selectedSector === 'education') {
+          } else if (normalizedSector === 'education') {
             sectorMatch = item.sectperf === 'HES';
-          } else if (selectedSector === 'nonprofit') {
+          } else if (normalizedSector === 'nonprofit') {
             sectorMatch = item.sectperf === 'PNP';
           }
           

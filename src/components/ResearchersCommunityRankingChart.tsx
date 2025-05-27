@@ -103,6 +103,20 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
   const t = texts[language];
 
+  // Mapeo de sectores para manejar diferentes formatos de entrada
+  const sectorCodeMapping: Record<string, string> = {
+    'Sector empresarial': 'BES',
+    'Business enterprise sector': 'BES',
+    'Administración Pública': 'GOV',
+    'Government sector': 'GOV',
+    'Enseñanza Superior': 'HES',
+    'Higher education sector': 'HES',
+    'Instituciones Privadas sin Fines de Lucro': 'PNP',
+    'Private non-profit sector': 'PNP',
+    'Todos los sectores': 'TOTAL',
+    'All sectors': 'TOTAL'
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -315,7 +329,9 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
   // Filtrar y procesar datos para el gráfico usando la lógica unificada
   const getChartData = () => {
-    const sectorId = getSectorId(selectedSector);
+    // Mapear el sector seleccionado usando lógica flexible
+    const sectorCode = selectedSector.length <= 3 ? selectedSector : (sectorCodeMapping[selectedSector] || 'TOTAL');
+    const sectorId = getSectorId(sectorCode);
 
     // Filtrar datos por año, sector, sexo (total) y medida (INVESTIGADORES_EJC)
     const filteredData = data.filter(item => 
@@ -651,8 +667,26 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
     const labels = chartData.map(item => item.name);
     const values = chartData.map(item => item.value);
     
-    // Obtener el color del sector seleccionado
-    const sectorColor = RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+    // Obtener el color del sector seleccionado usando normalización
+    const getSectorColor = (): string => {
+      let normalizedId = selectedSector.toLowerCase();
+      
+      // Mapear sectores a IDs
+      if (normalizedId === 'total' || normalizedId === 'todos los sectores' || normalizedId === 'all sectors' || normalizedId === 'all') 
+        normalizedId = 'total';
+      if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'sector empresarial' || normalizedId === 'business enterprise sector') 
+        normalizedId = 'business';
+      if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'administración pública' || normalizedId === 'government sector') 
+        normalizedId = 'government';
+      if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'enseñanza superior' || normalizedId === 'higher education sector') 
+        normalizedId = 'education';
+      if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'instituciones privadas sin fines de lucro' || normalizedId === 'private non-profit sector') 
+        normalizedId = 'nonprofit';
+      
+      return RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+    };
+    
+    const sectorColor = getSectorColor();
     
     // Generar colores (Canarias en amarillo, el resto según el color del sector)
     const backgroundColors = chartData.map(item => {
@@ -741,33 +775,68 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
 
   const chartConfig = getChartConfig();
   
+  // Función para obtener el color del sector para el título
+  const getSectorTitleColor = (): string => {
+    let normalizedId = selectedSector.toLowerCase();
+    
+    // Mapear sectores a IDs (misma lógica que getSectorColor)
+    if (normalizedId === 'total' || normalizedId === 'todos los sectores' || normalizedId === 'all sectors' || normalizedId === 'all') 
+      normalizedId = 'total';
+    if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'sector empresarial' || normalizedId === 'business enterprise sector') 
+      normalizedId = 'business';
+    if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'administración pública' || normalizedId === 'government sector') 
+      normalizedId = 'government';
+    if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'enseñanza superior' || normalizedId === 'higher education sector') 
+      normalizedId = 'education';
+    if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'instituciones privadas sin fines de lucro' || normalizedId === 'private non-profit sector') 
+      normalizedId = 'nonprofit';
+    
+    return RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+  };
+
   // Función para mapear el sector a su nombre localizado
   const getSectorName = () => {
+    // Normalizar el sector para obtener el nombre correcto
+    let normalizedSector = selectedSector.toLowerCase();
+    
+    // Normalizar códigos y nombres a IDs estándar
+    if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+      normalizedSector = 'total';
+    if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+      normalizedSector = 'business';
+    if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+      normalizedSector = 'government';
+    if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+      normalizedSector = 'education';
+    if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+      normalizedSector = 'nonprofit';
+    
+    // Usar terminología exacta de los selectores de la página
     const sectorNames: Record<string, { es: string, en: string }> = {
       'total': {
         es: 'Todos los sectores',
         en: 'All sectors'
       },
       'business': {
-        es: 'Empresas',
-        en: 'Business enterprise'
+        es: 'Sector empresarial',
+        en: 'Business enterprise sector'
       },
       'government': {
         es: 'Administración Pública',
-        en: 'Government'
+        en: 'Government sector'
       },
       'education': {
         es: 'Enseñanza Superior',
-        en: 'Higher education'
+        en: 'Higher education sector'
       },
       'nonprofit': {
-        es: 'Instituciones sin fines de lucro',
-        en: 'Non-profit institutions'
+        es: 'Instituciones Privadas sin Fines de Lucro',
+        en: 'Private non-profit sector'
       }
     };
     
-    return sectorNames[selectedSector] ? 
-            sectorNames[selectedSector][language] : 
+    return sectorNames[normalizedSector] ? 
+            sectorNames[normalizedSector][language] : 
             (language === 'es' ? 'Todos los sectores' : 'All sectors');
   };
 
@@ -778,7 +847,7 @@ const ResearchersCommunityRankingChart: React.FC<ResearchersCommunityRankingChar
           {language === 'es' ? `Ranking de investigadores por comunidades autónomas · ${selectedYear}` : `Researchers Ranking by Autonomous Communities · ${selectedYear}`}
         </h3>
         <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
-             style={{ backgroundColor: `${d3.color(RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total)?.copy({ opacity: 0.15 })}` }}>
+             style={{ backgroundColor: `${d3.color(getSectorTitleColor())?.copy({ opacity: 0.15 })}` }}>
           {getSectorName()}
         </div>
       </div>

@@ -557,7 +557,9 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
   };
   
   // Obtener el código del sector seleccionado
-  const sectorCode = sectorCodeMapping[selectedSector] || 'TOTAL';
+  // Si selectedSector ya es un código (TOTAL, BES, etc.), usarlo directamente
+  // Si es un ID normalizado (total, business, etc.), mapearlo
+  const sectorCode = selectedSector.length <= 3 ? selectedSector : (sectorCodeMapping[selectedSector] || 'TOTAL');
 
   // Procesar y filtrar datos para el año y sector seleccionado
   const countryDataForYear = data.filter(item => 
@@ -1138,15 +1140,15 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
     let normalizedId = selectedSector.toLowerCase();
     
     // Mapear sectores a ids
-    if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') 
+    if (normalizedId === 'total' || normalizedId === 'all sectors' || normalizedId === 'all') 
       normalizedId = 'total';
-    if (normalizedId === 'business enterprise sector' || normalizedId === 'bes') 
+    if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'business enterprise sector') 
       normalizedId = 'business';
-    if (normalizedId === 'government sector' || normalizedId === 'gov') 
+    if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'government sector') 
       normalizedId = 'government';
-    if (normalizedId === 'higher education sector' || normalizedId === 'hes') 
+    if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'higher education sector') 
       normalizedId = 'education';
-    if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') 
+    if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'private non-profit sector') 
       normalizedId = 'nonprofit';
     
     // Obtener color del sector usando los nuevos colores de investigadores
@@ -1157,8 +1159,22 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
 
   // Función para obtener el color del sector para el título
   const getSectorTitleColor = () => {
-    // Obtener el color base del sector usando los nuevos colores de investigadores
-    const sectorColor = RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+    // Normalizar el sector de la misma manera que getSectorColor
+    let normalizedId = selectedSector.toLowerCase();
+    
+    if (normalizedId === 'total' || normalizedId === 'all sectors' || normalizedId === 'all') 
+      normalizedId = 'total';
+    if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'business enterprise sector') 
+      normalizedId = 'business';
+    if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'government sector') 
+      normalizedId = 'government';
+    if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'higher education sector') 
+      normalizedId = 'education';
+    if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'private non-profit sector') 
+      normalizedId = 'nonprofit';
+    
+    // Obtener el color base del sector usando los colores normalizados
+    const sectorColor = RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
     // Usar d3 para obtener una versión más oscura del color
     return d3.color(sectorColor)?.darker(0.8)?.toString() || '#333333';
   };
@@ -1351,36 +1367,70 @@ const ResearcherRankingChart: React.FC<ResearcherRankingChartProps> = ({
         <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
              style={{ backgroundColor: `${d3.color(getSectorTitleColor())?.copy({ opacity: 0.15 })}` }}>
           {(() => {
-            // Obtener el nombre exacto del sector desde los datos de rdSectors
-            const sectorMapping: Record<string, string> = {
-              'total': 'All Sectors',
-              'business': 'Business enterprise sector',
-              'government': 'Government sector',
-              'education': 'Higher education sector',
-              'nonprofit': 'Private non-profit sector'
-            };
+            // Normalizar el sector para obtener el nombre correcto
+            let normalizedSector = selectedSector.toLowerCase();
             
-            // Obtener el nombre del sector en inglés primero
-            const sectorNameEn = sectorMapping[selectedSector] || 'All Sectors';
+            // Normalizar códigos a nombres estándar
+            if (normalizedSector === 'total' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+              normalizedSector = 'total';
+            if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'business enterprise sector') 
+              normalizedSector = 'business';
+            if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'government sector') 
+              normalizedSector = 'government';
+            if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'higher education sector') 
+              normalizedSector = 'education';
+            if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'private non-profit sector') 
+              normalizedSector = 'nonprofit';
             
-            // Obtener el nombre en el idioma actual
+            // Obtener el nombre en el idioma actual usando la misma terminología que los selectores
             if (language === 'es') {
-              switch (sectorNameEn) {
-                case 'All Sectors':
+              switch (normalizedSector) {
+                case 'total':
+                case 'all sectors':
                   return 'Todos los sectores';
-                case 'Business enterprise sector':
+                case 'bes':
+                case 'business':
+                case 'business enterprise sector':
                   return 'Sector empresarial';
-                case 'Government sector':
-                  return 'Sector gubernamental';
-                case 'Higher education sector':
+                case 'gov':
+                case 'government':
+                case 'government sector':
+                  return 'Administración Pública';
+                case 'hes':
+                case 'education':
+                case 'higher education sector':
                   return 'Enseñanza Superior';
-                case 'Private non-profit sector':
-                  return 'Instituciones privadas sin fines de lucro';
+                case 'pnp':
+                case 'nonprofit':
+                case 'private non-profit sector':
+                  return 'Instituciones Privadas sin Fines de Lucro';
                 default:
-                  return sectorNameEn;
+                  return 'Todos los sectores';
               }
             } else {
-              return sectorNameEn;
+              switch (normalizedSector) {
+                case 'total':
+                case 'all sectors':
+                  return 'All sectors';
+                case 'bes':
+                case 'business':
+                case 'business enterprise sector':
+                  return 'Business enterprise sector';
+                case 'gov':
+                case 'government':
+                case 'government sector':
+                  return 'Government sector';
+                case 'hes':
+                case 'education':
+                case 'higher education sector':
+                  return 'Higher education sector';
+                case 'pnp':
+                case 'nonprofit':
+                case 'private non-profit sector':
+                  return 'Private non-profit sector';
+                default:
+                  return 'All sectors';
+              }
             }
           })()}
         </div>

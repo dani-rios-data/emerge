@@ -251,12 +251,17 @@ function getCommunityCode(feature: GeoJsonFeature): string {
 function getSectorPalette(sectorId: string) {
   let normalizedId = sectorId.toLowerCase();
   
-  // Transformar sectores a IDs
-  if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') normalizedId = 'total';
-  if (normalizedId === 'business enterprise sector' || normalizedId === 'bes') normalizedId = 'business';
-  if (normalizedId === 'government sector' || normalizedId === 'gov') normalizedId = 'government';
-  if (normalizedId === 'higher education sector' || normalizedId === 'hes') normalizedId = 'education';
-  if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') normalizedId = 'nonprofit';
+  // Transformar sectores a IDs con normalización mejorada
+  if (normalizedId === 'total' || normalizedId === 'todos los sectores' || normalizedId === 'all sectors' || normalizedId === 'all') 
+    normalizedId = 'total';
+  if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'sector empresarial' || normalizedId === 'business enterprise sector') 
+    normalizedId = 'business';
+  if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'administración pública' || normalizedId === 'government sector') 
+    normalizedId = 'government';
+  if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'enseñanza superior' || normalizedId === 'higher education sector') 
+    normalizedId = 'education';
+  if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'instituciones privadas sin fines de lucro' || normalizedId === 'private non-profit sector') 
+    normalizedId = 'nonprofit';
   
   // Asegurar que usamos una clave válida para RESEARCHER_SECTOR_COLORS
   const validSectorId = (normalizedId in RESEARCHER_SECTOR_COLORS) ? normalizedId : 'total';
@@ -293,9 +298,23 @@ function getCommunityValue(
   // Convertir a normalizado para comparar
   const normalizedCommunityName = normalizarTexto(communityName);
   
-  // Mapear el sector seleccionado al código del sector en el CSV
+  // Mapear el sector seleccionado al código del sector en el CSV usando normalización mejorada
+  let normalizedSector = selectedSector.toLowerCase();
+  
+  // Normalizar códigos y nombres a IDs estándar
+  if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+    normalizedSector = 'total';
+  if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+    normalizedSector = 'business';
+  if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+    normalizedSector = 'government';
+  if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+    normalizedSector = 'education';
+  if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+    normalizedSector = 'nonprofit';
+  
   let sectorId = '';
-  switch (selectedSector.toLowerCase()) {
+  switch (normalizedSector) {
     case 'total':
       sectorId = '_T';
       break;
@@ -556,9 +575,23 @@ function getValueRange(
 ): { min: number, max: number, median: number, quartiles: number[] } {
   if (!data || data.length === 0) return { min: 0, max: 1, median: 0.5, quartiles: [0, 0.33, 0.66, 1] };
   
-  // Mapear el sector seleccionado al código del sector en el CSV
+  // Mapear el sector seleccionado al código del sector en el CSV usando normalización mejorada
+  let normalizedSector = sector.toLowerCase();
+  
+  // Normalizar códigos y nombres a IDs estándar
+  if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+    normalizedSector = 'total';
+  if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+    normalizedSector = 'business';
+  if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+    normalizedSector = 'government';
+  if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+    normalizedSector = 'education';
+  if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+    normalizedSector = 'nonprofit';
+  
   let sectorId = '';
-  switch (sector.toLowerCase()) {
+  switch (normalizedSector) {
     case 'total':
       sectorId = '_T';
       break;
@@ -1128,9 +1161,23 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
         // Si no hay valor para esta comunidad, no mostrar ranking
         if (currentValue === null) return null;
         
-        // Mapear el sector seleccionado al código del sector en el CSV
+        // Mapear el sector seleccionado al código del sector en el CSV usando normalización mejorada
+        let normalizedSector = selectedSector.toLowerCase();
+        
+        // Normalizar códigos y nombres a IDs estándar
+        if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+          normalizedSector = 'total';
+        if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+          normalizedSector = 'business';
+        if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+          normalizedSector = 'government';
+        if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+          normalizedSector = 'education';
+        if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+          normalizedSector = 'nonprofit';
+        
         let sectorId = '';
-        switch (selectedSector.toLowerCase()) {
+        switch (normalizedSector) {
           case 'total':
             sectorId = '_T';
             break;
@@ -1296,9 +1343,23 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
       // Función para obtener el valor del país/comunidad
       const getSpainValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
-        // Mapear el sector seleccionado al código del sector en el CSV
+        // Mapear el sector seleccionado al código del sector en el CSV usando normalización mejorada
+        let normalizedSector = sector.toLowerCase();
+        
+        // Normalizar códigos y nombres a IDs estándar
+        if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+          normalizedSector = 'total';
+        if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+          normalizedSector = 'business';
+        if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+          normalizedSector = 'government';
+        if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+          normalizedSector = 'education';
+        if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+          normalizedSector = 'nonprofit';
+        
         let sectorId = '';
-        switch (sector.toLowerCase()) {
+        switch (normalizedSector) {
           case 'total':
             sectorId = '_T';
             break;
@@ -1378,9 +1439,23 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
       
       // Función para obtener el valor de una comunidad específica (por ejemplo Canarias)
       const getCanariasValue = (data: ResearchersCommunityData[], year: string, sector: string): number | null => {
-        // Mapear el sector seleccionado al código del sector en el CSV
+        // Mapear el sector seleccionado al código del sector en el CSV usando normalización mejorada
+        let normalizedSector = sector.toLowerCase();
+        
+        // Normalizar códigos y nombres a IDs estándar
+        if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+          normalizedSector = 'total';
+        if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+          normalizedSector = 'business';
+        if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+          normalizedSector = 'government';
+        if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+          normalizedSector = 'education';
+        if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+          normalizedSector = 'nonprofit';
+        
         let sectorId = '';
-        switch (sector.toLowerCase()) {
+        switch (normalizedSector) {
           case 'total':
             sectorId = '_T';
             break;
@@ -2155,6 +2230,71 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
     };
   }, [geoJson, data, selectedYear, selectedSector, language, onClick, dataDisplayType, t, valueRange]);
   
+  // Función para obtener el color del sector para el título
+  const getSectorColor = (): string => {
+    let normalizedId = selectedSector.toLowerCase();
+    
+    // Mapear sectores a IDs
+    if (normalizedId === 'total' || normalizedId === 'todos los sectores' || normalizedId === 'all sectors' || normalizedId === 'all') 
+      normalizedId = 'total';
+    if (normalizedId === 'bes' || normalizedId === 'business' || normalizedId === 'sector empresarial' || normalizedId === 'business enterprise sector') 
+      normalizedId = 'business';
+    if (normalizedId === 'gov' || normalizedId === 'government' || normalizedId === 'administración pública' || normalizedId === 'government sector') 
+      normalizedId = 'government';
+    if (normalizedId === 'hes' || normalizedId === 'education' || normalizedId === 'enseñanza superior' || normalizedId === 'higher education sector') 
+      normalizedId = 'education';
+    if (normalizedId === 'pnp' || normalizedId === 'nonprofit' || normalizedId === 'instituciones privadas sin fines de lucro' || normalizedId === 'private non-profit sector') 
+      normalizedId = 'nonprofit';
+    
+    return RESEARCHER_SECTOR_COLORS[normalizedId as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total;
+  };
+
+  // Función para obtener el texto del sector
+  const getSectorText = (): string => {
+    // Normalizar el sector primero
+    let normalizedSector = selectedSector.toLowerCase();
+    
+    // Mapear códigos y nombres a IDs estándar
+    if (normalizedSector === 'total' || normalizedSector === 'todos los sectores' || normalizedSector === 'all sectors' || normalizedSector === 'all') 
+      normalizedSector = 'total';
+    if (normalizedSector === 'bes' || normalizedSector === 'business' || normalizedSector === 'sector empresarial' || normalizedSector === 'business enterprise sector') 
+      normalizedSector = 'business';
+    if (normalizedSector === 'gov' || normalizedSector === 'government' || normalizedSector === 'administración pública' || normalizedSector === 'government sector') 
+      normalizedSector = 'government';
+    if (normalizedSector === 'hes' || normalizedSector === 'education' || normalizedSector === 'enseñanza superior' || normalizedSector === 'higher education sector') 
+      normalizedSector = 'education';
+    if (normalizedSector === 'pnp' || normalizedSector === 'nonprofit' || normalizedSector === 'instituciones privadas sin fines de lucro' || normalizedSector === 'private non-profit sector') 
+      normalizedSector = 'nonprofit';
+    
+    // Usar terminología exacta de los selectores de la página
+    const sectorNames: Record<string, { es: string, en: string }> = {
+      'total': {
+        es: 'Todos los sectores',
+        en: 'All sectors'
+      },
+      'business': {
+        es: 'Sector empresarial',
+        en: 'Business enterprise sector'
+      },
+      'government': {
+        es: 'Administración Pública',
+        en: 'Government sector'
+      },
+      'education': {
+        es: 'Enseñanza Superior',
+        en: 'Higher education sector'
+      },
+      'nonprofit': {
+        es: 'Instituciones Privadas sin Fines de Lucro',
+        en: 'Private non-profit sector'
+      }
+    };
+    
+    return sectorNames[normalizedSector] ? 
+            sectorNames[normalizedSector][language] : 
+            (language === 'es' ? 'Todos los sectores' : 'All sectors');
+  };
+  
   return (
     <div className="relative h-full" ref={mapRef} key={`map-${language}-${selectedYear}-${selectedSector}`}>
       {isLoading ? (
@@ -2175,37 +2315,8 @@ const ResearchersSpanishRegionsMap: React.FC<ResearchersSpanishRegionsMapProps> 
               {language === 'es' ? `Mapa de investigadores por comunidades autónomas · ${selectedYear}` : `Researchers Map by Autonomous Communities · ${selectedYear}`}
             </h3>
             <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
-                 style={{ backgroundColor: `${d3.color(RESEARCHER_SECTOR_COLORS[selectedSector as keyof typeof RESEARCHER_SECTOR_COLORS] || RESEARCHER_SECTOR_COLORS.total)?.copy({ opacity: 0.15 })}` }}>
-              {(() => {
-                // Mapeo de IDs de sector a nombres localizados
-                const sectorNames: Record<string, { es: string, en: string }> = {
-                  'total': {
-                    es: 'Todos los sectores',
-                    en: 'All sectors'
-                  },
-                  'business': {
-                    es: 'Empresas',
-                    en: 'Business enterprise'
-                  },
-                  'government': {
-                    es: 'Administración Pública',
-                    en: 'Government'
-                  },
-                  'education': {
-                    es: 'Enseñanza Superior',
-                    en: 'Higher education'
-                  },
-                  'nonprofit': {
-                    es: 'Instituciones Privadas sin Fines de Lucro',
-                    en: 'Private non-profit institutions'
-                  }
-                };
-                
-                // Obtener nombre localizado del sector
-                return sectorNames[selectedSector] ? 
-                      sectorNames[selectedSector][language] : 
-                      (language === 'es' ? 'Todos los sectores' : 'All sectors');
-              })()}
+                 style={{ backgroundColor: `${d3.color(getSectorColor())?.copy({ opacity: 0.15 })}` }}>
+              {getSectorText()}
             </div>
           </div>
           <div 
