@@ -1189,41 +1189,7 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Función para obtener el título del gráfico basado en sector y año seleccionados
   const getChartTitle = () => {
-    // Mapeo de IDs de sector a nombres localizados
-    const sectorNames: Record<string, { es: string, en: string }> = {
-      'total': {
-        es: 'Todos los sectores',
-        en: 'All sectors'
-      },
-      'business': {
-        es: 'Empresas',
-        en: 'Business enterprise'
-      },
-      'government': {
-        es: 'Administración Pública',
-        en: 'Government'
-      },
-      'education': {
-        es: 'Enseñanza Superior',
-        en: 'Higher education'
-      },
-      'nonprofit': {
-        es: 'Instituciones sin fines de lucro',
-        en: 'Non-profit institutions'
-      }
-    };
-    
-    // Obtener nombre localizado del sector
-    const sectorName = sectorNames[selectedSector] ? 
-                       sectorNames[selectedSector][language] : 
-                       (language === 'es' ? 'Todos los sectores' : 'All sectors');
-    
-    // Construir el título con el mismo formato que los otros componentes
-    if (language === 'es') {
-      return `Ranking de países - ${sectorName} (${selectedYear})`;
-    } else {
-      return `Country Ranking - ${sectorName} (${selectedYear})`;
-    }
+    return `${language === 'es' ? 'Ranking de países por inversión en I+D' : 'Country Ranking by R&D Investment'} · ${selectedYear}`;
   };
   
   // Función para obtener el color del sector para el título
@@ -1241,10 +1207,10 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
         <h3 className="text-sm font-semibold text-gray-800">
           {getChartTitle()}
         </h3>
-                 <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
+        <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
              style={{ backgroundColor: `${d3.color(getSectorColor())?.copy({ opacity: 0.15 })}` }}>
           {(() => {
-            // Obtener el nombre exacto del sector desde los datos de rdSectors
+            // Obtener el nombre exacto del sector desde los datos
             const sectorMapping: Record<string, string> = {
               'total': 'All Sectors',
               'business': 'Business enterprise sector',
@@ -1253,12 +1219,18 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
               'nonprofit': 'Private non-profit sector'
             };
             
-            // Obtener el nombre del sector en inglés primero
-            const sectorNameEn = sectorMapping[selectedSector] || 'All Sectors';
+            // Normalizar el ID del sector
+            let normalizedId = selectedSector.toLowerCase();
+            if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total') normalizedId = 'total';
+            if (normalizedId === 'business enterprise sector') normalizedId = 'business';
+            if (normalizedId === 'government sector') normalizedId = 'government';
+            if (normalizedId === 'higher education sector') normalizedId = 'education';
+            if (normalizedId === 'private non-profit sector') normalizedId = 'nonprofit';
             
-            // Obtener el nombre en el idioma actual
-            // Buscar en rdSectors (importado en la página principal) a través de props
-            // Si no está disponible, usar valores predeterminados
+            // Obtener el nombre del sector en inglés
+            const sectorNameEn = sectorMapping[normalizedId] || 'All Sectors';
+            
+            // Traducir al idioma actual
             if (language === 'es') {
               switch (sectorNameEn) {
                 case 'All Sectors':

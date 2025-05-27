@@ -24,6 +24,8 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       // Investment sources
       europeanInvestment: "Inversión en I+D en Europa",
       europeanInvestmentDesc: "Datos sobre el porcentaje del PIB invertido en actividades de I+D en países europeos.",
+      europeanGDP: "Producto Interior Bruto en Europa",
+      europeanGDPDesc: "Datos sobre el PIB a precios corrientes en países europeos, utilizados para calcular la inversión aproximada en I+D en millones de euros.",
       spanishGDP: "Producto Interior Bruto en España",
       spanishGDPDesc: "Datos sobre el PIB en comunidades y ciudades autónomas de España.",
       rdSpending: "Gasto en I+D en España y comunidades autónomas",
@@ -59,6 +61,8 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       // Investment sources
       europeanInvestment: "R&D Investment in Europe",
       europeanInvestmentDesc: "Data on the percentage of GDP invested in R&D activities in European countries.",
+      europeanGDP: "Gross Domestic Product in Europe",
+      europeanGDPDesc: "Data on GDP at current prices in European countries, used to calculate approximate R&D investment in million euros.",
       spanishGDP: "Gross Domestic Product in Spain",
       spanishGDPDesc: "Data on GDP in Spanish autonomous communities and cities.",
       rdSpending: "R&D Spending in Spain and autonomous communities",
@@ -92,6 +96,15 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       title: t('europeanInvestment'),
       description: t('europeanInvestmentDesc'),
       url: "https://ec.europa.eu/eurostat/databrowser/view/tsc00001/default/table?lang=en",
+      organization: "Eurostat",
+      logo: "/logos/eurostat.png",
+      category: "investment" as const
+    },
+    {
+      id: "eurostat-gdp",
+      title: t('europeanGDP'),
+      description: t('europeanGDPDesc'),
+      url: "https://ec.europa.eu/eurostat/databrowser/view/nama_10_gdp/default/table?lang=en",
       organization: "Eurostat",
       logo: "/logos/eurostat.png",
       category: "investment" as const

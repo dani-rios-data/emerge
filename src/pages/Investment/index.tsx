@@ -884,6 +884,49 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 `Geographical Distribution of Investment`} 
               />
               
+              {/* Descripción del dataset */}
+              <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p className="mb-2">
+                  <strong>
+                    {language === 'es' 
+                      ? 'Descripción de los datos:' 
+                      : 'Data description:'}
+                  </strong>
+                </p>
+                <p className="mb-3">
+                  {language === 'es' 
+                    ? "Incluye los gastos en I+D realizados dentro de los diversos sectores de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro), independientemente de la fuente de financiación. Expresado como porcentaje del producto interior bruto (PIB)."
+                    : "Includes the expenditures for R&D performed within the various sectors of performance (business, government, higher education, private non profit), regardless of the source of funds. Expressed as a percentage of gross domestic product (GDP)."
+                  }
+                </p>
+                <p className="text-xs italic">
+                  {language === 'es' 
+                    ? "Fuente: Eurostat"
+                    : "Source: Eurostat"
+                  }
+                </p>
+                <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mt-3">
+                  <div className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                      <path d="M12 9v4"/>
+                      <path d="M12 17h.01"/>
+                    </svg>
+                    <div>
+                      <p className="text-yellow-800 font-medium text-xs">
+                        {language === 'es' ? 'Nota metodológica:' : 'Methodological note:'}
+                      </p>
+                      <p className="text-yellow-700 text-xs mt-1">
+                        {language === 'es' 
+                          ? "Para calcular los valores en euros se utilizó la información del PIB de Europa a precios corrientes del dataset de Eurostat (nama_10_gdp). Los valores aproximados de inversión en I+D en millones de euros se obtuvieron multiplicando el porcentaje del PIB destinado a I+D por el PIB total de cada país."
+                          : "To calculate values in euros, European GDP information at current prices from the Eurostat dataset (nama_10_gdp) was used. The approximate R&D investment values in million euros were obtained by multiplying the percentage of GDP allocated to R&D by the total GDP of each country."
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               {/* Filtros - DEJAR SOLO UN CONJUNTO DE FILTROS */}
               <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -1062,6 +1105,41 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 `Distribución regional de la inversión` : 
                 `Regional Distribution of Investment`} 
               />
+              
+              {/* Descripción del dataset */}
+              <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p className="mb-2">
+                  <strong>
+                    {language === 'es' 
+                      ? 'Descripción de los datos:' 
+                      : 'Data description:'}
+                  </strong>
+                </p>
+                <p className="mb-3">
+                  {language === 'es'
+                    ? 'Gastos internos totales en actividades de I+D según sectores de ejecución. Resultados basados en Empresa Estadística. España y comunidades autónomas por años.'
+                    : 'Total internal expenditure on R&D activities by performance sectors. Results based on Statistical Enterprise. Spain and autonomous communities by years.'}
+                </p>
+                <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                  <div className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                      <path d="M12 9v4"/>
+                      <path d="M12 17h.01"/>
+                    </svg>
+                    <div>
+                      <p className="text-yellow-800 font-medium text-xs">
+                        {language === 'es' ? 'Nota metodológica:' : 'Methodological note:'}
+                      </p>
+                      <p className="text-yellow-700 text-xs mt-1">
+                        {language === 'es'
+                          ? 'Los datos no se encuentran directamente en % del PIB. La información fue calculada cruzando los datos de gasto en I+D con el PIB anual de las comunidades autónomas.'
+                          : 'Data is not directly available as % of GDP. The information was calculated by cross-referencing R&D expenditure data with the annual GDP of the autonomous communities.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               {/* Filtros para la sección de comunidades autónomas */}
               <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
