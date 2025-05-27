@@ -6,8 +6,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Customized
 } from 'recharts';
 // Importando datos de country_flags.json
 import countryFlagsData from '../logos/country_flags.json';
@@ -81,7 +81,6 @@ const countryFlags = countryFlagsData as Array<{
 
 // Constantes para el diseño
 const FLAG_SIZE = 20;
-const FLAG_STROKE_WIDTH = 2;
 
 // Componente personalizado para mostrar banderas en el gráfico
 const FlagsCustomComponent = (props: {
@@ -163,27 +162,34 @@ const FlagsCustomComponent = (props: {
     if (isNaN(x) || isNaN(y)) return null;
 
     const flagUrl = getFlagUrl(type, code);
+    const flagWidth = FLAG_SIZE;
+    const flagHeight = Math.round(FLAG_SIZE * 0.67);
     
     return (
       <g key={`flag-${type}`}>
-        <circle
-          cx={x}
-          cy={y}
-          r={FLAG_SIZE / 2 + FLAG_STROKE_WIDTH}
+        {/* Fondo blanco con borde rectangular */}
+        <rect
+          x={x - flagWidth / 2 - 2}
+          y={y - flagHeight / 2 - 2}
+          width={flagWidth + 4}
+          height={flagHeight + 4}
           fill="white"
           stroke={color}
-          strokeWidth={FLAG_STROKE_WIDTH}
+          strokeWidth={1}
+          rx={4}
+          ry={4}
         />
+        {/* Bandera */}
         <foreignObject
-          x={x - FLAG_SIZE / 2}
-          y={y - FLAG_SIZE / 2}
-          width={FLAG_SIZE}
-          height={FLAG_SIZE}
+          x={x - flagWidth / 2}
+          y={y - flagHeight / 2}
+          width={flagWidth}
+          height={flagHeight}
         >
           <div style={{
             width: '100%',
             height: '100%',
-            borderRadius: '50%',
+            borderRadius: '4px',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
@@ -547,49 +553,50 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
     strokeColor: string;
     size?: number;
   }) => {
-    const getFlagUrl = (type: 'eu' | 'es' | 'country', code?: string) => {
-      if (type === 'eu') return 'https://flagcdn.com/eu.svg';
-      if (type === 'es') return 'https://flagcdn.com/es.svg';
-      if (type === 'country' && code) {
-        const foundFlag = countryFlags.find(flag => 
-          flag.code.toUpperCase() === code.toUpperCase() ||
-          flag.iso3.toUpperCase() === code.toUpperCase()
-        );
+    let flagUrl = '';
+    
+    // Buscar la bandera adecuada según el tipo
+    if (type === 'eu') {
+      // Bandera de la UE
+      const euFlag = countryFlags.find(flag => flag.code === 'EU' || flag.iso3 === 'EUU');
+      flagUrl = euFlag?.flag || "https://flagcdn.com/eu.svg";
+    } else if (type === 'es') {
+      // Bandera de España
+      const esFlag = countryFlags.find(flag => flag.code === 'ES' || flag.iso3 === 'ESP');
+      flagUrl = esFlag?.flag || "https://flagcdn.com/es.svg";
+    } else if (type === 'country' && code) {
+      // Manejar el caso especial de Grecia (EL)
+      if (code === 'EL') {
+        // Buscar la bandera de Grecia usando el código estándar ISO (GR)
+        const greeceFlag = countryFlags.find(flag => flag.code === 'GR' || flag.iso3 === 'GRC');
+        flagUrl = greeceFlag?.flag || 'https://flagcdn.com/gr.svg';
+      } else {
+        // Para otros países, buscar en el JSON de banderas
+        const countryFlag = countryFlags.find(flag => flag.code === code || flag.iso3 === code);
+        flagUrl = countryFlag?.flag || '';
         
-        if (foundFlag) return foundFlag.flag;
-        
-        const lowerCode = code.toLowerCase();
-        const codeMapping: Record<string, string> = {
-          'el': 'gr',
-          'uk': 'gb'
-        };
-        
-        const mappedCode = codeMapping[lowerCode] || lowerCode;
-        return `https://flagcdn.com/${mappedCode}.svg`;
+        // Si no se encuentra, usar API de banderas
+        if (!flagUrl && code.length === 2) {
+          flagUrl = `https://flagcdn.com/${code.toLowerCase()}.svg`;
+        }
       }
-      return '';
-    };
-
+    }
+    
+    if (!flagUrl) return null;
+    
     return (
-      <div 
-        className="inline-flex items-center justify-center rounded-full bg-white"
-        style={{
-          width: size,
-          height: size,
-          border: `2px solid ${strokeColor}`,
-          overflow: 'hidden'
+      <img 
+        src={flagUrl} 
+        alt=""
+        width={size} 
+        height={Math.round(size * 0.67)} 
+        style={{ 
+          objectFit: 'cover',
+          border: `1px solid ${strokeColor}`,
+          borderRadius: 4,
+          boxShadow: '0 0 0 0.5px rgba(0,0,0,.02)'
         }}
-      >
-        <img
-          src={getFlagUrl(type, code)}
-          alt={`${type} flag`}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-          }}
-        />
-      </div>
+      />
     );
   };
 
@@ -610,144 +617,185 @@ const PatentsTimelineChart: React.FC<PatentsTimelineChartProps> = ({
   }
 
   return (
-    <div className="w-full">
-      {/* Selector de país */}
-      <div className="flex justify-end mb-6">
-        <div className="relative" ref={dropdownRef}>
-          <button
+    <div className="w-full h-full">
+      <div className="mb-4 flex justify-end items-center">
+        {/* Selector de país estilo bandera */}
+        <div className="flex-shrink-0 relative" ref={dropdownRef}>
+          <div 
+            className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center justify-between w-64 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <span className="flex items-center">
-              {selectedCountry ? (
-                <>
-                  {selectedCountry.flag && (
-                    <img 
-                      src={selectedCountry.flag} 
-                      alt={selectedCountry.localName}
-                      className="w-4 h-4 mr-2 rounded-sm object-cover"
-                    />
-                  )}
-                  {selectedCountry.localName}
-                </>
-              ) : (
-                texts.selectCountry
+            <div className="flex items-center gap-1 px-2 py-1">
+              {selectedCountry && (
+                <FlagImage 
+                  type="country" 
+                  code={selectedCountry.code} 
+                  size={20} 
+                  strokeColor="rgba(229, 231, 235, 0.5)"
+                />
               )}
-            </span>
-            <svg className="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-
+              <span className="text-sm font-medium text-gray-800">
+                {selectedCountry ? (language === 'es' ? selectedCountry.localName : selectedCountry.name) : texts.selectCountry}
+              </span>
+            </div>
+            <div className="p-1 px-2 border-l border-gray-200 text-gray-500">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+          
+          {/* Menú desplegable */}
           {isDropdownOpen && (
-            <div className="absolute right-0 z-10 w-full sm:w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-              <button
-                onClick={() => {
-                  setSelectedCountry(null);
-                  setIsDropdownOpen(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
-              >
-                {texts.selectCountry}
-              </button>
-              {availableCountries.map((country) => (
-                <button
-                  key={country.code}
-                  onClick={() => {
-                    setSelectedCountry(country);
-                    setIsDropdownOpen(false);
-                    if (onCountryChange) {
-                      onCountryChange(country);
-                    }
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 flex items-center"
-                >
-                  {country.flag && (
-                    <img 
-                      src={country.flag} 
-                      alt={country.localName}
-                      className="w-4 h-4 mr-2 rounded-sm object-cover"
+            <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto w-48 right-0">
+              {availableCountries
+                .filter(country => country.code !== 'ES') // Excluir España del selector
+                .map(country => (
+                  <button
+                    key={country.code}
+                    className={`flex items-center w-full text-left px-3 py-1.5 hover:bg-gray-100 ${
+                      selectedCountry && country.code === selectedCountry.code ? 'bg-blue-50' : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedCountry(country);
+                      setIsDropdownOpen(false);
+                      if (onCountryChange) {
+                        onCountryChange(country);
+                      }
+                    }}
+                  >
+                    <FlagImage 
+                      type="country" 
+                      code={country.code} 
+                      size={18} 
+                      strokeColor="rgba(229, 231, 235, 0.5)"
                     />
-                  )}
-                  {country.localName}
-                </button>
-              ))}
+                    <span className="ml-2 text-sm">
+                      {language === 'es' ? country.localName : country.name}
+                    </span>
+                  </button>
+                ))}
             </div>
           )}
         </div>
       </div>
 
       {/* Gráfico */}
-      <div style={{ height: '400px' }}>
+      <div className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm relative">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={timeSeriesData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            margin={{ top: 20, right: 60, left: 20, bottom: 10 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
               dataKey="year" 
-              stroke="#666"
-              fontSize={12}
+              tick={{ fill: '#4b5563', fontSize: 10 }}
+              tickLine={{ stroke: '#9ca3af' }}
+              axisLine={{ stroke: '#e5e7eb' }}
             />
             <YAxis 
-              stroke="#666"
-              fontSize={12}
+              label={{ 
+                value: texts.patentsCount, 
+                angle: -90, 
+                position: 'insideLeft',
+                style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }
+              }}
+              tick={{ fill: '#4b5563', fontSize: 10 }}
+              tickLine={{ stroke: '#9ca3af' }}
+              axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatYAxis}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              content={({ payload }) => (
-                <div className="flex flex-wrap justify-center gap-6 mt-4">
-                  {payload?.map((entry, index) => (
-                    <div key={index} className="flex items-center">
-                      {entry.dataKey === 'eu' && <FlagImage type="eu" strokeColor={entry.color} />}
-                      {entry.dataKey === 'es' && <FlagImage type="es" strokeColor={entry.color} />}
-                      {entry.dataKey === 'country' && selectedCountry && (
-                        <FlagImage type="country" code={selectedCountry.code} strokeColor={entry.color} />
-                      )}
-                      <span className="ml-2 text-sm text-gray-700">{entry.value}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            />
             
+            {/* Línea para la UE */}
             <Line
-              type="monotone"
+              type="linear"
               dataKey="eu"
-              stroke="#3B82F6"
-              strokeWidth={2}
+              stroke="#4338ca"
+              strokeWidth={2.5}
               dot={false}
               name={texts.euAverage}
               connectNulls={false}
+              activeDot={{ r: 6, stroke: "#4338ca", strokeWidth: 1, fill: '#fff' }}
+              isAnimationActive={false}
             />
+            
+            {/* Línea para España */}
             <Line
-              type="monotone"
+              type="linear"
               dataKey="es"
-              stroke="#EF4444"
-              strokeWidth={2}
+              stroke="#dc2626"
+              strokeWidth={2.5}
               dot={false}
               name={texts.spain}
               connectNulls={false}
+              activeDot={{ r: 6, stroke: "#dc2626", strokeWidth: 1, fill: '#fff' }}
+              isAnimationActive={false}
             />
-            {selectedCountry && (
+            
+            {/* Línea para el país seleccionado */}
+            {selectedCountry && selectedCountry.code !== 'ES' && (
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="country"
-                stroke="#10B981"
-                strokeWidth={2}
+                stroke="#3b82f6"
+                strokeWidth={2.5}
                 dot={false}
                 name={selectedCountry.localName}
                 connectNulls={false}
+                activeDot={{ r: 6, stroke: "#3b82f6", strokeWidth: 1, fill: '#fff' }}
+                isAnimationActive={false}
               />
             )}
             
-            <FlagsCustomComponent 
-              selectedCountry={selectedCountry}
+            {/* Banderas renderizadas dentro del SVG */}
+            <Customized
+              component={(rechartProps: Record<string, unknown>) => (
+                <FlagsCustomComponent
+                  {...rechartProps}
+                  data={timeSeriesData}
+                  selectedCountry={selectedCountry}
+                />
+              )}
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+      
+      {/* Leyenda en la parte inferior central */}
+      <div className="flex flex-wrap items-center justify-center mt-4 gap-x-8 gap-y-3">
+        {/* UE */}
+        <div className="flex items-center">
+          <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: "#4338ca" }}></div>
+          <span className="text-sm font-medium text-gray-700">{texts.euAverage}</span>
+        </div>
+        
+        {/* España */}
+        <div className="flex items-center">
+          <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: "#dc2626" }}></div>
+          <span className="text-sm font-medium text-gray-700">{texts.spain}</span>
+        </div>
+        
+        {/* País seleccionado */}
+        {selectedCountry && selectedCountry.code !== 'ES' && (
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: "#3b82f6" }}></div>
+            <span className="text-sm font-medium text-gray-700">
+              {language === 'es' ? selectedCountry.localName : selectedCountry.name}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {/* Nota inferior */}
+      <div className="mt-4 text-xs text-gray-500 text-center">
+        <p>
+          {language === 'es' 
+            ? `Sector visualizado: ${texts[selectedSector as keyof typeof texts] || texts.total}`
+            : `Visualized sector: ${texts[selectedSector as keyof typeof texts] || texts.total}`
+          }
+        </p>
       </div>
     </div>
   );

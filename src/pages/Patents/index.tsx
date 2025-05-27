@@ -14,14 +14,6 @@ interface PatentsData {
   [key: string]: string | undefined;
 }
 
-// Interfaz para un país seleccionable
-interface CountryOption {
-  name: string;
-  localName: string;
-  code: string;
-  flag?: string;
-}
-
 interface PatentsProps {
   language?: 'es' | 'en';
 }
@@ -37,14 +29,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Estados separados para cada sección
   const [mapSector, setMapSector] = useState<string>('TOTAL');
   const [timelineSector, setTimelineSector] = useState<string>('TOTAL');
-  
-  // Estado para el país seleccionado en la timeline
-  const [selectedTimelineCountry, setSelectedTimelineCountry] = useState<CountryOption>({
-    name: 'Germany',
-    localName: 'Alemania',
-    code: 'DE',
-    flag: undefined
-  });
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,11 +138,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
     setTimelineSector(e.target.value);
   };
 
-  // Manejador para el cambio de país en la timeline
-  const handleTimelineCountryChange = (country: CountryOption) => {
-    setSelectedTimelineCountry(country);
-  };
-
   // Función para obtener el nombre localizado del sector
   const getSectorName = (sectorCode: string): string => {
     switch (sectorCode) {
@@ -190,32 +169,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
       {title}
     </h3>
   );
-
-  // Componente para título de subsección con país (para Patents Timeline Evolution)
-  const SubsectionTitleWithFlag = ({ 
-    baseTitle, 
-    country, 
-    language 
-  }: { 
-    baseTitle: string; 
-    country: CountryOption; 
-    language: 'es' | 'en';
-  }) => {
-    return (
-      <div className="flex items-center mb-4 mt-8">
-        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
-        <h3 className="text-md font-semibold text-blue-700 flex items-center">
-          <span>{baseTitle}</span>
-          <span className="mx-3 text-blue-400">•</span>
-          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            <span className="text-sm font-medium text-blue-800">
-              {language === 'es' ? country.localName : country.name}
-            </span>
-          </div>
-        </h3>
-      </div>
-    );
-  };
 
   // Sectores disponibles con códigos
   const availableSectors = ['TOTAL', 'BES', 'GOV', 'HES', 'PNP'];
@@ -379,11 +332,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 2.2: Evolución temporal */}
         <div className="mb-10">
-          <SubsectionTitleWithFlag
-            baseTitle={t.timelineTitle}
-            country={selectedTimelineCountry}
-            language={language}
-          />
+          <SubsectionTitle title={t.timelineTitle} />
           
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
@@ -444,7 +393,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
                   data={patentsData}
                   language={language}
                   selectedSector={timelineSector}
-                  onCountryChange={handleTimelineCountryChange}
                 />
               </div>
             </div>
