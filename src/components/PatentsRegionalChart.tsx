@@ -24,19 +24,25 @@ ChartJS.register(
   Legend
 );
 
-// Colores para la gráfica - Paleta mejorada y moderna
+// Definir colores específicos para los componentes de patentes - Paleta neutral profesional
+const PATENTS_SECTOR_COLORS = {
+  total: '#37474F',        // Gris azulado oscuro para el total (neutral y profesional)
+  business: '#FF7043',     // Naranja coral para empresas (innovación corporativa)
+  government: '#5E35B1',   // Púrpura profundo para gobierno (autoridad institucional)
+  education: '#1E88E5',    // Azul vibrante para educación (conocimiento y academia)
+  nonprofit: '#8D6E63'     // Marrón medio para organizaciones sin fines de lucro (estabilidad social)
+};
+
+// Colores para la gráfica
 const CHART_PALETTE = {
-  DEFAULT: '#1E40AF',      // Azul moderno y profesional
-  LIGHT: '#3B82F6',        // Azul más claro
-  DARK: '#1E3A8A',         // Azul más oscuro
-  HIGHLIGHT: '#DC2626',    // Rojo moderno para destacar
-  TEXT: '#1F2937',         // Gris oscuro para mejor legibilidad
+  DEFAULT: '#2E7D32',      // Verde tecnológico principal
+  LIGHT: '#4CAF50',        // Verde más claro
+  DARK: '#1B5E20',         // Verde más oscuro
+  HIGHLIGHT: '#CC0000',    // Rojo para Madrid (destacar la capital)
+  TEXT: '#000000',         // Color del texto (negro) 
   BORDER: '#E5E7EB',       // Color del borde (gris suave)
-  YELLOW: '#F59E0B',       // Amarillo moderno para Canarias
-  GREEN: '#059669',        // Verde moderno
-  GRADIENT_START: '#3B82F6', // Inicio del gradiente
-  GRADIENT_END: '#1D4ED8',   // Final del gradiente
-  SHADOW: 'rgba(59, 130, 246, 0.1)' // Sombra sutil
+  YELLOW: '#FFC107',       // Amarillo para destacar
+  GREEN: '#009900'         // Verde para destacar
 };
 
 // Mapeo de códigos NUTS de provincias a comunidades autónomas
@@ -476,34 +482,6 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
 
   const t = texts[language];
 
-  const formatNumberComplete = (value: number, decimals: number = 0): string => {
-    const locale = language === 'es' ? 'es-ES' : 'en-US';
-    return new Intl.NumberFormat(locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(value);
-  };
-
-  // Función para obtener el valor de Canarias
-  const getCanariasValue = (year: number): number | null => {
-    let canariasValue = 0;
-    const yearKey = year.toString();
-    
-    data.forEach(item => {
-      const provinceCode = item['Nuts Prov'];
-      const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
-      
-      if (autonomousCommunityCode === 'ES70') { // Código de Canarias
-        const yearValue = parseFloat(item[yearKey] || '0');
-        if (!isNaN(yearValue)) {
-          canariasValue += yearValue;
-        }
-      }
-    });
-    
-    return canariasValue > 0 ? canariasValue : null;
-  };
-
   // Preparar datos del gráfico usando el dataset de patentes por provincias
   const prepareChartData = (): ChartDataResult => {
     // Construir mapa de comunidades autónomas agregando datos de provincias
@@ -573,23 +551,13 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     const labels = chartItems.map(item => item.name);
     const values = chartItems.map(item => item.value);
     
-    // Determinar colores con gradiente sutil
-    const backgroundColor = chartItems.map((item, index) => {
+    // Determinar colores
+    const backgroundColor = chartItems.map(item => {
       if (item.isCanarias) return CHART_PALETTE.YELLOW;
-      
-      // Crear un gradiente sutil basado en la posición
-      const intensity = 1 - (index * 0.02); // Reducir intensidad gradualmente
-      const baseColor = CHART_PALETTE.DEFAULT;
-      
-      // Convertir hex a rgba para aplicar opacidad
-      const r = parseInt(baseColor.slice(1, 3), 16);
-      const g = parseInt(baseColor.slice(3, 5), 16);
-      const b = parseInt(baseColor.slice(5, 7), 16);
-      
-      return `rgba(${r}, ${g}, ${b}, ${Math.max(0.7, intensity)})`;
+      return getPatentsSectorColor();
     });
 
-    const borderColor = backgroundColor.map(() => 'transparent');
+    const borderColor = backgroundColor.map(color => color);
 
     return {
       labels,
@@ -598,56 +566,47 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         data: values,
         backgroundColor,
         borderColor,
-        borderWidth: 0,
-        borderRadius: 6,
-        barPercentage: 0.6,
-        categoryPercentage: 0.8
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.5,
+        categoryPercentage: 0.7
       }],
       sortedItems: chartItems
     };
   };
 
-  // Preparar datos para el gráfico
-  const chartData: ChartDataResult = prepareChartData();
-  
-  // Altura fija para el gráfico horizontal
-  const chartHeight = 520;
+  // Obtener color para las barras (color fijo para patentes)
+  const getPatentsSectorColor = (): string => {
+    return PATENTS_SECTOR_COLORS.total;
+  };
 
-  // Determinar si hay datos para mostrar
-  const hasData = data.length > 0 && data.some(item => {
-    const yearKey = selectedYear.toString();
-    const yearValue = item[yearKey];
-    return yearValue && parseFloat(yearValue) > 0;
-  });
-  
-  // Estilos para el contenedor con scroll horizontal - Mejorados
-  const scrollContainerStyle: React.CSSProperties = {
-    height: '520px',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    border: '1px solid #E5E7EB',
-    borderRadius: '12px',
-    padding: '15px 5px',
-    background: 'linear-gradient(135deg, #FAFBFC 0%, #F8FAFC 100%)',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#CBD5E1 #F1F5F9',
-    msOverflowStyle: 'none',
-  } as React.CSSProperties;
+  const formatNumberComplete = (value: number, decimals: number = 0): string => {
+    const locale = language === 'es' ? 'es-ES' : 'en-US';
+    return new Intl.NumberFormat(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(value);
+  };
 
-  // Si no hay datos, mostrar mensaje de no disponibilidad
-  if (!hasData) {
-    return (
-      <div className="flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm" style={{ height: '620px' }}>
-        <div className="text-center text-gray-500">
-          <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-sm font-medium">{t.noData}</p>
-        </div>
-      </div>
-    );
-  }
+  // Función para obtener el valor de Canarias
+  const getCanariasValue = (year: number): number | null => {
+    let canariasValue = 0;
+    const yearKey = year.toString();
+    
+    data.forEach(item => {
+      const provinceCode = item['Nuts Prov'];
+      const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
+      
+      if (autonomousCommunityCode === 'ES70') { // Código de Canarias
+        const yearValue = parseFloat(item[yearKey] || '0');
+        if (!isNaN(yearValue)) {
+          canariasValue += yearValue;
+        }
+      }
+    });
+    
+    return canariasValue > 0 ? canariasValue : null;
+  };
 
   const options: ChartOptions<'bar'> = {
     indexAxis: 'x' as const,
@@ -661,22 +620,16 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
     layout: {
       padding: {
-        top: 20,
-        right: 25,
-        bottom: 40,
-        left: 20
+        top: 15,
+        right: 20,
+        bottom: 35,
+        left: 15
       }
     },
     elements: {
       bar: {
-        borderWidth: 0,
-        borderRadius: {
-          topLeft: 6,
-          topRight: 6,
-          bottomLeft: 0,
-          bottomRight: 0
-        },
-        borderSkipped: false
+        borderWidth: 1,
+        borderRadius: 4
       }
     },
     scales: {
@@ -685,19 +638,18 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           display: false,
         },
         ticks: {
-          color: CHART_PALETTE.TEXT,
+          color: '#333',
           font: {
-            size: 11,
-            weight: 'bold',
+            size: 12,
+            weight: 'normal',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
           },
           autoSkip: false,
           maxRotation: 45,
-          minRotation: 45,
-          padding: 8
+          minRotation: 45
         },
         border: {
-          display: false
+          color: '#E5E7EB'
         }
       },
       y: {
@@ -795,7 +747,7 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           const tooltipContent = `
             <div class="max-w-md bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con bandera y nombre de la región -->
-              <div class="flex items-center p-2 bg-blue-50 border-b border-blue-100">
+              <div class="flex items-center p-2 bg-orange-50 border-b border-orange-100">
                 ${flagUrl ? 
                   `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
                     <img src="${flagUrl}" class="w-full h-full object-cover" alt="${regionName}" />
@@ -816,7 +768,7 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
                   <div class="flex items-center">
                     ${isConfidential ? 
                       `<span class="text-md font-bold text-gray-500">${t.confidential}</span>` :
-                      `<span class="text-lg font-bold text-blue-700">${formatNumberComplete(Math.round(value), 0)}</span>`
+                      `<span class="text-lg font-bold text-orange-700">${formatNumberComplete(Math.round(value), 0)}</span>`
                     }
                   </div>
                   ${yoyChange !== null && yoyPercentage !== null && !isConfidential ? `
@@ -912,40 +864,95 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     }
   };
 
+  // Preparar datos para el gráfico
+  const chartData: ChartDataResult = prepareChartData();
+  
+  // Altura fija para el gráfico horizontal
+  const chartHeight = 520;
+
+  // Determinar si hay datos para mostrar
+  const hasData = data.length > 0 && data.some(item => {
+    const yearKey = selectedYear.toString();
+    const yearValue = item[yearKey];
+    return yearValue && parseFloat(yearValue) > 0;
+  });
+  
+  // Estilos para el contenedor con scroll horizontal
+  const scrollContainerStyle: React.CSSProperties = {
+    height: '520px',
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    border: '1px solid rgba(229, 231, 235, 0.4)',
+    borderRadius: '12px',
+    padding: '10px 0',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#d1d5db #f3f4f6',
+    msOverflowStyle: 'none',
+    backdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+  } as React.CSSProperties;
+
+  // Si no hay datos, mostrar mensaje de no disponibilidad
+  if (!hasData) {
+    return (
+      <div className="flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm" style={{ height: '620px' }}>
+        <div className="text-center text-gray-500">
+          <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="mt-2">{t.noData}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative bg-white rounded-xl shadow-sm border border-gray-100" style={{ height: '620px' }} ref={containerRef}>
-      {/* Título mejorado */}
-      <div className="mb-4 text-center pt-4">
-        <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 mr-2">
-            <path d="M3 3v18h18"/>
-            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
-          </svg>
-          <h3 className="text-sm font-semibold text-gray-800">
-            {t.title} · <span className="text-blue-600">{selectedYear}</span>
-          </h3>
+    <div className="relative bg-gradient-to-br from-white via-gray-50/30 to-gray-100/20 rounded-xl border border-gray-200/60 shadow-sm overflow-hidden" style={{ height: '620px' }} ref={containerRef}>
+      {/* Header mejorado con gradiente y icono */}
+      <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/40 border-b border-gray-200/50 px-6 py-4">
+        <div className="flex items-center justify-center space-x-3">
+          {/* Icono de gráfico de barras */}
+          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-sm">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          
+          {/* Título mejorado */}
+          <div className="text-center">
+            <h3 className="text-lg font-bold bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 bg-clip-text text-transparent">
+              {t.title}
+            </h3>
+            <div className="flex items-center justify-center mt-1 space-x-2">
+              <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-600">{selectedYear}</span>
+              <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar mx-4">
-        <div style={{ height: `${chartHeight}px`, width: `${Math.max(800, chartData.labels.length * 60)}px` }}>
-          <Bar 
-            ref={chartRef}
-            data={chartData}
-            options={options}
-          />
+      {/* Contenedor del gráfico con padding mejorado */}
+      <div className="p-4">
+        <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
+          <div style={{ height: `${chartHeight}px`, width: `${Math.max(800, chartData.labels.length * 60)}px` }}>
+            <Bar 
+              ref={chartRef}
+              data={chartData}
+              options={options}
+            />
+          </div>
         </div>
-      </div>
-      
-      {/* Etiqueta del eje Y mejorada */}
-      <div className="text-center mt-3 mb-3">
-        <div className="inline-flex items-center px-3 py-1 bg-gray-50 rounded-full border border-gray-200">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 mr-1">
-            <path d="M12 20V10"/>
-            <path d="M18 20V4"/>
-            <path d="M6 20v-4"/>
-          </svg>
-          <span className="text-xs font-medium text-gray-600">{t.axisLabel}</span>
+        
+        {/* Etiqueta del eje Y centrada con estilo mejorado */}
+        <div className="text-center mt-4 mb-2">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 shadow-sm">
+            <svg className="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+            {t.axisLabel}
+          </span>
         </div>
       </div>
     </div>
