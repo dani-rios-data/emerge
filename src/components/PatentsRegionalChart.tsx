@@ -568,8 +568,8 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         borderColor,
         borderWidth: 1,
         borderRadius: 4,
-        barPercentage: 0.5,
-        categoryPercentage: 0.7
+        barPercentage: 0.7,
+        categoryPercentage: 0.9
       }],
       sortedItems: chartItems
     };
@@ -620,10 +620,10 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
     layout: {
       padding: {
-        top: 15,
-        right: 20,
-        bottom: 35,
-        left: 15
+        top: 10,
+        right: 15,
+        bottom: 30,
+        left: 10
       }
     },
     elements: {
@@ -640,7 +640,7 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         ticks: {
           color: '#333',
           font: {
-            size: 12,
+            size: 10,
             weight: 'normal',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
           },
@@ -670,6 +670,9 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
       }
     },
     plugins: {
+      title: {
+        display: false
+      },
       legend: {
         display: false
       },
@@ -877,26 +880,21 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     return yearValue && parseFloat(yearValue) > 0;
   });
   
-  // Estilos para el contenedor con scroll horizontal
+  // Estilos para el contenedor sin scroll horizontal
   const scrollContainerStyle: React.CSSProperties = {
     height: '520px',
-    overflowX: 'auto',
+    overflowX: 'hidden',
     overflowY: 'hidden',
-    border: '1px solid rgba(229, 231, 235, 0.4)',
-    borderRadius: '12px',
+    border: '1px solid #f0f0f0',
+    borderRadius: '8px',
     padding: '10px 0',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#d1d5db #f3f4f6',
-    msOverflowStyle: 'none',
-    backdropFilter: 'blur(8px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+    width: '100%'
   } as React.CSSProperties;
 
   // Si no hay datos, mostrar mensaje de no disponibilidad
   if (!hasData) {
     return (
-      <div className="flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm" style={{ height: '620px' }}>
+      <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: '620px' }}>
         <div className="text-center text-gray-500">
           <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -908,52 +906,21 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
   }
 
   return (
-    <div className="relative bg-gradient-to-br from-white via-gray-50/30 to-gray-100/20 rounded-xl border border-gray-200/60 shadow-sm overflow-hidden" style={{ height: '620px' }} ref={containerRef}>
-      {/* Header mejorado con gradiente y icono */}
-      <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/40 border-b border-gray-200/50 px-6 py-4">
-        <div className="flex items-center justify-center space-x-3">
-          {/* Icono de gráfico de barras */}
-          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-sm">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          
-          {/* Título mejorado */}
-          <div className="text-center">
-            <h3 className="text-lg font-bold bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 bg-clip-text text-transparent">
-              {t.title}
-            </h3>
-            <div className="flex items-center justify-center mt-1 space-x-2">
-              <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
-              <span className="text-sm font-medium text-gray-600">{selectedYear}</span>
-              <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
-            </div>
-          </div>
+    <div className="relative" style={{ height: '620px' }} ref={containerRef}>
+      {/* Contenedor del gráfico sin título */}
+      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
+        <div style={{ height: `${chartHeight}px`, width: '100%' }}>
+          <Bar 
+            ref={chartRef}
+            data={chartData}
+            options={options}
+          />
         </div>
       </div>
       
-      {/* Contenedor del gráfico con padding mejorado */}
-      <div className="p-4">
-        <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
-          <div style={{ height: `${chartHeight}px`, width: `${Math.max(800, chartData.labels.length * 60)}px` }}>
-            <Bar 
-              ref={chartRef}
-              data={chartData}
-              options={options}
-            />
-          </div>
-        </div>
-        
-        {/* Etiqueta del eje Y centrada con estilo mejorado */}
-        <div className="text-center mt-4 mb-2">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 shadow-sm">
-            <svg className="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
-            {t.axisLabel}
-          </span>
-        </div>
+      {/* Etiqueta del eje Y centrada */}
+      <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
+        {t.axisLabel}
       </div>
     </div>
   );

@@ -551,8 +551,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 3.1: Distribución regional */}
         <div className="mb-8">
-          <SubsectionTitle title={t.regionalDistribution} />
-          
           {/* Descripción del dataset */}
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p>
@@ -569,6 +567,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
             </p>
           </div>
 
+          <SubsectionTitle title={t.regionalDistribution} />
+          
           {regionalData.length > 0 ? (
             <div className="bg-white rounded-lg w-full">
               {/* Filtros para la sección regional */}
