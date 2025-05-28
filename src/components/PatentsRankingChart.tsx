@@ -601,7 +601,7 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
     countryDataForYear.forEach(item => {
       const countryCode = item.geo;
       let value = parseFloat(item.OBS_VALUE || '0');
-      if (isNaN(value)) return;
+      if (isNaN(value) || value === 0) return; // Filtrar valores en 0
       
       // Aplicar el mismo cálculo de promedios que en el mapa
       if (countryCode === 'EU27_2020') {

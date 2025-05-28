@@ -16,16 +16,26 @@ interface PatentsData {
   [key: string]: string | undefined;
 }
 
-// Interfaz para los datos regionales
+// Interfaz para los datos regionales de patentes
 interface RegionalData {
-  TERRITORIO: string;
-  TERRITORIO_CODE: string;
-  TIME_PERIOD: string;
-  SEXO: string;
-  SECTOR_EJECUCION: string;
-  SECTOR_EJECUCION_CODE: string;
-  OBS_VALUE: string;
-  CONFIDENCIALIDAD_OBSERVACION?: string;
+  'Nuts Prov': string;
+  'Provincia': string;
+  '2010': string;
+  '2011': string;
+  '2012': string;
+  '2013': string;
+  '2014': string;
+  '2015': string;
+  '2016': string;
+  '2017': string;
+  '2018': string;
+  '2019': string;
+  '2020': string;
+  '2021': string;
+  '2022': string;
+  '2023': string;
+  '2024': string;
+  'SUMA': string;
   [key: string]: string | undefined;
 }
 
@@ -48,8 +58,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
   
   // Estados para la sección regional
   const [regionalData, setRegionalData] = useState<RegionalData[]>([]);
-  const [regionalSector, setRegionalSector] = useState<string>('Total');
-  const [regionalYear, setRegionalYear] = useState<number>(2020);
+  const [regionalYear, setRegionalYear] = useState<number>(2024);
   const [regionalAvailableYears, setRegionalAvailableYears] = useState<number[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -147,11 +156,11 @@ const Patents: React.FC<PatentsProps> = (props) => {
     loadPatentsData();
   }, [t.error]);
 
-  // Cargar datos regionales
+  // Cargar datos regionales de patentes
   useEffect(() => {
     const loadRegionalData = async () => {
       try {
-        const response = await fetch('./data/researchers/researchers_comunidades_autonomas.csv');
+        const response = await fetch('./data/patents/patentes_spain.csv');
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
         }
@@ -159,28 +168,23 @@ const Patents: React.FC<PatentsProps> = (props) => {
         const csvText = await response.text();
         const result = Papa.parse(csvText, {
           header: true,
-          skipEmptyLines: true
+          skipEmptyLines: true,
+          delimiter: ';'
         });
 
         const parsedRegionalData = result.data as RegionalData[];
         setRegionalData(parsedRegionalData);
 
-        // Extraer años disponibles para datos regionales
-        const regionalYears = Array.from(new Set(parsedRegionalData.map(item => 
-          parseInt(item.TIME_PERIOD)
-        )))
-        .filter(year => !isNaN(year))
-        .sort((a, b) => b - a);
+        // Extraer años disponibles para datos regionales (2010-2024)
+        const regionalYears = [2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010];
 
         setRegionalAvailableYears(regionalYears);
         
-        // Establecer el año más reciente como predeterminado
-        if (regionalYears.length > 0) {
-          setRegionalYear(regionalYears[0]);
-        }
+        // Establecer 2024 como año predeterminado (más reciente)
+        setRegionalYear(2024);
 
       } catch (err) {
-        console.error('Error loading regional data:', err);
+        console.error('Error loading regional patents data:', err);
       }
     };
 
@@ -207,10 +211,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Handlers para la sección regional
   const handleRegionalYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRegionalYear(parseInt(e.target.value));
-  };
-
-  const handleRegionalSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRegionalSector(e.target.value);
   };
 
   // Función para obtener el nombre localizado del sector
@@ -557,14 +557,14 @@ const Patents: React.FC<PatentsProps> = (props) => {
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p>
               {language === 'es' 
-                ? "Distribución de investigadores en actividades de I+D por comunidades autónomas de España, medidos en equivalencia a jornada completa (EJC). Aunque los datos se refieren específicamente a investigadores, constituyen un indicador proxy de la actividad innovadora regional y la capacidad potencial de generación de patentes, ya que existe una correlación directa entre el personal investigador y la producción de propiedad intelectual."
-                : "Distribution of researchers in R&D activities by Spanish autonomous communities, measured in full-time equivalent (FTE). Although the data specifically refers to researchers, it constitutes a proxy indicator of regional innovative activity and potential patent generation capacity, as there is a direct correlation between research personnel and intellectual property production."
+                ? "Distribución de patentes por comunidades autónomas de España. Los datos muestran el número de patentes registradas por provincia, agregadas a nivel de comunidad autónoma. Las patentes representan un indicador directo de la actividad innovadora y la capacidad de protección de la propiedad intelectual en cada territorio."
+                : "Distribution of patents by Spanish autonomous communities. The data shows the number of patents registered by province, aggregated at the autonomous community level. Patents represent a direct indicator of innovative activity and intellectual property protection capacity in each territory."
               }
             </p>
             <p className="mt-2 text-xs italic">
               {language === 'es' 
-                ? "Fuente: Instituto Nacional de Estadística (INE)"
-                : "Source: National Statistics Institute (INE)"
+                ? "Fuente: Dataset de patentes de España"
+                : "Source: Spain patents dataset"
               }
             </p>
           </div>
@@ -573,48 +573,31 @@ const Patents: React.FC<PatentsProps> = (props) => {
             <div className="bg-white rounded-lg w-full">
               {/* Filtros para la sección regional */}
               <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      className="text-blue-500 mr-2"
-                    >
-                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    <label className="text-gray-700 font-medium mr-2">{t.year}</label>
-                    <select 
-                      value={regionalYear}
-                      onChange={handleRegionalYearChange}
-                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    >
-                      {regionalAvailableYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                    <select 
-                      value={regionalSector}
-                      onChange={handleRegionalSectorChange}
-                      className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                    >
-                      <option value="Total">{t.allSectors}</option>
-                      <option value="Enseñanza Superior">{t.educationSector}</option>
-                      <option value="Administración Pública">{t.governmentSector}</option>
-                      <option value="Empresas">{t.businessSector}</option>
-                      <option value="Instituciones Privadas sin Fines de Lucro (IPSFL)">{t.nonprofitSector}</option>
-                    </select>
-                  </div>
+                <div className="flex items-center">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="text-blue-500 mr-2"
+                  >
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                  <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                  <select 
+                    value={regionalYear}
+                    onChange={handleRegionalYearChange}
+                    className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    {regionalAvailableYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               
@@ -623,7 +606,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
                 <PatentsRegionalChart
                   data={regionalData}
                   selectedYear={regionalYear}
-                  selectedSector={regionalSector}
                   language={language}
                 />
               </div>

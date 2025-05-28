@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
-import * as d3 from 'd3';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,6 +11,8 @@ import {
   ChartOptions,
   ChartEvent
 } from 'chart.js';
+// Importar datos de banderas de comunidades autónomas
+import autonomousCommunitiesFlagsData from '../logos/autonomous_communities_flags.json';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -23,63 +24,150 @@ ChartJS.register(
   Legend
 );
 
-// Definir colores específicos para los componentes de patentes - Paleta neutral profesional
-const PATENTS_SECTOR_COLORS = {
-  total: '#37474F',        // Gris azulado oscuro para el total (neutral y profesional)
-  business: '#FF7043',     // Naranja coral para empresas (innovación corporativa)
-  government: '#5E35B1',   // Púrpura profundo para gobierno (autoridad institucional)
-  education: '#1E88E5',    // Azul vibrante para educación (conocimiento y academia)
-  nonprofit: '#8D6E63'     // Marrón medio para organizaciones sin fines de lucro (estabilidad social)
-};
-
-// Colores para la gráfica
+// Colores para la gráfica - Paleta mejorada y moderna
 const CHART_PALETTE = {
-  DEFAULT: '#2E7D32',      // Verde tecnológico principal
-  LIGHT: '#4CAF50',        // Verde más claro
-  DARK: '#1B5E20',         // Verde más oscuro
-  HIGHLIGHT: '#CC0000',    // Rojo para Madrid (destacar la capital)
-  TEXT: '#000000',         // Color del texto (negro) 
+  DEFAULT: '#1E40AF',      // Azul moderno y profesional
+  LIGHT: '#3B82F6',        // Azul más claro
+  DARK: '#1E3A8A',         // Azul más oscuro
+  HIGHLIGHT: '#DC2626',    // Rojo moderno para destacar
+  TEXT: '#1F2937',         // Gris oscuro para mejor legibilidad
   BORDER: '#E5E7EB',       // Color del borde (gris suave)
-  YELLOW: '#FFC107',       // Amarillo para destacar
-  GREEN: '#009900'         // Verde para destacar
+  YELLOW: '#F59E0B',       // Amarillo moderno para Canarias
+  GREEN: '#059669',        // Verde moderno
+  GRADIENT_START: '#3B82F6', // Inicio del gradiente
+  GRADIENT_END: '#1D4ED8',   // Final del gradiente
+  SHADOW: 'rgba(59, 130, 246, 0.1)' // Sombra sutil
 };
 
-// Mapeo de códigos de comunidades autónomas a nombres y banderas
-const autonomousCommunitiesMapping: Record<string, {es: string, en: string, flag: string, mainCities: string[]}> = {
-  'ES': {es: 'España', en: 'Spain', flag: '🇪🇸', mainCities: ['Madrid', 'Barcelona', 'Valencia']},
-  'ES11': {es: 'Galicia', en: 'Galicia', flag: '🏴󠁥󠁳󠁧󠁡󠁿', mainCities: ['A Coruña', 'Vigo', 'Santiago de Compostela', 'Lugo', 'Ourense', 'Pontevedra', 'Ferrol']},
-  'ES12': {es: 'Principado de Asturias', en: 'Principality of Asturias', flag: '🏴󠁥󠁳󠁡󠁳󠁿', mainCities: ['Oviedo', 'Gijón', 'Avilés', 'Langreo', 'Mieres']},
-  'ES13': {es: 'Cantabria', en: 'Cantabria', flag: '🏴󠁥󠁳󠁣󠁢󠁿', mainCities: ['Santander', 'Torrelavega', 'Castro Urdiales', 'Camargo']},
-  'ES21': {es: 'País Vasco', en: 'Basque Country', flag: '🏴󠁥󠁳󠁰󠁶󠁿', mainCities: ['Bilbao', 'Vitoria-Gasteiz', 'San Sebastián', 'Barakaldo', 'Getxo']},
-  'ES22': {es: 'Comunidad Foral de Navarra', en: 'Chartered Community of Navarre', flag: '🏴󠁥󠁳󠁮󠁡󠁿', mainCities: ['Pamplona', 'Tudela', 'Barañáin', 'Burlada']},
-  'ES23': {es: 'La Rioja', en: 'La Rioja', flag: '🏴󠁥󠁳󠁲󠁩󠁿', mainCities: ['Logroño', 'Calahorra', 'Arnedo', 'Haro']},
-  'ES24': {es: 'Aragón', en: 'Aragon', flag: '🏴󠁥󠁳󠁡󠁲󠁿', mainCities: ['Zaragoza', 'Huesca', 'Teruel', 'Calatayud', 'Utebo']},
-  'ES30': {es: 'Comunidad de Madrid', en: 'Community of Madrid', flag: '🏴󠁥󠁳󠁭󠁤󠁿', mainCities: ['Madrid', 'Móstoles', 'Alcalá de Henares', 'Fuenlabrada', 'Leganés', 'Getafe']},
-  'ES41': {es: 'Castilla y León', en: 'Castile and León', flag: '🏴󠁥󠁳󠁣󠁬󠁿', mainCities: ['Valladolid', 'Burgos', 'Salamanca', 'León', 'Palencia', 'Zamora', 'Ávila', 'Segovia', 'Soria']},
-  'ES42': {es: 'Castilla-La Mancha', en: 'Castile-La Mancha', flag: '🏴󠁥󠁳󠁣󠁭󠁿', mainCities: ['Toledo', 'Albacete', 'Guadalajara', 'Ciudad Real', 'Cuenca', 'Talavera de la Reina']},
-  'ES43': {es: 'Extremadura', en: 'Extremadura', flag: '🏴󠁥󠁳󠁥󠁸󠁿', mainCities: ['Badajoz', 'Cáceres', 'Mérida', 'Plasencia', 'Don Benito']},
-  'ES51': {es: 'Cataluña', en: 'Catalonia', flag: '🏴󠁥󠁳󠁣󠁴󠁿', mainCities: ['Barcelona', 'L\'Hospitalet de Llobregat', 'Badalona', 'Terrassa', 'Sabadell', 'Lleida', 'Tarragona', 'Girona']},
-  'ES52': {es: 'Comunidad Valenciana', en: 'Valencian Community', flag: '🏴󠁥󠁳󠁶󠁣󠁿', mainCities: ['Valencia', 'Alicante', 'Castellón de la Plana', 'Elche', 'Torrevieja', 'Orihuela']},
-  'ES53': {es: 'Illes Balears', en: 'Balearic Islands', flag: '🏴󠁥󠁳󠁩󠁢󠁿', mainCities: ['Palma', 'Calvià', 'Manacor', 'Inca', 'Llucmajor']},
-  'ES61': {es: 'Andalucía', en: 'Andalusia', flag: '🏴󠁥󠁳󠁡󠁮󠁿', mainCities: ['Sevilla', 'Málaga', 'Córdoba', 'Granada', 'Almería', 'Cádiz', 'Huelva', 'Jaén']},
-  'ES62': {es: 'Región de Murcia', en: 'Region of Murcia', flag: '🏴󠁥󠁳󠁭󠁣󠁿', mainCities: ['Murcia', 'Cartagena', 'Lorca', 'Molina de Segura']},
-  'ES63': {es: 'Ciudad de Ceuta', en: 'City of Ceuta', flag: '🏴󠁥󠁳󠁣󠁥󠁿', mainCities: ['Ceuta']},
-  'ES64': {es: 'Ciudad de Melilla', en: 'City of Melilla', flag: '🏴󠁥󠁳󠁭󠁬󠁿', mainCities: ['Melilla']},
-  'ES70': {es: 'Canarias', en: 'Canary Islands', flag: '🏴󠁥󠁳󠁣󠁮󠁿', mainCities: ['Las Palmas de Gran Canaria', 'Santa Cruz de Tenerife', 'San Cristóbal de La Laguna', 'Telde', 'Santa Lucía']}
+// Mapeo de códigos NUTS de provincias a comunidades autónomas
+const provinceToAutonomousCommunityMapping: Record<string, string> = {
+  // Andalucía (ES61)
+  'ES611': 'ES61', 'ES612': 'ES61', 'ES613': 'ES61', 'ES614': 'ES61', 
+  'ES615': 'ES61', 'ES616': 'ES61', 'ES617': 'ES61', 'ES618': 'ES61',
+  // Aragón (ES24)
+  'ES241': 'ES24', 'ES242': 'ES24', 'ES243': 'ES24',
+  // Asturias (ES12)
+  'ES120': 'ES12',
+  // Canarias (ES70)
+  'ES705': 'ES70', 'ES709': 'ES70',
+  // Cantabria (ES13)
+  'ES130': 'ES13',
+  // Castilla-La Mancha (ES42)
+  'ES421': 'ES42', 'ES422': 'ES42', 'ES423': 'ES42', 'ES424': 'ES42', 'ES425': 'ES42',
+  // Castilla y León (ES41)
+  'ES411': 'ES41', 'ES412': 'ES41', 'ES413': 'ES41', 'ES414': 'ES41', 
+  'ES415': 'ES41', 'ES416': 'ES41', 'ES417': 'ES41', 'ES418': 'ES41', 'ES419': 'ES41',
+  // Cataluña (ES51)
+  'ES511': 'ES51', 'ES512': 'ES51', 'ES513': 'ES51', 'ES514': 'ES51',
+  // Comunidad Valenciana (ES52)
+  'ES521': 'ES52', 'ES522': 'ES52', 'ES523': 'ES52',
+  // Extremadura (ES43)
+  'ES431': 'ES43', 'ES432': 'ES43',
+  // Galicia (ES11)
+  'ES111': 'ES11', 'ES112': 'ES11', 'ES113': 'ES11', 'ES114': 'ES11',
+  // Illes Balears (ES53)
+  'ES532': 'ES53',
+  // La Rioja (ES23)
+  'ES230': 'ES23',
+  // Madrid (ES30)
+  'ES300': 'ES30',
+  // Murcia (ES62)
+  'ES620': 'ES62',
+  // Navarra (ES22)
+  'ES220': 'ES22',
+  // País Vasco (ES21)
+  'ES211': 'ES21', 'ES212': 'ES21', 'ES213': 'ES21',
+  // Ceuta (ES63)
+  'ES630': 'ES63',
+  // Melilla (ES64)
+  'ES640': 'ES64'
 };
 
+// Mapeo de códigos de comunidades autónomas a nombres, banderas y provincias del dataset
+const autonomousCommunitiesMapping: Record<string, {es: string, en: string, flag: string, provinces: string[]}> = {
+  'ES61': {es: 'Andalucía', en: 'Andalusia', flag: '🏴󠁥󠁳󠁡󠁮󠁿', provinces: ['Almería', 'Cádiz', 'Córdoba', 'Granada', 'Huelva', 'Jaén', 'Málaga', 'Sevilla']},
+  'ES24': {es: 'Aragón', en: 'Aragon', flag: '🏴󠁥󠁳󠁡󠁲󠁿', provinces: ['Huesca', 'Teruel', 'Zaragoza']},
+  'ES12': {es: 'Principado de Asturias', en: 'Principality of Asturias', flag: '🏴󠁥󠁳󠁡󠁳󠁿', provinces: ['Asturias']},
+  'ES70': {es: 'Canarias', en: 'Canary Islands', flag: '🏴󠁥󠁳󠁣󠁮󠁿', provinces: ['Las Palmas', 'Santa Cruz de Tenerife']},
+  'ES13': {es: 'Cantabria', en: 'Cantabria', flag: '🏴󠁥󠁳󠁣󠁢󠁿', provinces: ['Cantabria']},
+  'ES42': {es: 'Castilla-La Mancha', en: 'Castile-La Mancha', flag: '🏴󠁥󠁳󠁣󠁭󠁿', provinces: ['Albacete', 'Ciudad Real', 'Cuenca', 'Guadalajara', 'Toledo']},
+  'ES41': {es: 'Castilla y León', en: 'Castile and León', flag: '🏴󠁥󠁳󠁣󠁬󠁿', provinces: ['Ávila', 'Burgos', 'León', 'Palencia', 'Salamanca', 'Segovia', 'Soria', 'Valladolid', 'Zamora']},
+  'ES51': {es: 'Cataluña', en: 'Catalonia', flag: '🏴󠁥󠁳󠁣󠁴󠁿', provinces: ['Barcelona', 'Girona', 'Lleida', 'Tarragona']},
+  'ES52': {es: 'Comunidad Valenciana', en: 'Valencian Community', flag: '🏴󠁥󠁳󠁶󠁣󠁿', provinces: ['Alicante', 'Castellón', 'Valencia']},
+  'ES43': {es: 'Extremadura', en: 'Extremadura', flag: '🏴󠁥󠁳󠁥󠁸󠁿', provinces: ['Badajoz', 'Cáceres']},
+  'ES11': {es: 'Galicia', en: 'Galicia', flag: '🏴󠁥󠁳󠁧󠁡󠁿', provinces: ['A Coruña', 'Lugo', 'Ourense', 'Pontevedra']},
+  'ES53': {es: 'Illes Balears', en: 'Balearic Islands', flag: '🏴󠁥󠁳󠁩󠁢󠁿', provinces: ['Illes Balears']},
+  'ES23': {es: 'La Rioja', en: 'La Rioja', flag: '🏴󠁥󠁳󠁲󠁩󠁿', provinces: ['La Rioja']},
+  'ES30': {es: 'Comunidad de Madrid', en: 'Community of Madrid', flag: '🏴󠁥󠁳󠁭󠁤󠁿', provinces: ['Madrid']},
+  'ES62': {es: 'Región de Murcia', en: 'Region of Murcia', flag: '🏴󠁥󠁳󠁭󠁣󠁿', provinces: ['Murcia']},
+  'ES22': {es: 'Comunidad Foral de Navarra', en: 'Chartered Community of Navarre', flag: '🏴󠁥󠁳󠁮󠁡󠁿', provinces: ['Navarra']},
+  'ES21': {es: 'País Vasco', en: 'Basque Country', flag: '🏴󠁥󠁳󠁰󠁶󠁿', provinces: ['Araba/Álava', 'Bizkaia', 'Gipuzkoa']},
+  'ES63': {es: 'Ciudad de Ceuta', en: 'City of Ceuta', flag: '🏴󠁥󠁳󠁣󠁥󠁿', provinces: ['Ceuta']},
+  'ES64': {es: 'Ciudad de Melilla', en: 'City of Melilla', flag: '🏴󠁥󠁳󠁭󠁬󠁿', provinces: ['Melilla']}
+};
 
+// Interfaz para los elementos del archivo de banderas de comunidades autónomas
+interface AutonomousCommunityFlag {
+  community: string;
+  code: string;
+  flag: string;
+}
 
-// Interfaz para los datos de entrada
-interface RegionalData {
-  TERRITORIO: string;
-  TERRITORIO_CODE: string;
-  TIME_PERIOD: string;
-  SEXO: string;
-  SECTOR_EJECUCION: string;
-  SECTOR_EJECUCION_CODE: string;
-  OBS_VALUE: string;
-  CONFIDENCIALIDAD_OBSERVACION?: string;
+// Asegurar el tipo correcto para el array de banderas
+const autonomousCommunitiesFlags = autonomousCommunitiesFlagsData as AutonomousCommunityFlag[];
+
+// Función para obtener la URL de la bandera de la comunidad autónoma
+const getAutonomousCommunityFlagUrl = (regionCode: string): string => {
+  // Mapeo de códigos NUTS a códigos de banderas
+  const nutsToFlagCodeMapping: Record<string, string> = {
+    'ES61': 'AND', // Andalucía
+    'ES24': 'ARA', // Aragón
+    'ES12': 'AST', // Asturias
+    'ES70': 'CAN', // Canarias
+    'ES13': 'CNT', // Cantabria
+    'ES42': 'CLM', // Castilla-La Mancha
+    'ES41': 'CYL', // Castilla y León
+    'ES51': 'CAT', // Cataluña
+    'ES52': 'VAL', // Comunidad Valenciana
+    'ES43': 'EXT', // Extremadura
+    'ES11': 'GAL', // Galicia
+    'ES53': 'BAL', // Illes Balears
+    'ES23': 'RIO', // La Rioja
+    'ES30': 'MAD', // Comunidad de Madrid
+    'ES62': 'MUR', // Región de Murcia
+    'ES22': 'NAV', // Navarra
+    'ES21': 'PVA', // País Vasco
+    'ES63': 'CEU', // Ceuta
+    'ES64': 'MEL'  // Melilla
+  };
+  
+  const flagCode = nutsToFlagCodeMapping[regionCode];
+  if (!flagCode) return '';
+  
+  const flagData = autonomousCommunitiesFlags.find(flag => flag.code === flagCode);
+  return flagData?.flag || '';
+};
+
+// Interfaz para los datos de patentes por provincias
+interface PatentsProvinceData {
+  'Nuts Prov': string;
+  'Provincia': string;
+  '2010': string;
+  '2011': string;
+  '2012': string;
+  '2013': string;
+  '2014': string;
+  '2015': string;
+  '2016': string;
+  '2017': string;
+  '2018': string;
+  '2019': string;
+  '2020': string;
+  '2021': string;
+  '2022': string;
+  '2023': string;
+  '2024': string;
+  'SUMA': string;
   [key: string]: string | undefined;
 }
 
@@ -91,6 +179,7 @@ interface ChartDataItem {
   isMadrid: boolean;
   isCanarias: boolean;
   isConfidential: boolean;
+  provinces?: {name: string, value: number}[];
 }
 
 // Interfaz para el resultado del procesamiento de datos del gráfico
@@ -110,17 +199,15 @@ interface ChartDataResult {
 }
 
 interface PatentsRegionalChartProps {
-  data: RegionalData[];
+  data: PatentsProvinceData[];
   selectedYear: number;
   language: 'es' | 'en';
-  selectedSector?: string;
 }
 
 const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({ 
   data, 
   selectedYear, 
-  language,
-  selectedSector = 'Total'
+  language
 }) => {
   const chartRef = useRef(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -145,8 +232,8 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
         borderRadius: '8px',
         padding: '0',
-        minWidth: '220px',
-        maxWidth: '480px',
+        minWidth: '200px',
+        maxWidth: '350px',
         border: '1px solid #e2e8f0',
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
         fontSize: '14px',
@@ -260,8 +347,8 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
       boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
       borderRadius: '8px',
       padding: '0',
-      minWidth: '220px',
-      maxWidth: '480px',
+      minWidth: '200px',
+      maxWidth: '350px',
       border: '1px solid #e2e8f0',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
       fontSize: '14px',
@@ -389,87 +476,81 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
 
   const t = texts[language];
 
-  // Mapeo entre ID de sector y código en los datos
-  const sectorCodeMapping: Record<string, string> = {
-    'Total': '_T',
-    'Enseñanza Superior': 'ENSENIANZA_SUPERIOR',
-    'Administración Pública': 'ADMINISTRACION_PUBLICA',
-    'Empresas': 'EMPRESAS',
-    'Instituciones Privadas sin Fines de Lucro (IPSFL)': 'IPSFL'
+  const formatNumberComplete = (value: number, decimals: number = 0): string => {
+    const locale = language === 'es' ? 'es-ES' : 'en-US';
+    return new Intl.NumberFormat(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(value);
   };
 
-  // Función para obtener datos detallados por sectores para una comunidad autónoma
-  const getRegionSectorDetails = (regionCode: string, year: number): Record<string, number> => {
-    const regionData = data.filter(item => 
-      item.TERRITORIO_CODE === regionCode &&
-      parseInt(item.TIME_PERIOD) === year &&
-      item.SEXO === 'Total' &&
-      item.MEDIDAS_CODE === 'INVESTIGADORES_EJC'
-    );
-
-    const sectorDetails: Record<string, number> = {};
+  // Función para obtener el valor de Canarias
+  const getCanariasValue = (year: number): number | null => {
+    let canariasValue = 0;
+    const yearKey = year.toString();
     
-    regionData.forEach(item => {
-      const value = parseFloat(item.OBS_VALUE || '0');
-      if (!isNaN(value)) {
-        switch (item.SECTOR_EJECUCION_CODE) {
-          case '_T':
-            sectorDetails['Total'] = value;
-            break;
-          case 'ENSENIANZA_SUPERIOR':
-            sectorDetails['Enseñanza Superior'] = value;
-            break;
-          case 'ADMINISTRACION_PUBLICA':
-            sectorDetails['Administración Pública'] = value;
-            break;
-          case 'EMPRESAS':
-            sectorDetails['Empresas'] = value;
-            break;
-          case 'IPSFL':
-            sectorDetails['IPSFL'] = value;
-            break;
+    data.forEach(item => {
+      const provinceCode = item['Nuts Prov'];
+      const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
+      
+      if (autonomousCommunityCode === 'ES70') { // Código de Canarias
+        const yearValue = parseFloat(item[yearKey] || '0');
+        if (!isNaN(yearValue)) {
+          canariasValue += yearValue;
         }
       }
     });
-
-    return sectorDetails;
-  };
-  
-  // Obtener el código del sector seleccionado
-  const sectorCode = sectorCodeMapping[selectedSector] || '_T';
-
-  // Preparar datos del gráfico
-  const prepareChartData = (): ChartDataResult => {
-    // Filtrar datos para el año y sector seleccionados, excluyendo España total
-    const regionalDataForYear = data.filter(item => {
-      const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-      const sectorMatch = item.SECTOR_EJECUCION_CODE === sectorCode;
-      const sexMatch = item.SEXO === 'Total'; // Solo datos totales, no por sexo
-      const isRegional = item.TERRITORIO_CODE !== 'ES'; // Excluir España total
-      
-      return yearMatch && sectorMatch && sexMatch && isRegional;
-    });
-
-    // Construir mapa de comunidades autónomas
-    const regionMap = new Map<string, {code: string, name: string, value: number, isConfidential: boolean}>();
     
-    regionalDataForYear.forEach(item => {
-      const regionCode = item.TERRITORIO_CODE;
-      let value = parseFloat(item.OBS_VALUE || '0');
-      const isConfidential = item.CONFIDENCIALIDAD_OBSERVACION === 'C' || !item.OBS_VALUE || item.OBS_VALUE.trim() === '';
+    return canariasValue > 0 ? canariasValue : null;
+  };
+
+  // Preparar datos del gráfico usando el dataset de patentes por provincias
+  const prepareChartData = (): ChartDataResult => {
+    // Construir mapa de comunidades autónomas agregando datos de provincias
+    const regionMap = new Map<string, {code: string, name: string, value: number, provinces: {name: string, value: number}[]}>();
+    
+    // Crear un mapa para evitar duplicados de provincias
+    const processedProvinces = new Set<string>();
+    
+    // Procesar cada provincia en el dataset
+    data.forEach(item => {
+      const provinceCode = item['Nuts Prov'];
+      const provinceName = item['Provincia'];
+      const yearKey = selectedYear.toString();
+      
+      if (!provinceCode || !provinceName || !yearKey) return;
+      
+      // Evitar procesar la misma provincia múltiples veces
+      if (processedProvinces.has(provinceCode)) return;
+      processedProvinces.add(provinceCode);
+      
+      // Obtener el código de la comunidad autónoma para esta provincia
+      const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
+      if (!autonomousCommunityCode) return;
+      
+      // Obtener el valor de patentes para el año seleccionado
+      const yearValue = item[yearKey];
+      let value = parseFloat(yearValue || '0');
       
       if (isNaN(value)) {
         value = 0;
       }
       
-      // Solo incluir si tenemos el mapeo de la comunidad autónoma
-      if (autonomousCommunitiesMapping[regionCode]) {
-        regionMap.set(regionCode, {
-          code: regionCode,
-          name: autonomousCommunitiesMapping[regionCode][language],
-          value: value,
-          isConfidential: isConfidential
-        });
+      // Agregar o actualizar la comunidad autónoma
+      if (regionMap.has(autonomousCommunityCode)) {
+        const existing = regionMap.get(autonomousCommunityCode)!;
+        existing.value += value;
+        existing.provinces.push({ name: provinceName, value: value });
+      } else {
+        const communityInfo = autonomousCommunitiesMapping[autonomousCommunityCode];
+        if (communityInfo) {
+          regionMap.set(autonomousCommunityCode, {
+            code: autonomousCommunityCode,
+            name: communityInfo[language],
+            value: value,
+            provinces: [{ name: provinceName, value: value }]
+          });
+        }
       }
     });
 
@@ -484,21 +565,31 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
       value: item.value,
       isMadrid: item.code === 'ES30',
       isCanarias: item.code === 'ES70',
-      isConfidential: item.isConfidential
+      isConfidential: false, // Los datos de patentes no tienen confidencialidad
+      provinces: item.provinces
     }));
 
     // Preparar datos para Chart.js
     const labels = chartItems.map(item => item.name);
     const values = chartItems.map(item => item.value);
     
-    // Determinar colores
-    const backgroundColor = chartItems.map(item => {
+    // Determinar colores con gradiente sutil
+    const backgroundColor = chartItems.map((item, index) => {
       if (item.isCanarias) return CHART_PALETTE.YELLOW;
-      if (item.isConfidential) return '#E5E7EB'; // Gris para datos confidenciales
-      return getPatentsSectorColor();
+      
+      // Crear un gradiente sutil basado en la posición
+      const intensity = 1 - (index * 0.02); // Reducir intensidad gradualmente
+      const baseColor = CHART_PALETTE.DEFAULT;
+      
+      // Convertir hex a rgba para aplicar opacidad
+      const r = parseInt(baseColor.slice(1, 3), 16);
+      const g = parseInt(baseColor.slice(3, 5), 16);
+      const b = parseInt(baseColor.slice(5, 7), 16);
+      
+      return `rgba(${r}, ${g}, ${b}, ${Math.max(0.7, intensity)})`;
     });
 
-    const borderColor = backgroundColor.map(color => color);
+    const borderColor = backgroundColor.map(() => 'transparent');
 
     return {
       labels,
@@ -507,60 +598,56 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         data: values,
         backgroundColor,
         borderColor,
-        borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.5,
-        categoryPercentage: 0.7
+        borderWidth: 0,
+        borderRadius: 6,
+        barPercentage: 0.6,
+        categoryPercentage: 0.8
       }],
       sortedItems: chartItems
     };
   };
 
-  // Obtener color del sector para las barras
-  const getPatentsSectorColor = (): string => {
-    let normalizedId = selectedSector.toLowerCase();
-    
-    // Mapear sectores a IDs normalizados
-    if (normalizedId === 'total' || normalizedId.includes('total')) 
-      normalizedId = 'total';
-    if (normalizedId.includes('empresa')) 
-      normalizedId = 'business';
-    if (normalizedId.includes('administración') || normalizedId.includes('pública')) 
-      normalizedId = 'government';
-    if (normalizedId.includes('enseñanza') || normalizedId.includes('superior')) 
-      normalizedId = 'education';
-    if (normalizedId.includes('privadas') || normalizedId.includes('ipsfl')) 
-      normalizedId = 'nonprofit';
-    
-    return PATENTS_SECTOR_COLORS[normalizedId as keyof typeof PATENTS_SECTOR_COLORS] || PATENTS_SECTOR_COLORS.total;
-  };
+  // Preparar datos para el gráfico
+  const chartData: ChartDataResult = prepareChartData();
+  
+  // Altura fija para el gráfico horizontal
+  const chartHeight = 520;
 
-  // Función para obtener el color del sector para el título
-  const getSectorTitleColor = () => {
-    let normalizedId = selectedSector.toLowerCase();
-    
-    if (normalizedId === 'total' || normalizedId.includes('total')) 
-      normalizedId = 'total';
-    if (normalizedId.includes('empresa')) 
-      normalizedId = 'business';
-    if (normalizedId.includes('administración') || normalizedId.includes('pública')) 
-      normalizedId = 'government';
-    if (normalizedId.includes('enseñanza') || normalizedId.includes('superior')) 
-      normalizedId = 'education';
-    if (normalizedId.includes('privadas') || normalizedId.includes('ipsfl')) 
-      normalizedId = 'nonprofit';
-    
-    const sectorColor = PATENTS_SECTOR_COLORS[normalizedId as keyof typeof PATENTS_SECTOR_COLORS] || PATENTS_SECTOR_COLORS.total;
-    return d3.color(sectorColor)?.darker(0.8)?.toString() || '#333333';
-  };
+  // Determinar si hay datos para mostrar
+  const hasData = data.length > 0 && data.some(item => {
+    const yearKey = selectedYear.toString();
+    const yearValue = item[yearKey];
+    return yearValue && parseFloat(yearValue) > 0;
+  });
+  
+  // Estilos para el contenedor con scroll horizontal - Mejorados
+  const scrollContainerStyle: React.CSSProperties = {
+    height: '520px',
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    border: '1px solid #E5E7EB',
+    borderRadius: '12px',
+    padding: '15px 5px',
+    background: 'linear-gradient(135deg, #FAFBFC 0%, #F8FAFC 100%)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#CBD5E1 #F1F5F9',
+    msOverflowStyle: 'none',
+  } as React.CSSProperties;
 
-  const formatNumberComplete = (value: number, decimals: number = 0): string => {
-    const locale = language === 'es' ? 'es-ES' : 'en-US';
-    return new Intl.NumberFormat(locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(value);
-  };
+  // Si no hay datos, mostrar mensaje de no disponibilidad
+  if (!hasData) {
+    return (
+      <div className="flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm" style={{ height: '620px' }}>
+        <div className="text-center text-gray-500">
+          <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm font-medium">{t.noData}</p>
+        </div>
+      </div>
+    );
+  }
 
   const options: ChartOptions<'bar'> = {
     indexAxis: 'x' as const,
@@ -574,16 +661,22 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
     layout: {
       padding: {
-        top: 15,
-        right: 20,
-        bottom: 35,
-        left: 15
+        top: 20,
+        right: 25,
+        bottom: 40,
+        left: 20
       }
     },
     elements: {
       bar: {
-        borderWidth: 1,
-        borderRadius: 4
+        borderWidth: 0,
+        borderRadius: {
+          topLeft: 6,
+          topRight: 6,
+          bottomLeft: 0,
+          bottomRight: 0
+        },
+        borderSkipped: false
       }
     },
     scales: {
@@ -592,18 +685,19 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           display: false,
         },
         ticks: {
-          color: '#333',
+          color: CHART_PALETTE.TEXT,
           font: {
-            size: 12,
-            weight: 'normal',
+            size: 11,
+            weight: 'bold',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
           },
           autoSkip: false,
           maxRotation: 45,
-          minRotation: 45
+          minRotation: 45,
+          padding: 8
         },
         border: {
-          color: '#E5E7EB'
+          display: false
         }
       },
       y: {
@@ -658,10 +752,32 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           // Obtener información adicional de la región
           const regionInfo = autonomousCommunitiesMapping[regionCode];
           const flag = regionInfo?.flag || '🏴';
-          const mainCities = regionInfo?.mainCities || [];
+          const flagUrl = getAutonomousCommunityFlagUrl(regionCode);
+          const provincesFromDataset = chartItem.provinces || [];
           
-          // Obtener desglose por sectores
-          const sectorDetails = getRegionSectorDetails(regionCode, selectedYear);
+          // Calcular YoY (Year over Year) si hay año anterior disponible
+          let yoyChange = null;
+          let yoyPercentage = null;
+          const previousYear = selectedYear - 1;
+          if (previousYear >= 2010) {
+            // Calcular el valor del año anterior para esta comunidad autónoma
+            let previousYearValue = 0;
+            data.forEach(item => {
+              const provinceCode = item['Nuts Prov'];
+              const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
+              if (autonomousCommunityCode === regionCode) {
+                const prevYearValue = parseFloat(item[previousYear.toString()] || '0');
+                if (!isNaN(prevYearValue)) {
+                  previousYearValue += prevYearValue;
+                }
+              }
+            });
+            
+            if (previousYearValue > 0) {
+              yoyChange = value - previousYearValue;
+              yoyPercentage = ((yoyChange / previousYearValue) * 100);
+            }
+          }
           
           // Calcular el ranking
           let rank = null;
@@ -671,109 +787,118 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
             rank = position + 1;
           }
           
+          // Obtener valor de Canarias para comparación
+          const isCanariasRegion = regionCode === 'ES70';
+          const canariasValue = !isCanariasRegion ? getCanariasValue(selectedYear) : null;
+          
           // Construir el contenido del tooltip
           const tooltipContent = `
-            <div class="max-w-lg bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+            <div class="max-w-md bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con bandera y nombre de la región -->
-              <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
-                <span class="text-2xl mr-2">${flag}</span>
-                <h3 class="text-lg font-bold text-gray-800">${regionName}</h3>
+              <div class="flex items-center p-2 bg-blue-50 border-b border-blue-100">
+                ${flagUrl ? 
+                  `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                    <img src="${flagUrl}" class="w-full h-full object-cover" alt="${regionName}" />
+                  </div>` :
+                  `<span class="text-xl mr-2">${flag}</span>`
+                }
+                <h3 class="text-md font-bold text-gray-800">${regionName}</h3>
               </div>
               
               <!-- Contenido principal -->
-              <div class="p-4">
+              <div class="p-3">
                 <!-- Métrica principal -->
-                <div class="mb-3">
-                  <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span>${t.patents} (${selectedSector}):</span>
+                <div class="mb-2">
+                  <div class="flex items-center text-gray-500 text-xs mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>${t.patents}:</span>
                   </div>
                   <div class="flex items-center">
                     ${isConfidential ? 
-                      `<span class="text-lg font-bold text-gray-500">${t.confidential}</span>` :
-                      `<span class="text-xl font-bold text-orange-700">${formatNumberComplete(Math.round(value), 0)}</span>`
+                      `<span class="text-md font-bold text-gray-500">${t.confidential}</span>` :
+                      `<span class="text-lg font-bold text-blue-700">${formatNumberComplete(Math.round(value), 0)}</span>`
                     }
                   </div>
-                </div>
-                
-                <!-- Ranking (si está disponible y no es confidencial) -->
-                ${rank !== null && !isConfidential ? `
-                <div class="mb-3">
-                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                      <circle cx="12" cy="8" r="6" />
-                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                    </svg>
-                    <span class="font-medium">Posición </span>
-                    <span class="font-bold text-lg mx-1">${rank}</span>
-                    <span class="text-gray-600">${language === 'es' ? `de ${nonConfidentialItems.length}` : `of ${nonConfidentialItems.length}`}</span>
-                  </div>
-                </div>
-                ` : ''}
-
-                <!-- Desglose detallado por sectores (solo si no es confidencial y hay datos) -->
-                ${!isConfidential && Object.keys(sectorDetails).length > 1 ? `
-                <div class="mb-3">
-                  <div class="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                      <path d="M3 3v18h18"></path>
-                      <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
-                    </svg>
-                    ${language === 'es' ? 'Valores individuales por sector:' : 'Individual values by sector:'}
-                  </div>
-                  <div class="space-y-1 text-xs">
-                    ${Object.entries(sectorDetails)
-                      .filter(([sector]) => sector !== 'Total')
-                      .sort(([,a], [,b]) => b - a)
-                      .map(([sector, val]) => {
-                        const percentage = sectorDetails['Total'] > 0 ? ((val / sectorDetails['Total']) * 100).toFixed(1) : '0.0';
-                        const sectorColors: Record<string, string> = {
-                          'Enseñanza Superior': '#1E88E5',
-                          'Empresas': '#FF7043', 
-                          'Administración Pública': '#5E35B1',
-                          'IPSFL': '#8D6E63'
-                        };
-                        const color = sectorColors[sector] || '#666';
-                        return `
-                        <div class="flex justify-between items-center py-2 px-3 bg-white rounded border border-gray-200 shadow-sm">
-                          <div class="flex items-center">
-                            <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></div>
-                            <span class="text-gray-700 font-medium">${sector}</span>
-                          </div>
-                          <div class="text-right">
-                            <div class="font-bold text-gray-800">${formatNumberComplete(Math.round(val), 0)}</div>
-                            <div class="text-xs text-gray-500">${percentage}% del total</div>
-                          </div>
-                        </div>
-                      `}).join('')}
-                  </div>
-                  ${sectorDetails['Total'] ? `
-                  <div class="mt-2 pt-2 border-t border-gray-200">
-                    <div class="flex justify-between items-center text-sm font-bold">
-                      <span class="text-gray-700">Total:</span>
-                      <span class="text-gray-800">${formatNumberComplete(Math.round(sectorDetails['Total']), 0)}</span>
+                  ${yoyChange !== null && yoyPercentage !== null && !isConfidential ? `
+                  <div class="mt-1">
+                    <div class="inline-flex items-center px-2 py-1 rounded-full text-xs ${yoyChange >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                        <path d="${yoyChange >= 0 ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                      </svg>
+                      <span class="font-medium">
+                        YoY: ${yoyChange >= 0 ? '+' : ''}${formatNumberComplete(Math.round(yoyChange), 0)} 
+                        (${yoyPercentage >= 0 ? '+' : ''}${yoyPercentage.toFixed(1)}%)
+                      </span>
                     </div>
                   </div>
                   ` : ''}
                 </div>
+                
+                <!-- Ranking (si está disponible y no es confidencial) -->
+                ${rank !== null && !isConfidential ? `
+                <div class="mb-2">
+                  <div class="bg-yellow-50 p-1.5 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-1">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="text-sm">Posición </span>
+                    <span class="font-bold text-md mx-1">${rank}</span>
+                    <span class="text-gray-600 text-sm">${language === 'es' ? `de ${nonConfidentialItems.length}` : `of ${nonConfidentialItems.length}`}</span>
+                  </div>
+                </div>
                 ` : ''}
 
-                <!-- Principales ciudades/provincias incluidas -->
-                ${mainCities.length > 0 ? `
-                <div class="border-t border-gray-100 pt-3">
-                  <div class="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                <!-- Comparación con Canarias (si no es Canarias y hay datos) -->
+                ${canariasValue !== null && !isCanariasRegion && !isConfidential ? `
+                <div class="mb-2">
+                  <div class="bg-gray-50 p-2 rounded-md">
+                    <div class="text-xs text-gray-500 mb-1 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                        <path d="M8 3l4 8 5-5v7H3V6l5 5 4-8z"></path>
+                      </svg>
+                      ${language === 'es' ? 'vs Canarias:' : 'vs Canary Islands:'}
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                      <span class="text-gray-600">${language === 'es' ? 'Canarias' : 'Canary Islands'} (${formatNumberComplete(Math.round(canariasValue), 0)}):</span>
+                      <span class="font-medium ${value > canariasValue ? 'text-green-600' : value < canariasValue ? 'text-red-600' : 'text-gray-600'}">
+                        ${(() => {
+                          if (value === canariasValue) return '=';
+                          const difference = value - canariasValue;
+                          const percentDiff = ((difference / canariasValue) * 100).toFixed(1);
+                          return `${difference > 0 ? '+' : ''}${percentDiff}%`;
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                ` : ''}
+
+                <!-- Lista de provincias con valores individuales del dataset -->
+                ${provincesFromDataset.length > 0 ? `
+                <div class="mb-2">
+                  <div class="text-xs font-medium text-gray-700 mb-1 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
                     </svg>
-                    ${language === 'es' ? 'Principales ciudades/provincias incluidas:' : 'Main cities/provinces included:'}
+                    ${language === 'es' ? 'Provincias:' : 'Provinces:'}
                   </div>
-                  <div class="text-xs text-gray-600 leading-relaxed bg-gray-50 p-2 rounded">
-                    ${mainCities.slice(0, 8).map(city => `<span class="inline-block bg-white px-2 py-0.5 rounded mr-1 mb-1 border border-gray-200">${city}</span>`).join('')}
-                    ${mainCities.length > 8 ? `<span class="text-gray-400">+${mainCities.length - 8} más</span>` : ''}
-                  </div>
-                  <div class="text-xs text-gray-500 mt-1 italic">
-                    ${language === 'es' ? 'Nota: Los datos se agregan a nivel de comunidad autónoma' : 'Note: Data is aggregated at autonomous community level'}
+                  <div class="space-y-0.5 text-xs">
+                    ${provincesFromDataset
+                      .filter((province) => province.value > 0)
+                      .sort((a, b) => b.value - a.value)
+                      .map((province) => {
+                        const percentage = value > 0 ? ((province.value / value) * 100).toFixed(1) : '0.0';
+                        return `
+                        <div class="flex justify-between items-center py-1 px-2 bg-white rounded border border-gray-200">
+                          <div class="flex items-center">
+                            <div class="w-1 h-1 rounded-full mr-1.5 bg-blue-500"></div>
+                            <span class="text-gray-700 text-xs">${province.name}</span>
+                          </div>
+                          <span class="font-medium text-gray-800 text-xs">${formatNumberComplete(Math.round(province.value), 0)} (${percentage}%)</span>
+                        </div>
+                      `}).join('')}
                   </div>
                 </div>
                 ` : ''}
@@ -787,60 +912,22 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     }
   };
 
-  // Preparar datos para el gráfico
-  const chartData: ChartDataResult = prepareChartData();
-  
-  // Altura fija para el gráfico horizontal
-  const chartHeight = 520;
-
-  // Determinar si hay datos para mostrar
-  const hasData = data.filter(item => 
-    parseInt(item.TIME_PERIOD) === selectedYear &&
-    item.SECTOR_EJECUCION_CODE === sectorCode &&
-    item.SEXO === 'Total' &&
-    item.TERRITORIO_CODE !== 'ES'
-  ).length > 0;
-  
-  // Estilos para el contenedor con scroll horizontal
-  const scrollContainerStyle: React.CSSProperties = {
-    height: '520px',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    border: '1px solid #f0f0f0',
-    borderRadius: '8px',
-    padding: '10px 0',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#d1d5db #f3f4f6',
-    msOverflowStyle: 'none',
-  } as React.CSSProperties;
-
-  // Si no hay datos, mostrar mensaje de no disponibilidad
-  if (!hasData) {
-    return (
-      <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: '620px' }}>
-        <div className="text-center text-gray-500">
-          <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="mt-2">{t.noData}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative" style={{ height: '620px' }} ref={containerRef}>
-      <div className="mb-2 text-center">
-        <h3 className="text-sm font-semibold text-gray-800">
-          {t.title} · {selectedYear}
-        </h3>
-        <div className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-gray-800" 
-             style={{ backgroundColor: `${d3.color(getSectorTitleColor())?.copy({ opacity: 0.15 })}` }}>
-          {selectedSector}
+    <div className="relative bg-white rounded-xl shadow-sm border border-gray-100" style={{ height: '620px' }} ref={containerRef}>
+      {/* Título mejorado */}
+      <div className="mb-4 text-center pt-4">
+        <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 mr-2">
+            <path d="M3 3v18h18"/>
+            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+          </svg>
+          <h3 className="text-sm font-semibold text-gray-800">
+            {t.title} · <span className="text-blue-600">{selectedYear}</span>
+          </h3>
         </div>
       </div>
       
-      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
+      <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar mx-4">
         <div style={{ height: `${chartHeight}px`, width: `${Math.max(800, chartData.labels.length * 60)}px` }}>
           <Bar 
             ref={chartRef}
@@ -850,9 +937,16 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         </div>
       </div>
       
-      {/* Etiqueta del eje Y centrada */}
-      <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
-        {t.axisLabel}
+      {/* Etiqueta del eje Y mejorada */}
+      <div className="text-center mt-3 mb-3">
+        <div className="inline-flex items-center px-3 py-1 bg-gray-50 rounded-full border border-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 mr-1">
+            <path d="M12 20V10"/>
+            <path d="M18 20V4"/>
+            <path d="M6 20v-4"/>
+          </svg>
+          <span className="text-xs font-medium text-gray-600">{t.axisLabel}</span>
+        </div>
       </div>
     </div>
   );
