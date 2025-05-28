@@ -20,13 +20,27 @@ interface CountryFlag {
 // Aseguramos el tipo correcto para el array de flags
 const countryFlags = countryFlagsData as CountryFlag[];
 
-// Definir la interfaz para los datos de entrada (usando datos de investigadores)
-interface ResearchersData {
-  sectperf: string;  // Sector of performance
-  geo: string;       // Geopolitical entity (ISO code)
+// Definir la interfaz para los datos del nuevo CSV (patentes_europa.csv)
+interface PatentsData {
+  STRUCTURE: string;
+  STRUCTURE_ID: string;
+  STRUCTURE_NAME: string;
+  freq: string;
+  'Time frequency': string;
+  coop_ptn: string;
+  'Cooperation partners': string;
+  unit: string;
+  'Unit of measure': string;
+  geo: string;       // Código del país (AL, AT, BE, etc.)
+  'Geopolitical entity (reporting)': string;
   TIME_PERIOD: string; // Año
-  OBS_VALUE: string;   // Número de investigadores
-  OBS_FLAG?: string;   // Flag de observación
+  Time: string;
+  OBS_VALUE: string;   // Número de patentes
+  'Observation value': string;
+  OBS_FLAG?: string;   // Flag de observación (ej: 'p' para provisional)
+  'Observation status (Flag) V2 structure'?: string;
+  CONF_STATUS?: string;
+  'Confidentiality status (flag)'?: string;
   [key: string]: string | undefined;
 }
 
@@ -50,9 +64,8 @@ interface GeoJsonData {
 }
 
 interface PatentsEuropeanMapProps {
-  data: ResearchersData[];
+  data: PatentsData[];
   selectedYear: number;
-  selectedSector: string;
   language: 'es' | 'en';
   onClick?: (country: string) => void;
 }
@@ -108,15 +121,15 @@ function isSupranationalEntity(name: string | undefined): boolean {
 
 
 // Función para obtener el valor de la UE
-function getEUValue(data: ResearchersData[], year: number, sector: string): number | null {
+function getEUValue(data: PatentsData[], year: number): number | null {
   if (!data || data.length === 0) return null;
   
   const euData = data.filter(item => {
-    const isEU = item.geo === 'EU27_2020';
+    const isEU = item.geo === 'EU27_2020' || item.geo === 'EU';
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    const sectorMatch = item.sectperf === sector; // Ahora usamos directamente el código del sector
+    // Remover filtro estricto de coop_ptn para compatibilidad
     
-    return isEU && yearMatch && sectorMatch;
+    return isEU && yearMatch;
   });
   
   if (euData.length > 0 && euData[0].OBS_VALUE) {
@@ -127,15 +140,15 @@ function getEUValue(data: ResearchersData[], year: number, sector: string): numb
 }
 
 // Función para obtener el valor para España
-function getSpainValue(data: ResearchersData[], year: number, sector: string): number | null {
+function getSpainValue(data: PatentsData[], year: number): number | null {
   if (!data || data.length === 0) return null;
   
   const spainData = data.filter(item => {
     const isSpain = item.geo === 'ES';
     const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    const sectorMatch = item.sectperf === sector; // Ahora usamos directamente el código del sector
+    // Remover filtro estricto de coop_ptn para compatibilidad
     
-    return isSpain && yearMatch && sectorMatch;
+    return isSpain && yearMatch;
   });
   
   if (spainData.length > 0 && spainData[0].OBS_VALUE) {
@@ -145,12 +158,11 @@ function getSpainValue(data: ResearchersData[], year: number, sector: string): n
   return null;
 }
 
-// Función para obtener el valor del año anterior con mejor manejo del sector y búsqueda más exhaustiva
+// Función para obtener el valor del año anterior
 function getPreviousYearValue(
-  data: ResearchersData[],
+  data: PatentsData[],
   countryCode: string | undefined,
-  year: number,
-  sector: string
+  year: number
 ): number | null {
   if (!data || data.length === 0 || !countryCode || year <= 1) {
     console.log(`[Patents YoY Debug] Retornando null - Condiciones iniciales no cumplidas: data=${!!data}, countryCode=${countryCode}, year=${year}`);
@@ -158,9 +170,7 @@ function getPreviousYearValue(
   }
   
   const previousYear = year - 1;
-  console.log(`[Patents YoY Debug] Buscando datos para país=${countryCode}, año anterior=${previousYear}, sector=${sector}`);
-  
-  // Ahora usamos directamente el código del sector que viene ya normalizado
+  console.log(`[Patents YoY Debug] Buscando datos para país=${countryCode}, año anterior=${previousYear}`);
   
   // Crear un array de posibles códigos alternativos para el país
   const possibleCodes = [countryCode];
@@ -268,16 +278,14 @@ function getPreviousYearValue(
       // Comprobar si el código geo coincide
       const geoMatch = item.geo === code;
       const yearMatch = parseInt(item.TIME_PERIOD) === previousYear;
-      
-      // Usar directamente el código del sector
-      const sectorMatch = item.sectperf === sector;
+      // Remover filtro estricto de coop_ptn para compatibilidad
       
       // Depuración detallada para diagnóstico
       if (geoMatch) {
-        console.log(`[Patents YoY Debug] Encontrada coincidencia geo=${item.geo}, año=${item.TIME_PERIOD}, sector=${item.sectperf}, yearMatch=${yearMatch}, sectorMatch=${sectorMatch}`);
+        console.log(`[Patents YoY Debug] Encontrada coincidencia geo=${item.geo}, año=${item.TIME_PERIOD}, yearMatch=${yearMatch}`);
       }
       
-      return geoMatch && yearMatch && sectorMatch;
+      return geoMatch && yearMatch;
     });
     
     console.log(`[Patents YoY Debug] Resultados encontrados para código ${code}: ${prevYearData.length}`);
@@ -403,27 +411,54 @@ const countryCodeMapping: Record<string, {es: string, en: string}> = {
   'CH': {es: 'Suiza', en: 'Switzerland'},
   'IS': {es: 'Islandia', en: 'Iceland'},
   'TR': {es: 'Turquía', en: 'Turkey'},
+  // Países de los Balcanes y Europa del Este
+  'AL': {es: 'Albania', en: 'Albania'},
+  'BA': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
   'ME': {es: 'Montenegro', en: 'Montenegro'},
   'MK': {es: 'Macedonia del Norte', en: 'North Macedonia'},
-  'MKD': {es: 'Macedonia del Norte', en: 'North Macedonia'},
-  'AL': {es: 'Albania', en: 'Albania'},
   'RS': {es: 'Serbia', en: 'Serbia'},
-  'SRB': {es: 'Serbia', en: 'Serbia'},
-  'BA': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
-  'BIH': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
-  'MD': {es: 'Moldavia', en: 'Moldova'},
-  'MDA': {es: 'Moldavia', en: 'Moldova'},
-  'UA': {es: 'Ucrania', en: 'Ukraine'},
-  'UKR': {es: 'Ucrania', en: 'Ukraine'},
   'XK': {es: 'Kosovo', en: 'Kosovo'},
-  'XKX': {es: 'Kosovo', en: 'Kosovo'},
+  'MD': {es: 'Moldavia', en: 'Moldova'},
+  'UA': {es: 'Ucrania', en: 'Ukraine'},
+  'BY': {es: 'Bielorrusia', en: 'Belarus'},
   'RU': {es: 'Rusia', en: 'Russia'},
-  'RUS': {es: 'Rusia', en: 'Russia'},
-  'JP': {es: 'Japón', en: 'Japan'},
+  // Países nórdicos y otros
+  'FO': {es: 'Islas Feroe', en: 'Faroe Islands'},
+  'GL': {es: 'Groenlandia', en: 'Greenland'},
+  // Microstados europeos
+  'AD': {es: 'Andorra', en: 'Andorra'},
+  'LI': {es: 'Liechtenstein', en: 'Liechtenstein'},
+  'MC': {es: 'Mónaco', en: 'Monaco'},
+  'SM': {es: 'San Marino', en: 'San Marino'},
+  'VA': {es: 'Ciudad del Vaticano', en: 'Vatican City'},
+  // Otros países fuera de Europa que pueden aparecer
   'US': {es: 'Estados Unidos', en: 'United States'},
-  'CN_X_HK': {es: 'China (exc. Hong Kong)', en: 'China (exc. Hong Kong)'},
+  'CA': {es: 'Canadá', en: 'Canada'},
+  'JP': {es: 'Japón', en: 'Japan'},
   'KR': {es: 'Corea del Sur', en: 'South Korea'},
-  'MNE': {es: 'Montenegro', en: 'Montenegro'}
+  'CN': {es: 'China', en: 'China'},
+  'IN': {es: 'India', en: 'India'},
+  'AU': {es: 'Australia', en: 'Australia'},
+  'NZ': {es: 'Nueva Zelanda', en: 'New Zealand'},
+  'IL': {es: 'Israel', en: 'Israel'},
+  'SG': {es: 'Singapur', en: 'Singapore'},
+  'TW': {es: 'Taiwán', en: 'Taiwan'},
+  'HK': {es: 'Hong Kong', en: 'Hong Kong'},
+  'BR': {es: 'Brasil', en: 'Brazil'},
+  'MX': {es: 'México', en: 'Mexico'},
+  'AR': {es: 'Argentina', en: 'Argentina'},
+  'CL': {es: 'Chile', en: 'Chile'},
+  'ZA': {es: 'Sudáfrica', en: 'South Africa'},
+  // Códigos antiguos para compatibilidad
+  'MKD': {es: 'Macedonia del Norte', en: 'North Macedonia'},
+  'SRB': {es: 'Serbia', en: 'Serbia'},
+  'MNE': {es: 'Montenegro', en: 'Montenegro'},
+  'BIH': {es: 'Bosnia y Herzegovina', en: 'Bosnia and Herzegovina'},
+  'MDA': {es: 'Moldavia', en: 'Moldova'},
+  'UKR': {es: 'Ucrania', en: 'Ukraine'},
+  'XKX': {es: 'Kosovo', en: 'Kosovo'},
+  'RUS': {es: 'Rusia', en: 'Russia'},
+  'CN_X_HK': {es: 'China (exc. Hong Kong)', en: 'China (exc. Hong Kong)'}
 };
 
 
@@ -476,7 +511,6 @@ const mapTexts = {
 const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({ 
   data, 
   selectedYear, 
-  selectedSector, 
   language
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -491,30 +525,34 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     if (data && data.length > 0) {
       console.log("[Patents Map Data Debug] Estructura de datos total:", data.length, "registros");
       console.log("[Patents Map Data Debug] Ejemplo de estructura de datos:", data[0]);
+      console.log("[Patents Map Data Debug] Campos disponibles:", Object.keys(data[0]));
+      
+      // Verificar si tenemos coop_ptn o sectperf
+      const hasCoop = data.some(item => item.coop_ptn !== undefined);
+      const hasSectperf = data.some(item => item.sectperf !== undefined);
+      console.log("[Patents Map Data Debug] ¿Datos tienen coop_ptn?", hasCoop);
+      console.log("[Patents Map Data Debug] ¿Datos tienen sectperf?", hasSectperf);
+      
+      // Verificar años disponibles
       
       // Verificar años disponibles
       const availableYears = Array.from(new Set(data.map(item => item.TIME_PERIOD))).sort();
       console.log("[Patents Map Data Debug] Años disponibles:", availableYears);
       
-      // Verificar sectores disponibles
-      const availableSectors = Array.from(new Set(data.map(item => item.sectperf)));
-      console.log("[Patents Map Data Debug] Sectores disponibles:", availableSectors);
-      
       // Verificar países disponibles
       const availableCountries = Array.from(new Set(data.map(item => item.geo))).sort();
       console.log("[Patents Map Data Debug] Países disponibles:", availableCountries.slice(0, 10), "... (primeros 10)");
       
-      // Filtrar datos para el año y sector actuales
+      // Filtrar datos para el año actual
       const currentData = data.filter(item => 
-        parseInt(item.TIME_PERIOD) === selectedYear && 
-        item.sectperf === (selectedSector === 'TOTAL' ? 'TOTAL' : selectedSector)
+        parseInt(item.TIME_PERIOD) === selectedYear
       );
-      console.log("[Patents Map Data Debug] Datos para año actual", selectedYear, "y sector", selectedSector, ":", currentData.length, "registros");
+      console.log("[Patents Map Data Debug] Datos para año actual", selectedYear, ":", currentData.length, "registros");
       
       if (currentData.length > 0) {
         console.log("[Patents Map Data Debug] Ejemplos de datos actuales:", currentData.slice(0, 5));
       } else {
-        console.warn("[Patents Map Data Debug] ⚠️  NO HAY DATOS para el año", selectedYear, "y sector", selectedSector);
+        console.warn("[Patents Map Data Debug] ⚠️  NO HAY DATOS para el año", selectedYear);
         
         // Buscar cuál es el año más reciente disponible
         const allYears = Array.from(new Set(data.map(item => parseInt(item.TIME_PERIOD)))).sort((a, b) => b - a);
@@ -523,8 +561,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         if (allYears.length > 0) {
           const latestYear = allYears[0];
           const latestYearData = data.filter(item => 
-            parseInt(item.TIME_PERIOD) === latestYear && 
-            item.sectperf === (selectedSector === 'TOTAL' ? 'TOTAL' : selectedSector)
+            parseInt(item.TIME_PERIOD) === latestYear
           );
           console.log("[Patents Map Data Debug] Datos para el año más reciente", latestYear, ":", latestYearData.length, "registros");
         }
@@ -532,56 +569,21 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     } else {
       console.log("[Patents Map Data Debug] No hay datos disponibles");
     }
-  }, [data, selectedYear, selectedSector]);
+  }, [data, selectedYear]);
 
   // Obtener título del mapa
   const getMapTitle = (): string => {
     return t.researchersByCountry;
   };
   
-  // Obtener texto del sector
+  // Obtener texto del sector - Ahora siempre retorna "Total"
   const getSectorText = (): string => {
-    switch(selectedSector) {
-      case 'business':
-      case 'Business enterprise sector':
-      case 'BES':
-        return t.sector_business;
-      case 'government':
-      case 'Government sector':
-      case 'GOV':
-        return t.sector_government;
-      case 'education':
-      case 'Higher education sector':
-      case 'HES':
-        return t.sector_education;
-      case 'nonprofit':
-      case 'Private non-profit sector':
-      case 'PNP':
-        return t.sector_nonprofit;
-      default:
-        return t.sector_total;
-    }
+    return t.sector_total;
   };
   
-  // Obtener color del sector para el título
+  // Obtener color del sector para el título - Ahora siempre usa el color total
   const getSectorColor = (): string => {
-    let normalizedId = selectedSector.toLowerCase();
-    
-    // Mapear sectores a ids
-    if (normalizedId === 'all sectors' || normalizedId === 'all' || normalizedId === 'total' || normalizedId === 'TOTAL') 
-      normalizedId = 'total';
-    if (normalizedId === 'business enterprise sector' || normalizedId === 'bes') 
-      normalizedId = 'business';
-    if (normalizedId === 'government sector' || normalizedId === 'gov') 
-      normalizedId = 'government';
-    if (normalizedId === 'higher education sector' || normalizedId === 'hes') 
-      normalizedId = 'education';
-    if (normalizedId === 'private non-profit sector' || normalizedId === 'pnp') 
-      normalizedId = 'nonprofit';
-    
-    // Obtener color del sector usando los colores de patentes
-    const baseColor = PATENTS_SECTOR_COLORS[normalizedId as keyof typeof PATENTS_SECTOR_COLORS] || PATENTS_SECTOR_COLORS.total;
-    // Usar d3 para obtener una versión más oscura del color
+    const baseColor = PATENTS_SECTOR_COLORS.total;
     return d3.color(baseColor)?.darker(0.8)?.toString() || '#333333';
   };
 
@@ -747,32 +749,20 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     
     console.log(`[Patents Map Debug] Códigos a buscar para ${countryName}: ${possibleCodes.join(', ')}`);
     
-
-    
-    // Normalizar el sector seleccionado
-    let sectorCode = 'TOTAL';
-    if (selectedSector === 'BES' || selectedSector === 'business') sectorCode = 'BES';
-    else if (selectedSector === 'GOV' || selectedSector === 'government') sectorCode = 'GOV';
-    else if (selectedSector === 'HES' || selectedSector === 'education') sectorCode = 'HES';
-    else if (selectedSector === 'PNP' || selectedSector === 'nonprofit') sectorCode = 'PNP';
-    
-    console.log(`[Patents Map Debug] Sector normalizado: ${selectedSector} -> ${sectorCode}`);
-    
     // Buscar los datos para cualquiera de los posibles códigos
-    console.log(`[Patents Map Debug] Buscando datos para año: ${selectedYear}, sector: ${sectorCode}`);
+    console.log(`[Patents Map Debug] Buscando datos para año: ${selectedYear}`);
     
     const countryData = data.find(item => {
       const geoMatch = possibleCodes.some(code => item.geo === code);
       const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-      const sectorMatch = item.sectperf === sectorCode;
+      // Remover filtro estricto de coop_ptn para compatibilidad
       
       // Debug para matches encontrados
       if (geoMatch) {
-        console.log(`[Patents Map Debug] Match encontrado para ${item.geo}: yearMatch=${yearMatch}, sectorMatch=${sectorMatch}, TIME_PERIOD=${item.TIME_PERIOD}, sectperf=${item.sectperf}, OBS_VALUE=${item.OBS_VALUE}`);
-
+        console.log(`[Patents Map Debug] Match encontrado para ${item.geo}: yearMatch=${yearMatch}, TIME_PERIOD=${item.TIME_PERIOD}, OBS_VALUE=${item.OBS_VALUE}`);
       }
       
-      return geoMatch && yearMatch && sectorMatch;
+      return geoMatch && yearMatch;
     });
     
     if (countryData && countryData.OBS_VALUE) {
@@ -827,16 +817,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     console.log(`[Patents Map Debug] Cuartiles calculados: Q1=${q1}, Q2=${q2}, Q3=${q3}`);
     console.log(`[Patents Map Debug] Rango de valores: ${allValues[0]} - ${allValues[allValues.length - 1]}`);
     
-    // Obtener color base del sector
-    let normalizedId = selectedSector.toLowerCase();
-    if (normalizedId === 'total' || normalizedId === 'TOTAL') normalizedId = 'total';
-    if (normalizedId === 'bes' || normalizedId === 'business') normalizedId = 'business';
-    if (normalizedId === 'gov' || normalizedId === 'government') normalizedId = 'government';
-    if (normalizedId === 'hes' || normalizedId === 'education') normalizedId = 'education';
-    if (normalizedId === 'pnp' || normalizedId === 'nonprofit') normalizedId = 'nonprofit';
-    
-    const baseColor = PATENTS_SECTOR_COLORS[normalizedId as keyof typeof PATENTS_SECTOR_COLORS] || PATENTS_SECTOR_COLORS.total;
-    console.log(`[Patents Map Debug] Color base del sector ${normalizedId}: ${baseColor}`);
+    // Obtener color base del sector - Ahora siempre usa el color total
+    const baseColor = PATENTS_SECTOR_COLORS.total;
+    console.log(`[Patents Map Debug] Color base (total): ${baseColor}`);
     
     // Asignar colores basados en cuartiles
     let finalColor = '';
@@ -1127,15 +1110,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         
         const quartiles = [min, q1, q2, q3, max];
         
-        // Obtener color base del sector
-        let normalizedId = selectedSector.toLowerCase();
-        if (normalizedId === 'total' || normalizedId === 'TOTAL') normalizedId = 'total';
-        if (normalizedId === 'bes' || normalizedId === 'business') normalizedId = 'business';
-        if (normalizedId === 'gov' || normalizedId === 'government') normalizedId = 'government';
-        if (normalizedId === 'hes' || normalizedId === 'education') normalizedId = 'education';
-        if (normalizedId === 'pnp' || normalizedId === 'nonprofit') normalizedId = 'nonprofit';
-        
-        const baseColor = PATENTS_SECTOR_COLORS[normalizedId as keyof typeof PATENTS_SECTOR_COLORS] || PATENTS_SECTOR_COLORS.total;
+        // Obtener color base - Ahora siempre usa el color total
+        const baseColor = PATENTS_SECTOR_COLORS.total;
         
         // Crear colores para la leyenda
         const colors = [
@@ -1537,29 +1513,17 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         // Recopilar todos los valores basándose en los datos reales
         const countryValuesMap = new Map<string, number>();
         
-        // Mapear el sector seleccionado al código correcto
-        let sectorCode = 'TOTAL';
-        if (selectedSector === 'BES' || selectedSector === 'business' || selectedSector === 'Business enterprise sector') {
-          sectorCode = 'BES';
-        } else if (selectedSector === 'GOV' || selectedSector === 'government' || selectedSector === 'Government sector') {
-          sectorCode = 'GOV';
-        } else if (selectedSector === 'HES' || selectedSector === 'education' || selectedSector === 'Higher education sector') {
-          sectorCode = 'HES';
-        } else if (selectedSector === 'PNP' || selectedSector === 'nonprofit' || selectedSector === 'Private non-profit sector') {
-          sectorCode = 'PNP';
-        }
-        
-        console.log(`[Patents Tooltip Debug] Selected sector: ${selectedSector} -> Mapped to: ${sectorCode}`);
+        console.log(`[Patents Tooltip Debug] Usando datos de patentes sin sectores`);
         
         const countryDataForYear = data.filter(item => {
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-          const sectorMatch = item.sectperf === sectorCode;
+          // Remover filtro estricto de coop_ptn para compatibilidad
           const isEuropean = EUROPEAN_COUNTRY_CODES.includes(item.geo);
           
-          return yearMatch && sectorMatch && isEuropean;
+          return yearMatch && isEuropean;
         });
         
-        console.log(`[Patents Tooltip Debug] Countries found for year ${selectedYear} and sector ${sectorCode}:`, countryDataForYear.length);
+        console.log(`[Patents Tooltip Debug] Countries found for year ${selectedYear}:`, countryDataForYear.length);
         
         // Debug específico para verificar si Islandia está en los datos
         const icelandiaData = countryDataForYear.filter(item => 
@@ -1568,7 +1532,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         if (icelandiaData.length > 0) {
           console.log(`[Debug Islandia] Datos encontrados para Islandia:`, icelandiaData);
         } else {
-          console.log(`[Debug Islandia] NO se encontraron datos para Islandia en año ${selectedYear} y sector ${sectorCode}`);
+          console.log(`[Debug Islandia] NO se encontraron datos para Islandia en año ${selectedYear}`);
         }
         
         const tempCountryMap = new Map<string, {code: string, value: number, isSupranational: boolean}>();
@@ -1713,7 +1677,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             'XK': 'XKX',
             'BY': 'BLR',
             'LI': 'LIE',
-            'MC': 'MCO',
+            'MCO': 'MCO',
             'SM': 'SMR',
             'VA': 'VAT',
             'AD': 'AND'
@@ -1730,11 +1694,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           
           const geoMatch = possibleCodes.some(code => item.geo === code);
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
+          const isApplicant = item.coop_ptn === 'APPL'; // Solo datos de aplicantes
           
-          // Usar el mismo sectorCode que se calcula arriba para consistencia
-          const sectorMatch = item.sectperf === sectorCode;
-          
-          return geoMatch && yearMatch && sectorMatch;
+          return geoMatch && yearMatch && isApplicant;
         });
         
         // Buscar información adicional en los datos
@@ -1755,9 +1717,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         const isSpain = countryIso2 === 'ES' || countryIso3 === 'ESP';
         const isEU = countryIso2 === 'EU' || countryData?.geo === 'EU27_2020';
         
-        const euValue = !isEU ? getEUValue(data, selectedYear, sectorCode) : null;
+        const euValue = !isEU ? getEUValue(data, selectedYear) : null;
         const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
-        const spainValue = !isSpain ? getSpainValue(data, selectedYear, sectorCode) : null;
+        const spainValue = !isSpain ? getSpainValue(data, selectedYear) : null;
         
         console.log(`[Patents Tooltip Debug] isSpain:`, isSpain, `isEU:`, isEU);
         console.log(`[Patents Tooltip Debug] euValue:`, euValue, `euAverageValue:`, euAverageValue);
@@ -1769,16 +1731,16 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         if (value !== null) {
           // Intentar primero con códigos más específicos
           if (countryData?.geo) {
-            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear, sectorCode);
+            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear);
           }
           
           // Si no se encontró, intentar con ISO3 e ISO2
           if (previousYearValue === null && countryIso3) {
-            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear, sectorCode);
+            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear);
           }
           
           if (previousYearValue === null && countryIso2) {
-            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear, sectorCode);
+            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear);
           }
           
           // Búsqueda adicional en los datos directamente
@@ -2031,7 +1993,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     };
 
     renderMap();
-  }, [geoData, data, selectedYear, selectedSector, language]);
+  }, [geoData, data, selectedYear, language]);
 
 
 

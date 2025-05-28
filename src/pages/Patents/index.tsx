@@ -1,18 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import PatentsEuropeanMap from '../../components/PatentsEuropeanMap';
 import PatentsRankingChart from '../../components/PatentsRankingChart';
-import PatentsTimelineChart from '../../components/PatentsTimelineChart';
-import PatentsBySectorChart from '../../components/PatentsBySectorChart';
 import PatentsRegionalChart from '../../components/PatentsRegionalChart';
+import PatentsRegionalTimelineChart from '../../components/PatentsRegionalTimelineChart';
 import Papa from 'papaparse';
 
-// Definir la interfaz para los datos de patentes
+// Definir la interfaz para los datos de patentes (compatible con ambos datasets)
 interface PatentsData {
-  sectperf: string;  // Sector of performance
+  // Campos para datos de investigadores
+  sectperf?: string;  // Sector of performance (para investigadores)
+  
+  // Campos para datos de patentes
+  STRUCTURE?: string;
+  STRUCTURE_ID?: string;
+  STRUCTURE_NAME?: string;
+  freq?: string;
+  'Time frequency'?: string;
+  coop_ptn?: string;  // Cooperation partners (para patentes)
+  'Cooperation partners'?: string;
+  unit?: string;
+  'Unit of measure'?: string;
+  'Geopolitical entity (reporting)'?: string;
+  Time?: string;
+  'Observation value'?: string;
+  'Observation status (Flag) V2 structure'?: string;
+  CONF_STATUS?: string;
+  'Confidentiality status (flag)'?: string;
+  
+  // Campos comunes
   geo: string;       // Geopolitical entity (ISO code)
   TIME_PERIOD: string; // Año
-  OBS_VALUE: string;   // Número de patentes
+  OBS_VALUE: string;   // Número de datos
   OBS_FLAG?: string;   // Flag de observación
+  
+  // Otros campos opcionales que podrían ser necesarios
   [key: string]: string | undefined;
 }
 
@@ -46,63 +67,68 @@ interface PatentsProps {
 const Patents: React.FC<PatentsProps> = (props) => {
   const language = props.language || 'es';
   
-  // Estados para los datos y filtros
-  const [patentsData, setPatentsData] = useState<PatentsData[]>([]);
+  // Estados para los filtros
+  const [selectedYear, setSelectedYear] = useState<number>(2023);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number>(2022);
   
-  // Estados separados para cada sección
-  const [mapSector, setMapSector] = useState<string>('TOTAL');
-  const [timelineSector, setTimelineSector] = useState<string>('TOTAL');
-  const [sectorChartCountry, setSectorChartCountry] = useState<{name: string, localName: string, code: string} | null>(null);
-  
-  // Estados para la sección regional
+  // Estados para los datos
+  const [patentsData, setPatentsData] = useState<PatentsData[]>([]);
   const [regionalData, setRegionalData] = useState<RegionalData[]>([]);
+  
+  // Estados para datos regionales
   const [regionalYear, setRegionalYear] = useState<number>(2024);
   const [regionalAvailableYears, setRegionalAvailableYears] = useState<number[]>([]);
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Textos localizados
   const texts = {
     es: {
-      title: "Patentes",
-      subtitle: "Análisis de patentes por país y sector",
-      year: "Año:",
-      sector: "Sector:",
+      title: "Patentes por País y Región",
+      subtitle: "Análisis territorial del número de solicitudes de patentes presentadas",
+      year: "Año",
+      sector: "Sector",
       loading: "Cargando datos...",
       error: "Error al cargar los datos",
-      keyMetricsTitle: "Métricas clave",
-      euComparisonTitle: "Comparación entre la UE y países",
-      spanishRegionsTitle: "Comparación por comunidades autónomas de España",
-      geographicalDistribution: "Distribución geográfica de patentes",
-      timelineTitle: "Evolución temporal de patentes",
-      regionalDistribution: "Distribución regional de patentes",
+      
+      // Títulos de las secciones
+      keyMetricsTitle: "Indicadores Clave",
+      euComparisonTitle: "Comparación Europea", 
+      spanishRegionsTitle: "Distribución Regional en España",
+      
+      // Títulos de gráficas
+      geographicalDistribution: "Distribución geográfica",
+      chartTitle: "Evolución temporal de patentes",
+      
       // Sectores
-      allSectors: "Todos los sectores",
-      businessSector: "Sector empresarial",
+      totalSector: "Todos los sectores",
+      businessSector: "Sector empresarial", 
       governmentSector: "Administración Pública",
       educationSector: "Enseñanza Superior",
       nonprofitSector: "Instituciones Privadas sin Fines de Lucro"
     },
     en: {
-      title: "Patents",
-      subtitle: "Analysis of patents by country and sector",
-      year: "Year:",
-      sector: "Sector:",
+      title: "Patents by Country and Region", 
+      subtitle: "Territorial analysis of the number of patent applications filed",
+      year: "Year",
+      sector: "Sector", 
       loading: "Loading data...",
       error: "Error loading data",
-      keyMetricsTitle: "Key Metrics",
-      euComparisonTitle: "EU and Countries Comparison",
-      spanishRegionsTitle: "Spanish Autonomous Communities Comparison",
-      geographicalDistribution: "Geographical Distribution of Patents",
-      timelineTitle: "Patents Timeline Evolution",
-      regionalDistribution: "Regional Distribution of Patents",
-      // Sectores
-      allSectors: "All sectors",
+      
+      // Section titles
+      keyMetricsTitle: "Key Indicators",
+      euComparisonTitle: "European Comparison",
+      spanishRegionsTitle: "Regional Distribution in Spain",
+      
+      // Chart titles
+      geographicalDistribution: "Geographical distribution",
+      chartTitle: "Patents timeline evolution",
+      
+      // Sectors
+      totalSector: "All sectors",
       businessSector: "Business enterprise sector",
-      governmentSector: "Government sector",
+      governmentSector: "Government sector", 
       educationSector: "Higher education sector",
       nonprofitSector: "Private non-profit sector"
     }
@@ -115,7 +141,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
     const loadPatentsData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('./data/researchers/europa_researchers.csv');
+        const response = await fetch('./data/patents/patentes_europa.csv');
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
         }
@@ -196,87 +222,25 @@ const Patents: React.FC<PatentsProps> = (props) => {
     setSelectedYear(parseInt(e.target.value));
   };
 
-  const handleMapSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setMapSector(e.target.value);
-  };
-
-  const handleTimelineSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTimelineSector(e.target.value);
-  };
-
-  const handleSectorChartCountryChange = (country: {name: string, localName: string, code: string}) => {
-    setSectorChartCountry(country);
-  };
-
   // Handlers para la sección regional
   const handleRegionalYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRegionalYear(parseInt(e.target.value));
   };
 
-  // Función para obtener el nombre localizado del sector
-  const getSectorName = (sectorCode: string): string => {
-    switch (sectorCode) {
-      case 'TOTAL':
-        return t.allSectors;
-      case 'BES':
-        return t.businessSector;
-      case 'GOV':
-        return t.governmentSector;
-      case 'HES':
-        return t.educationSector;
-      case 'PNP':
-        return t.nonprofitSector;
-      default:
-        return sectorCode;
-    }
-  };
-
-  // Componente para títulos de sección
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
-      {title}
-    </h2>
+    <div className="flex items-center mb-6">
+      <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
+        {title}
+        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
+      </h2>
+    </div>
   );
 
-  // Componente para títulos de subsección
   const SubsectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
-      {title}
-    </h3>
+    <div className="flex items-center mb-4">
+      <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+    </div>
   );
-
-  // Componente para título de subsección con país destacado (para Distribución por sectores)
-  const SubsectionTitleWithCountry = ({ 
-    baseTitle, 
-    country, 
-    language 
-  }: { 
-    baseTitle: string; 
-    country: {name: string, localName: string, code: string} | null; 
-    language: 'es' | 'en';
-  }) => {
-    if (!country) {
-      return <SubsectionTitle title={baseTitle} />;
-    }
-    
-    return (
-      <div className="flex items-center mb-4 mt-8">
-        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
-        <h3 className="text-md font-semibold text-blue-700 flex items-center">
-          <span>{baseTitle}</span>
-          <span className="mx-3 text-blue-400">•</span>
-          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            <span className="text-sm font-medium text-blue-800">
-              {language === 'es' ? country.localName : country.name}
-            </span>
-          </div>
-        </h3>
-      </div>
-    );
-  };
-
-  // Sectores disponibles con códigos
-  const availableSectors = ['TOTAL', 'BES', 'GOV', 'HES', 'PNP'];
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 pt-3 pb-6 w-full min-h-[700px]">
@@ -371,21 +335,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
                         ))}
                       </select>
                     </div>
-                    
-                    <div className="flex items-center">
-                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                      <select 
-                        value={mapSector}
-                        onChange={handleMapSectorChange}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                      >
-                        {availableSectors.map(sectorCode => (
-                          <option key={sectorCode} value={sectorCode}>
-                            {getSectorName(sectorCode)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -397,7 +346,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
                   <PatentsEuropeanMap
                     data={patentsData}
                     selectedYear={selectedYear}
-                    selectedSector={mapSector}
                     language={language}
                   />
                 </div>
@@ -409,7 +357,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
                       <PatentsRankingChart
                         data={patentsData}
                         selectedYear={selectedYear}
-                        selectedSector={mapSector}
                         language={language}
                       />
                     </div>
@@ -425,7 +372,13 @@ const Patents: React.FC<PatentsProps> = (props) => {
                           <p>{error}</p>
                         </div>
                       ) : (
-                        <p className="text-gray-500">{language === 'es' ? 'Sin datos' : 'No data'}</p>
+                        <div className="bg-gray-50 p-8 rounded-lg text-center">
+                          <p className="text-gray-600">
+                            {language === 'es' ? 
+                              'Gráfico de ranking disponible en el mapa europeo' : 
+                              'Ranking chart available in the European map'}
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
@@ -437,7 +390,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 2.2: Evolución temporal */}
         <div className="mb-10">
-          <SubsectionTitle title={t.timelineTitle} />
+          <SubsectionTitle title={t.chartTitle} />
           
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
@@ -460,86 +413,10 @@ const Patents: React.FC<PatentsProps> = (props) => {
             </div>
           ) : (
             <div className="bg-white rounded-lg w-full">
-              {/* Filtros para la timeline */}
-              <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                <div className="flex items-center">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="16" 
-                    height="16" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="text-blue-500 mr-2"
-                  >
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                  </svg>
-                  <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                  <select 
-                    value={timelineSector}
-                    onChange={handleTimelineSectorChange}
-                    className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                  >
-                    {availableSectors.map(sectorCode => (
-                      <option key={sectorCode} value={sectorCode}>
-                        {getSectorName(sectorCode)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Sin gráfico temporal - componente eliminado */}
+              <div className="bg-gray-50 p-8 rounded-lg text-center">
+                <p className="text-gray-600">Gráfico temporal eliminado</p>
               </div>
-              
-              {/* Gráfico de evolución temporal */}
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-                <PatentsTimelineChart
-                  data={patentsData}
-                  language={language}
-                  selectedSector={timelineSector}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Subsección 2.3: Análisis por sectores */}
-        <div className="mb-8">
-          <SubsectionTitleWithCountry
-            baseTitle={language === 'es' ? "Distribución por sectores de investigación" : "Distribution by Research Sectors"}
-            country={sectorChartCountry}
-            language={language}
-          />
-          
-          {isLoading ? (
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
-              <div className="text-center text-gray-400">
-                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-lg">{t.loading}</p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
-              <div className="text-center text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-lg">{error}</p>
-              </div>
-            </div>
-          ) : (
-            /* Gráfico de distribución por sectores */
-            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-              <PatentsBySectorChart
-                data={patentsData}
-                language={language}
-                countryCode="ES"
-                onCountryChange={handleSectorChartCountryChange}
-              />
             </div>
           )}
         </div>
@@ -551,6 +428,42 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 3.1: Distribución regional */}
         <div className="mb-8">
+          {/* Warning sobre diferencias entre datasets */}
+          <div className="mb-4 text-sm bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <div className="flex items-start">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="text-yellow-600 mr-3 mt-0.5 flex-shrink-0"
+              >
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <path d="M12 9v4"/>
+                <path d="m12 17 .01 0"/>
+              </svg>
+              <div className="text-yellow-800">
+                <p className="font-medium mb-2">
+                  {language === 'es' 
+                    ? "Importante: Diferencias entre fuentes de datos"
+                    : "Important: Differences between data sources"
+                  }
+                </p>
+                <p className="text-xs leading-relaxed">
+                  {language === 'es' 
+                    ? "Los datos de esta sección pueden no coincidir exactamente con los datos de patentes europeos mostrados anteriormente. Aunque ambas fuentes son oficiales, utilizan metodologías y criterios de clasificación diferentes. Adicionalmente, los datos originales de esta sección provienen desagregados por provincias y han sido reagrupados por comunidades autónomas para facilitar el análisis territorial."
+                    : "The data in this section may not exactly match the European patent data shown above. Although both sources are official, they use different methodologies and classification criteria. Additionally, the original data in this section comes disaggregated by provinces and has been regrouped by autonomous communities to facilitate territorial analysis."
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Descripción del dataset */}
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p>
@@ -567,7 +480,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
             </p>
           </div>
 
-          <SubsectionTitle title={t.regionalDistribution} />
+          <SubsectionTitle title={t.geographicalDistribution} />
           
           {regionalData.length > 0 ? (
             <div className="bg-white rounded-lg w-full">
@@ -608,6 +521,18 @@ const Patents: React.FC<PatentsProps> = (props) => {
                   selectedYear={regionalYear}
                   language={language}
                 />
+              </div>
+
+              {/* Timeline de evolución regional */}
+              <div className="mt-8">
+                <SubsectionTitle title={language === 'es' ? "Evolución temporal por comunidades autónomas" : "Timeline Evolution by Autonomous Communities"} />
+                
+                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
+                  <PatentsRegionalTimelineChart
+                    data={regionalData}
+                    language={language}
+                  />
+                </div>
               </div>
             </div>
           ) : (
