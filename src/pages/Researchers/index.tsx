@@ -79,9 +79,9 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
   
   // Estado para el país seleccionado en la subsección "Timeline Evolution by Sectors"
   const [selectedSectorTimelineCountry, setSelectedSectorTimelineCountry] = useState<CountryOption>({
-    name: 'Bosnia and Herzegovina',
-    localName: 'Bosnia y Herzegovina',
-    code: 'BA',
+    name: 'Spain',
+    localName: 'España',
+    code: 'ES',
     flag: undefined
   });
   
