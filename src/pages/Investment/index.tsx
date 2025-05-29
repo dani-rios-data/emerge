@@ -388,6 +388,63 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     </h3>
   );
 
+  // Componente para título de subsección con sector (para mostrar el sector seleccionado)
+  const SubsectionTitleWithSector = ({ 
+    baseTitle, 
+    sector, 
+    language 
+  }: { 
+    baseTitle: string; 
+    sector: string; 
+    language: 'es' | 'en';
+  }) => {
+    return (
+      <div className="flex items-center mb-4 mt-8">
+        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
+        <h3 className="text-md font-semibold text-blue-700 flex items-center">
+          <span>{baseTitle}</span>
+          <span className="mx-3 text-blue-400">•</span>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <span className="text-sm font-medium text-blue-800">
+              {getSectorDisplayName(sector, language)}
+            </span>
+          </div>
+        </h3>
+      </div>
+    );
+  };
+
+  // Función para obtener el nombre del sector para mostrar
+  const getSectorDisplayName = (sector: string, language: 'es' | 'en'): string => {
+    // Primero buscar por ID en rdSectors
+    const sectorObj = rdSectors.find(s => s.id === sector);
+    if (sectorObj) {
+      return sectorObj.name[language];
+    }
+    
+    // Fallback para nombres completos o valores directos
+    switch(sector) {
+      case 'all':
+      case 'total':
+      case 'All Sectors':
+        return language === 'es' ? 'Todos los sectores' : 'All sectors';
+      case 'business':
+      case 'Business enterprise sector':
+        return language === 'es' ? 'Sector empresarial' : 'Business enterprise sector';
+      case 'government':
+      case 'Government sector':
+        return language === 'es' ? 'Administración Pública' : 'Government sector';
+      case 'education':
+      case 'Higher education sector':
+        return language === 'es' ? 'Enseñanza Superior' : 'Higher education sector';
+      case 'nonprofit':
+      case 'Private non-profit sector':
+        return language === 'es' ? 'Instituciones Privadas sin Fines de Lucro' : 'Private non-profit sector';
+      default:
+        return sector;
+    }
+  };
+
   // Función para obtener datos fijos para los indicadores clave, siempre del año más reciente y sector 'All Sectors'
   const getFixedKeyMetricsData = () => {
     if (europeData.length === 0 || availableYears.length === 0) {
@@ -896,9 +953,10 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Subsección 2.1: Mapa y ranking de inversión en I+D */}
             <div className="mb-10">
-              <SubsectionTitle title={language === 'es' ? 
-                `Distribución geográfica de la inversión` : 
-                `Geographical Distribution of Investment`} 
+              <SubsectionTitleWithSector 
+                baseTitle={language === 'es' ? "Distribución geográfica de la inversión" : "Geographical Distribution of Investment"} 
+                sector={selectedSector} 
+                language={language}
               />
               
               {/* Descripción del dataset */}
@@ -1051,7 +1109,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Subsección 2.2: Distribución sectorial de la inversión en I+D */}
             <div className="mb-10">
-              <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión" : "Sectoral Distribution of Investment"} />
+              <SubsectionTitleWithSector 
+                baseTitle={language === 'es' ? "Distribución sectorial de la inversión" : "Sectoral Distribution of Investment"} 
+                sector={selectedSector} 
+                language={language}
+              />
               
               {/* Componente SectorDistribution */}
               <SectorDistribution language={language} />
@@ -1059,7 +1121,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Sección de Tendencia histórica con RDComparisonChart */}
               {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
                 <>
-                  <SubsectionTitle title={language === 'es' ? "Evolución temporal de la inversión" : "Historical Investment Evolution"} />
+                  <SubsectionTitleWithSector 
+                    baseTitle={language === 'es' ? "Evolución temporal de la inversión" : "Historical Investment Evolution"} 
+                    sector={selectedSector} 
+                    language={language}
+                  />
                   
                   {/* Selector de sector encima de la gráfica */}
                   <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
@@ -1112,9 +1178,10 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
             <div className="mb-10">
-              <SubsectionTitle title={language === 'es' ? 
-                `Distribución regional de la inversión` : 
-                `Regional Distribution of Investment`} 
+              <SubsectionTitleWithSector 
+                baseTitle={language === 'es' ? "Distribución regional de la inversión" : "Regional Distribution of Investment"} 
+                sector={selectedRegionSector} 
+                language={language}
               />
               
               {/* Descripción del dataset */}
@@ -1252,7 +1319,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Nueva Subsección 3.2: Distribución sectorial de la inversión en I+D */}
             <div className="mb-10">
-              <SubsectionTitle title={language === 'es' ? "Análisis sectorial por comunidades" : "Sectoral Analysis by Communities"} />
+              <SubsectionTitleWithSector 
+                baseTitle={language === 'es' ? "Análisis sectorial por comunidades" : "Sectoral Analysis by Communities"} 
+                sector={selectedRegionSector} 
+                language={language}
+              />
               
               {/* Componente CommunityDistribution */}
               <CommunityDistribution language={language} />
@@ -1260,7 +1331,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Nuevo componente CommunityRDComparisonChart */}
               {europeData.length > 0 && autonomousCommunitiesData.length > 0 && (
                 <>
-                  <SubsectionTitle title={language === 'es' ? "Evolución temporal por comunidades" : "Historical Evolution by Communities"} />
+                  <SubsectionTitleWithSector 
+                    baseTitle={language === 'es' ? "Evolución temporal por comunidades" : "Historical Evolution by Communities"} 
+                    sector={selectedRegionSector} 
+                    language={language}
+                  />
                   
                   {/* Selector de sector estilo light-blue encima de la gráfica */}
                   <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
@@ -1307,7 +1382,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Nuevo componente SectorEvolutionChart para mostrar evolución por sectores */}
               {autonomousCommunitiesData.length > 0 && (
                 <>
-                  <SubsectionTitle title={language === 'es' ? "Evolución sectorial en comunidades" : "Sectoral Evolution in Communities"} />
+                  <SubsectionTitleWithSector 
+                    baseTitle={language === 'es' ? "Evolución sectorial en comunidades" : "Sectoral Evolution in Communities"} 
+                    sector={selectedRegionSector} 
+                    language={language}
+                  />
                   <SectorEvolutionChart 
                     language={language}
                     autonomousCommunitiesData={autonomousCommunitiesData}

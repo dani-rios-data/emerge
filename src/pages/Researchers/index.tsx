@@ -303,6 +303,50 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
     );
   };
 
+  // Componente para título de subsección con sector (para mostrar el sector seleccionado)
+  const SubsectionTitleWithSector = ({ 
+    baseTitle, 
+    sector, 
+    language 
+  }: { 
+    baseTitle: string; 
+    sector: string; 
+    language: 'es' | 'en';
+  }) => {
+    return (
+      <div className="flex items-center mb-4 mt-8">
+        <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
+        <h3 className="text-md font-semibold text-blue-700 flex items-center">
+          <span>{baseTitle}</span>
+          <span className="mx-3 text-blue-400">•</span>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <span className="text-sm font-medium text-blue-800">
+              {getSectorDisplayName(sector, language)}
+            </span>
+          </div>
+        </h3>
+      </div>
+    );
+  };
+
+  // Función para obtener el nombre del sector para mostrar
+  const getSectorDisplayName = (sector: string, language: 'es' | 'en'): string => {
+    switch(sector) {
+      case 'total':
+        return language === 'es' ? 'Todos los sectores' : 'All sectors';
+      case 'business':
+        return language === 'es' ? 'Sector empresarial' : 'Business enterprise sector';
+      case 'government':
+        return language === 'es' ? 'Administración Pública' : 'Government sector';
+      case 'education':
+        return language === 'es' ? 'Enseñanza Superior' : 'Higher education sector';
+      case 'nonprofit':
+        return language === 'es' ? 'Instituciones Privadas sin Fines de Lucro' : 'Private non-profit sector';
+      default:
+        return sector;
+    }
+  };
+
   // Textos localizados
   const texts = {
     es: {
@@ -457,7 +501,11 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
         
         {/* Nueva subsección: Evolución temporal */}
         <div className="mb-8">
-          <SubsectionTitle title={t.timelineTitle} />
+          <SubsectionTitleWithSector
+            baseTitle={t.timelineTitle}
+            sector={timelineSector}
+            language={language}
+          />
           
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
@@ -639,7 +687,11 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
         {/* Nueva subsección: Evolución por comunidades */}
         <div className="mb-8">
-          <SubsectionTitle title={language === 'es' ? "Evolución por comunidades autónomas" : "Evolution by Autonomous Communities"} />
+          <SubsectionTitleWithSector
+            baseTitle={language === 'es' ? "Evolución por comunidades autónomas" : "Evolution by Autonomous Communities"}
+            sector={communityTimelineSector}
+            language={language}
+          />
           
           {isCommunityLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
