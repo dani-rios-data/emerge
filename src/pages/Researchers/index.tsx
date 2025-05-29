@@ -69,14 +69,6 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
   const [communitySector, setCommunitySector] = useState<string>('total');
   const [communityTimelineSector, setCommunityTimelineSector] = useState<string>('total');
   
-  // Estado para el país seleccionado en la timeline de la primera subsección
-  const [selectedTimelineCountry, setSelectedTimelineCountry] = useState<CountryOption>({
-    name: 'Germany',
-    localName: 'Alemania',
-    code: 'DE',
-    flag: undefined
-  });
-  
   // Estado para el país seleccionado en la subsección "Timeline Evolution by Sectors"
   const [selectedSectorTimelineCountry, setSelectedSectorTimelineCountry] = useState<CountryOption>({
     name: 'Spain',
@@ -251,11 +243,6 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
 
   const handleCommunityTimelineSectorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCommunityTimelineSector(e.target.value);
-  };
-
-  // Manejador para el cambio de país en la timeline
-  const handleTimelineCountryChange = (country: CountryOption) => {
-    setSelectedTimelineCountry(country);
   };
 
   // Manejador para el cambio de país en la subsección "Timeline Evolution by Sectors"
@@ -552,7 +539,6 @@ const Researchers: React.FC<ResearchersProps> = (props) => {
                   data={researchersData}
                   language={language}
                   selectedSector={mapSectorToCode(timelineSector)}
-                  onCountryChange={handleTimelineCountryChange}
                 />
               </div>
             </div>
