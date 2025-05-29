@@ -8,7 +8,8 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
-  ChartEvent
+  ChartEvent,
+  ActiveElement
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import * as d3 from 'd3';
@@ -324,17 +325,22 @@ function getCountryFlagUrl(countryCode: string): string {
     return isNaN(value) ? null : value;
   };
 
-  const formatNumberComplete = (value: number, decimals: number = 0): string => {
-    const locale = language === 'es' ? 'es-ES' : 'en-US';
-    return new Intl.NumberFormat(locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(value);
+  // Función para obtener unidad de patentes
+  const getPatentsDisplayUnit = (patsDisplayType: PatentsDisplayType = 'number', language: 'es' | 'en' = 'es'): string => {
+    if (patsDisplayType === 'number') {
+      return language === 'es' ? 'patentes' : 'patents';
+    } else {
+      return language === 'es' ? 'por millón hab.' : 'per million inhab.';
+    }
   };
 
-  // Función para mostrar números exactamente como aparecen en el dataset
-  const formatNumberAsInDataset = (value: number): string => {
-    return Math.round(value).toString();
+  // Función para formatear números como en el dataset 
+  const formatPatentsValueAsInDataset = (value: number, patsDisplayType: PatentsDisplayType = 'number'): string => {
+    if (patsDisplayType === 'number') {
+      return Math.round(value).toString();
+    } else {
+      return value.toFixed(1);
+    }
   };
 
   const getLabelDescription = (label: string, language: 'es' | 'en'): string => {
@@ -345,6 +351,121 @@ function getCountryFlagUrl(countryCode: string): string {
     };
     
     return labelDescriptions[label]?.[language] || label;
+  };
+
+  // Función para obtener países competidores (idéntica al mapa)
+  const getCompetitorCountries = (countryCode: string, countryValuesMap: Map<string, number>): string => {
+    if (isSupranationalEntity(countryCode)) {
+      return '';
+    }
+    
+    const currentValue = countryValuesMap.get(countryCode);
+    if (currentValue === undefined) return '';
+    
+    // Crear array ordenado de países
+    const sortedValues: [string, number][] = [];
+    countryValuesMap.forEach((val, code) => {
+      const isSupranational = code === 'EU27_2020' || code === 'EA19' || code === 'EA20';
+      
+      if (!isSupranational) {
+        sortedValues.push([code, val]);
+      }
+    });
+    
+    sortedValues.sort((a, b) => b[1] - a[1]);
+    
+    const currentPosition = sortedValues.findIndex(([, val]) => val === currentValue);
+    
+    if (currentPosition === -1) return '';
+    
+    // Obtener competidores cercanos (1 por arriba y 1 por abajo)
+    const competitors: Array<{code: string, value: number, position: number, type: 'above' | 'below'}> = [];
+    
+    // País por arriba (mejor ranking)
+    if (currentPosition > 0) {
+      const [aboveCode, aboveValue] = sortedValues[currentPosition - 1];
+      competitors.push({
+        code: aboveCode, 
+        value: aboveValue, 
+        position: currentPosition, 
+        type: 'above'
+      });
+    }
+    
+    // País por abajo (peor ranking)
+    if (currentPosition < sortedValues.length - 1) {
+      const [belowCode, belowValue] = sortedValues[currentPosition + 1];
+      competitors.push({
+        code: belowCode, 
+        value: belowValue, 
+        position: currentPosition + 2, 
+        type: 'below'
+      });
+    }
+    
+    if (competitors.length === 0) return '';
+    
+    // Construir HTML para competidores
+    let competitorsHtml = `
+      <div class="space-y-1 border-t border-gray-100 pt-3 mt-3">
+        <div class="text-xs text-gray-500 mb-2 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+            <path d="M8 3l4 8 5-5v7H3V6l5 5 4-8z"></path>
+          </svg>
+          ${language === 'es' ? 'Comparación con el ranking' : 'Ranking comparison'}
+        </div>
+    `;
+    
+    competitors.forEach(competitor => {
+      const competitorName = getCountryNameFromCode(competitor.code, language);
+      const formattedValue = formatPatentsValueAsInDataset(Math.round(competitor.value), patsDisplayType);
+      const difference = Math.abs(currentValue - competitor.value);
+      const percentDiff = currentValue > 0 ? ((difference / currentValue) * 100).toFixed(1) : '0.0';
+      
+      const isAbove = competitor.type === 'above';
+      const arrowIcon = isAbove ? 
+        'M12 19V5M5 12l7-7 7 7' : // Flecha hacia arriba
+        'M12 5v14M5 12l7 7 7-7'; // Flecha hacia abajo
+      
+      // Calcular la posición real en el ranking
+      const competitorPosition = isAbove ? currentPosition : currentPosition + 2;
+      
+      // Textos explicativos según la posición
+      const positionLabel = isAbove ? 
+        (language === 'es' ? 'Lugar superior' : 'Position above') :
+        (language === 'es' ? 'Lugar inferior' : 'Position below');
+      
+      const gapText = isAbove ?
+        (language === 'es' ? `+${percentDiff}% más` : `+${percentDiff}% more`) :
+        (language === 'es' ? `${percentDiff}% menos` : `${percentDiff}% less`);
+      
+      competitorsHtml += `
+        <div class="bg-gray-50 p-2 rounded mb-1">
+          <div class="flex justify-between items-center text-xs">
+            <div class="flex items-center">
+              <div class="flex items-center mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 ${isAbove ? 'text-red-500' : 'text-green-500'}">
+                  <path d="${arrowIcon}"></path>
+                </svg>
+                <span class="text-xs text-gray-500">#${competitorPosition}</span>
+              </div>
+              <span class="font-medium text-gray-700">${competitorName}</span>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-gray-800">${formattedValue}</div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center mt-1">
+            <span class="text-xs text-gray-400">${positionLabel}</span>
+            <span class="text-xs font-medium ${isAbove ? 'text-red-600' : 'text-green-600'}">${gapText}</span>
+          </div>
+        </div>
+      `;
+    });
+    
+    competitorsHtml += '</div>';
+    
+    return competitorsHtml;
   };
 
   // Preparar datos del gráfico (igual que el mapa - solo datos APPL)
@@ -488,196 +609,366 @@ function getCountryFlagUrl(countryCode: string): string {
     };
   };
 
-  // Funciones para manejar el tooltip global (copiadas del mapa)
-  const createGlobalTooltip = (): HTMLElement => {
-    let tooltipElement = document.getElementById('patents-chart-tooltip');
-    
-    if (!tooltipElement) {
-      tooltipElement = document.createElement('div');
-      tooltipElement.id = 'patents-chart-tooltip';
-      tooltipElement.className = 'patents-tooltip';
-      
-      Object.assign(tooltipElement.style, {
-        position: 'fixed',
-        display: 'none',
-        opacity: '0',
-        zIndex: '999999',
-        pointerEvents: 'none',
-        backgroundColor: 'white',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-        borderRadius: '8px',
-        padding: '0',
-        minWidth: '150px',
-        maxWidth: '350px',
-        border: '1px solid #e2e8f0',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
-        fontSize: '14px',
-        lineHeight: '1.5',
-        color: '#333',
-        transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
-      });
-      
-      document.body.appendChild(tooltipElement);
-      
-      // Crear hoja de estilo inline
-      const styleSheet = document.createElement('style');
-      styleSheet.id = 'patents-tooltip-styles';
-      styleSheet.textContent = `
-        #patents-chart-tooltip {
-            transform-origin: top left;
-          transform: scale(0.95);
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-        #patents-chart-tooltip.visible {
-          opacity: 1 !important;
-          transform: scale(1);
-        }
-        #patents-chart-tooltip .text-green-600 { color: #059669; }
-        #patents-chart-tooltip .text-red-600 { color: #DC2626; }
-        #patents-chart-tooltip .text-orange-700 { color: #C2410C; }
-        #patents-chart-tooltip .bg-orange-50 { background-color: #FFF7ED; }
-        #patents-chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
-          #patents-chart-tooltip .bg-gray-50 { background-color: #F9FAFB; }
-        #patents-chart-tooltip .border-orange-100 { border-color: #FFEDD5; }
-        #patents-chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
-        #patents-chart-tooltip .text-gray-500 { color: #6B7280; }
-        #patents-chart-tooltip .text-gray-800 { color: #1F2937; }
-        #patents-chart-tooltip .text-gray-600 { color: #4B5563; }
-          #patents-chart-tooltip .text-gray-400 { color: #9CA3AF; }
-        #patents-chart-tooltip .text-yellow-500 { color: #F59E0B; }
-        #patents-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
-        #patents-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        #patents-chart-tooltip .p-3 { padding: 0.75rem; }
-        #patents-chart-tooltip .p-4 { padding: 1rem; }
-        #patents-chart-tooltip .p-2 { padding: 0.5rem; }
-          #patents-chart-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-          #patents-chart-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        #patents-chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
-        #patents-chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
-        #patents-chart-tooltip .mb-4 { margin-bottom: 1rem; }
-        #patents-chart-tooltip .mr-1 { margin-right: 0.25rem; }
-        #patents-chart-tooltip .mr-2 { margin-right: 0.5rem; }
-          #patents-chart-tooltip .ml-2 { margin-left: 0.5rem; }
-        #patents-chart-tooltip .mt-1 { margin-top: 0.25rem; }
-          #patents-chart-tooltip .mt-3 { margin-top: 0.75rem; }
-        #patents-chart-tooltip .text-xs { font-size: 0.75rem; }
-        #patents-chart-tooltip .text-sm { font-size: 0.875rem; }
-        #patents-chart-tooltip .text-lg { font-size: 1.125rem; }
-        #patents-chart-tooltip .text-xl { font-size: 1.25rem; }
-        #patents-chart-tooltip .font-bold { font-weight: 700; }
-        #patents-chart-tooltip .font-medium { font-weight: 500; }
-        #patents-chart-tooltip .flex { display: flex; }
-        #patents-chart-tooltip .items-center { align-items: center; }
-        #patents-chart-tooltip .justify-between { justify-content: space-between; }
-        #patents-chart-tooltip .w-8 { width: 2rem; }
-        #patents-chart-tooltip .h-6 { height: 1.5rem; }
-        #patents-chart-tooltip .w-44 { width: 11rem; }
-        #patents-chart-tooltip .rounded { border-radius: 0.25rem; }
-        #patents-chart-tooltip .overflow-hidden { overflow: hidden; }
-        #patents-chart-tooltip .border-t { border-top-width: 1px; }
-        #patents-chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
-          #patents-chart-tooltip .space-y-1 > * + * { margin-top: 0.25rem; }
-        #patents-chart-tooltip .max-w-xs { max-width: 20rem; }
-          #patents-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
-          #patents-chart-tooltip .relative { position: relative; }
-        #patents-chart-tooltip .inline-block { display: inline-block; }
-      `;
-      document.head.appendChild(styleSheet);
-    }
-    
-    return tooltipElement;
-  };
-
-  const positionGlobalTooltip = (event: MouseEvent, content: string): void => {
-    const tooltipEl = createGlobalTooltip();
-    tooltipEl.innerHTML = content;
-    
-    const tooltipWidth = tooltipEl.offsetWidth;
-    const tooltipHeight = tooltipEl.offsetHeight;
-    
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
-    
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    
-    let left = mouseX + 10;
-    let top = mouseY - (tooltipHeight / 2);
-    
-    if (left + tooltipWidth > windowWidth) {
-      left = mouseX - tooltipWidth - 10;
-    }
-    
-    if (top + tooltipHeight > windowHeight) {
-      top = windowHeight - tooltipHeight - 10;
-    }
-    
-    if (top < 10) {
-      top = 10;
-    }
-    
-    tooltipEl.style.left = `${Math.floor(left)}px`;
-    tooltipEl.style.top = `${Math.floor(top)}px`;
-    
-    setTimeout(() => {
-      tooltipEl.classList.add('visible');
-    }, 10);
-  };
-
-  const hideGlobalTooltip = (): void => {
-    const tooltipEl = document.getElementById('patents-chart-tooltip');
-    if (tooltipEl) {
-      tooltipEl.classList.remove('visible');
-      
-      setTimeout(() => {
-        if (tooltipEl) {
-          tooltipEl.style.display = 'none';
-          tooltipEl.style.opacity = '0';
-        }
-      }, 150);
-    }
-  };
-
+  // Añadir estilos CSS para el tooltip - haciendo exactamente los mismos que el mapa
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    // Crear un elemento de estilo
+    const styleElement = document.createElement('style');
+    styleElement.id = 'tooltip-patents-chart-styles';
     
-    const handleMouseLeave = () => {
-      hideGlobalTooltip();
-    };
+    // Definir estilos CSS para el tooltip usando el mismo formato que PatentsEuropeanMap
+    styleElement.textContent = `
+      .patents-chart-tooltip {
+        transform-origin: top left;
+        transform: scale(0.95);
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        opacity: 0;
+        z-index: 9999;
+        pointer-events: none;
+        position: fixed;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        border-radius: 8px;
+      }
+      .patents-chart-tooltip.visible {
+        opacity: 1 !important;
+        transform: scale(1);
+      }
+      .patents-chart-tooltip .text-green-600 { color: #059669; }
+      .patents-chart-tooltip .text-red-600 { color: #DC2626; }
+      .patents-chart-tooltip .text-orange-700 { color: #C2410C; }
+      .patents-chart-tooltip .bg-orange-50 { background-color: #FFF7ED; }
+      .patents-chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
+      .patents-chart-tooltip .bg-gray-50 { background-color: #F9FAFB; }
+      .patents-chart-tooltip .border-orange-100 { border-color: #FFEDD5; }
+      .patents-chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
+      .patents-chart-tooltip .text-gray-500 { color: #6B7280; }
+      .patents-chart-tooltip .text-gray-800 { color: #1F2937; }
+      .patents-chart-tooltip .text-gray-600 { color: #4B5563; }
+      .patents-chart-tooltip .text-gray-400 { color: #9CA3AF; }
+      .patents-chart-tooltip .text-yellow-500 { color: #F59E0B; }
+      .patents-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
+      .patents-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+      .patents-chart-tooltip .p-3 { padding: 0.75rem; }
+      .patents-chart-tooltip .p-4 { padding: 1rem; }
+      .patents-chart-tooltip .p-2 { padding: 0.5rem; }
+      .patents-chart-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+      .patents-chart-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      .patents-chart-tooltip .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+      .patents-chart-tooltip .py-0\\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+      .patents-chart-tooltip .pt-3 { padding-top: 0.75rem; }
+      .patents-chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
+      .patents-chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
+      .patents-chart-tooltip .mb-4 { margin-bottom: 1rem; }
+      .patents-chart-tooltip .mr-1 { margin-right: 0.25rem; }
+      .patents-chart-tooltip .mr-2 { margin-right: 0.5rem; }
+      .patents-chart-tooltip .ml-2 { margin-left: 0.5rem; }
+      .patents-chart-tooltip .mt-1 { margin-top: 0.25rem; }
+      .patents-chart-tooltip .mt-3 { margin-top: 0.75rem; }
+      .patents-chart-tooltip .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+      .patents-chart-tooltip .text-xs { font-size: 0.75rem; }
+      .patents-chart-tooltip .text-sm { font-size: 0.875rem; }
+      .patents-chart-tooltip .text-lg { font-size: 1.125rem; }
+      .patents-chart-tooltip .text-xl { font-size: 1.25rem; }
+      .patents-chart-tooltip .font-bold { font-weight: 700; }
+      .patents-chart-tooltip .font-medium { font-weight: 500; }
+      .patents-chart-tooltip .flex { display: flex; }
+      .patents-chart-tooltip .items-center { align-items: center; }
+      .patents-chart-tooltip .justify-between { justify-content: space-between; }
+      .patents-chart-tooltip .w-8 { width: 2rem; }
+      .patents-chart-tooltip .h-6 { height: 1.5rem; }
+      .patents-chart-tooltip .w-36 { width: 9rem; }
+      .patents-chart-tooltip .w-44 { width: 11rem; }
+      .patents-chart-tooltip .w-48 { width: 12rem; }
+      .patents-chart-tooltip .rounded { border-radius: 0.25rem; }
+      .patents-chart-tooltip .rounded-md { border-radius: 0.375rem; }
+      .patents-chart-tooltip .overflow-hidden { overflow: hidden; }
+      .patents-chart-tooltip .border-t { border-top-width: 1px; }
+      .patents-chart-tooltip .border-b { border-bottom-width: 1px; }
+      .patents-chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
+      .patents-chart-tooltip .space-y-1 > * + * { margin-top: 0.25rem; }
+      .patents-chart-tooltip .max-w-xs { max-width: 20rem; }
+      .patents-chart-tooltip .w-full { width: 100%; }
+      .patents-chart-tooltip .h-full { height: 100%; }
+      .patents-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+      .patents-chart-tooltip .relative { position: relative; }
+      .patents-chart-tooltip .inline-block { display: inline-block; }
+    `;
     
-    const handleScroll = () => {
-      hideGlobalTooltip();
-    };
+    // Añadir al head
+    document.head.appendChild(styleElement);
     
-    container.addEventListener('mouseleave', handleMouseLeave);
-    
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-    }
-
+    // Eliminar cuando se desmonte el componente
     return () => {
-      container.removeEventListener('mouseleave', handleMouseLeave);
-      
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-      }
-      
-      const globalTooltip = document.getElementById('patents-chart-tooltip');
-      if (globalTooltip && globalTooltip.parentNode) {
-        globalTooltip.parentNode.removeChild(globalTooltip);
-      }
-      
-      const tooltipStyles = document.getElementById('patents-tooltip-styles');
-      if (tooltipStyles && tooltipStyles.parentNode) {
-        tooltipStyles.parentNode.removeChild(tooltipStyles);
+      const existingStyle = document.getElementById('tooltip-patents-chart-styles');
+      if (existingStyle && existingStyle.parentNode) {
+        existingStyle.parentNode.removeChild(existingStyle);
       }
     };
   }, []);
 
+  // Referencias para el tooltip - exactamente como el mapa
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Funciones de posicionamiento del tooltip - exactamente como el mapa
+  const positionTooltip = (tooltip: d3.Selection<HTMLDivElement, unknown, null, undefined>, event: MouseEvent, tooltipNode: HTMLElement) => {
+    const tooltipRect = tooltipNode.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width || 300;
+    const tooltipHeight = tooltipRect.height || 200;
+    
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let left = event.clientX + 15;
+    let top = event.clientY - 15;
+    
+    if (left + tooltipWidth > windowWidth - 10) {
+      left = event.clientX - tooltipWidth - 15;
+    }
+    
+    if (top + tooltipHeight > windowHeight - 10) {
+      if (tooltipHeight < windowHeight - 20) {
+        top = windowHeight - tooltipHeight - 10;
+      } else {
+        top = 10;
+      }
+    }
+    
+    if (top < 10) top = 10;
+    if (left < 10) left = 10;
+    
+    tooltip
+      .style('left', `${left}px`)
+      .style('top', `${top}px`);
+  };
+
+  // Funciones de interacción con el mouse - exactamente como el mapa
+  const handleMouseOver = (event: ChartEvent, elements: ActiveElement[]) => {
+    if (elements.length === 0) return;
+    
+    const chartIndex = elements[0].index;
+    const chartItem = chartData.sortedItems[chartIndex];
+    if (!chartItem) return;
+    
+    const country = chartItem.code;
+    const value = chartItem.value;
+    const flagCode = chartItem.obsFlag;
+    
+    // Crear mapa de valores para el ranking y competidores (igual que el mapa)
+    const countryValuesMap = new Map<string, number>();
+    
+    chartData.sortedItems.forEach(item => {
+      countryValuesMap.set(item.code, item.value);
+    });
+    
+    // Calcular el ranking
+    let rank = null;
+    if (!chartItem.isSupranational) {
+      const allCountriesForRanking = new Map<string, number>();
+      
+      chartData.sortedItems.forEach(item => {
+        if (!item.isSupranational) {
+          allCountriesForRanking.set(item.code, item.value);
+        }
+      });
+      
+      const sortedCountries: [string, number][] = [];
+      allCountriesForRanking.forEach((val, code) => {
+        sortedCountries.push([code, val]);
+      });
+      
+      sortedCountries.sort((a, b) => b[1] - a[1]);
+      
+      const position = sortedCountries.findIndex(([code, ]) => code === chartItem.code);
+      if (position !== -1) {
+        rank = position + 1;
+        const total = sortedCountries.length;
+        rank = { rank: rank, total: total };
+      }
+    }
+    
+    const flagUrl = getCountryFlagUrl(country);
+    const countryName = getCountryNameFromCode(country, language);
+    
+    // Buscar datos del país en el dataset original (igual que el mapa)
+    const countryData = data.find(item => {
+      const geoMatch = item.geo === country;
+      const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
+      const targetCooperation = cooperationPartner || 'APPL';
+      const cooperationMatch = item.coop_ptn === targetCooperation;
+      const targetUnit = (patsDisplayType || 'number') === 'number' ? 'NR' : 'P_MHAB';
+      const unitMatch = item.unit === targetUnit;
+      
+      return geoMatch && yearMatch && cooperationMatch && unitMatch;
+    });
+    
+    // Preparar comparación YoY (igual que el mapa)
+    const previousYearValue = getPreviousYearValue(country, selectedYear);
+    let yoyComparisonHtml = '';
+    if (value !== null && previousYearValue !== null && previousYearValue !== 0) {
+      let adjustedPrevValue = previousYearValue;
+      if (country === 'EU27_2020') {
+        adjustedPrevValue = Math.round(previousYearValue / 27);
+      } else if (country === 'EA19') {
+        adjustedPrevValue = Math.round(previousYearValue / 19);
+      } else if (country === 'EA20') {
+        adjustedPrevValue = Math.round(previousYearValue / 20);
+      }
+      
+      const difference = value - adjustedPrevValue;
+      const percentDiff = (difference / adjustedPrevValue) * 100;
+      const formattedDiff = percentDiff.toFixed(1);
+      const isPositive = difference > 0;
+      
+      yoyComparisonHtml = `
+        <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+            <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+          </svg>
+          <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
+        </div>
+      `;
+    } else {
+      yoyComparisonHtml = `<div class="text-gray-400 flex items-center mt-1 text-xs">--</div>`;
+    }
+    
+    // Preparar comparaciones (igual que el mapa)
+    const isSpainCountry = country === 'ES';
+    const isEUEntity = country === 'EU27_2020';
+    
+    const euValue = !isEUEntity ? getEUValue(selectedYear) : null;
+    const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
+    const spainValue = !isSpainCountry ? getSpainValue(selectedYear) : null;
+
+    let comparisonsHtml = '';
+    
+    if (value !== null) {
+      if (!isEUEntity && euAverageValue !== null) {
+        const difference = value - euAverageValue;
+        const percentDiff = (difference / euAverageValue) * 100;
+        const formattedDiff = percentDiff.toFixed(1);
+        const isPositive = difference > 0;
+        
+        comparisonsHtml += `
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                `vs Media UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):` : 
+                `vs Avg UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):`}</span>
+            <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+          </div>
+        `;
+      }
+
+      if (!isSpainCountry && spainValue !== null) {
+        const difference = value - spainValue;
+        const percentDiff = (difference / spainValue) * 100;
+        const formattedDiff = percentDiff.toFixed(1);
+        const isPositive = difference > 0;
+        
+        comparisonsHtml += `
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                `vs España (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):` : 
+                `vs Spain (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):`}</span>
+            <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+          </div>
+        `;
+      }
+    }
+
+    // Obtener información de competencia (igual que el mapa)
+    const competitorsHtml = !isSupranationalEntity(country) && value !== null ? 
+      getCompetitorCountries(country, countryValuesMap) : '';
+
+    // Construir tooltip con la misma estructura que el mapa
+    const tooltipContent = `
+      <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+        <!-- Header con el nombre del país -->
+        <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
+          <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+            <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
+          </div>
+          <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div class="p-4">
+          <!-- Métrica principal -->
+          <div class="mb-3">
+            <div class="flex items-center text-gray-500 text-sm mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>${getPatentsDisplayUnit(patsDisplayType, language)}:</span>
+            </div>
+            <div class="flex items-center">
+              <span class="text-xl font-bold text-orange-700">${formatPatentsValueAsInDataset(value, patsDisplayType)}</span>
+              ${flagCode ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>` : ''}
+            </div>
+            ${yoyComparisonHtml}
+          </div>
+          
+          <!-- Ranking (si está disponible y no es entidad supranacional) -->
+          ${rank ? `
+          <div class="mb-4">
+            <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                <circle cx="12" cy="8" r="6" />
+                <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+              </svg>
+              <span class="font-medium">Rank </span>
+              <span class="font-bold text-lg mx-1">${rank.rank}</span>
+              <span class="text-gray-600">${language === 'es' ? `de ${rank.total}` : `of ${rank.total}`}</span>
+            </div>
+          </div>
+          ` : ''}
+          
+          <!-- Si hay comparaciones, mostrarlas -->
+          ${comparisonsHtml ? `
+          <div class="space-y-2 border-t border-gray-100 pt-3">
+            <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+            ${comparisonsHtml}
+          </div>
+          ` : ''}
+          
+          <!-- Competidores directos -->
+          ${competitorsHtml}
+        </div>
+        
+        <!-- Footer con información de la bandera de observación -->
+        ${countryData && countryData.OBS_FLAG && getLabelDescription(countryData.OBS_FLAG, language) ? `
+        <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+          <span>${countryData.OBS_FLAG} - ${getLabelDescription(countryData.OBS_FLAG, language)}</span>
+        </div>
+        ` : ''}
+      </div>
+    `;
+    
+    // Mostrar tooltip
+    const tooltip = d3.select(tooltipRef.current!);
+    tooltip
+      .style('display', 'block')
+      .html(tooltipContent)
+      .classed('visible', true);
+    
+    setTimeout(() => {
+      if (tooltipRef.current && event && 'native' in event) {
+        positionTooltip(tooltip, event.native as MouseEvent, tooltipRef.current);
+      }
+    }, 10);
+  };
+
+  const handleMouseOut = () => {
+    const tooltip = d3.select(tooltipRef.current!);
+    tooltip.classed('visible', false);
+    
+    setTimeout(() => {
+      if (!tooltip.classed('visible')) {
+        tooltip.style('display', 'none');
+      }
+    }, 150);
+  };
+
+  // Configuración del gráfico
   const options: ChartOptions<'bar'> = {
-    indexAxis: 'y' as const,
+    indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -685,7 +976,13 @@ function getCountryFlagUrl(countryCode: string): string {
       axis: 'y',
       intersect: true
     },
-    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+    onHover: (event: ChartEvent, elements: ActiveElement[]) => {
+      if (elements.length > 0) {
+        handleMouseOver(event, elements);
+      } else {
+        handleMouseOut();
+      }
+    },
     layout: {
       padding: {
         top: 15,
@@ -702,9 +999,9 @@ function getCountryFlagUrl(countryCode: string): string {
         grid: {
           display: false
         },
-                   ticks: {
+        ticks: {
           color: '#333',
-             font: {
+          font: {
             size: 12,
             weight: 'normal',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
@@ -721,273 +1018,7 @@ function getCountryFlagUrl(countryCode: string): string {
         display: false
       },
       tooltip: {
-        enabled: false,
-        external: function(context) {
-          // Tooltip Element
-          let tooltipEl = document.getElementById('chartjs-tooltip');
-
-          // Create element on first render
-          if (!tooltipEl) {
-            tooltipEl = document.createElement('div');
-            tooltipEl.id = 'chartjs-tooltip';
-            tooltipEl.innerHTML = '<table></table>';
-            document.body.appendChild(tooltipEl);
-          }
-
-          // Hide if no tooltip
-          const tooltipModel = context.tooltip;
-          if (tooltipModel.opacity === 0) {
-            tooltipEl.style.opacity = '0';
-            return;
-          }
-
-          // Set caret Position
-          tooltipEl.classList.remove('above', 'below', 'no-transform');
-          if (tooltipModel.yAlign) {
-            tooltipEl.classList.add(tooltipModel.yAlign);
-          } else {
-            tooltipEl.classList.add('no-transform');
-          }
-
-          // Set Text
-          if (tooltipModel.body) {
-            const dataIndex = tooltipModel.dataPoints[0]?.dataIndex;
-            
-            if (dataIndex !== undefined && chartData.sortedItems[dataIndex]) {
-              const item = chartData.sortedItems[dataIndex];
-              const countryName = getCountryNameFromCode(item.code, language);
-              const value = item.value;
-              const flagUrl = getCountryFlagUrl(item.code);
-              
-              const innerHtml = `
-                <div style="background: white; border: 1px solid #ccc; border-radius: 8px; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-family: Arial, sans-serif; max-width: 250px;">
-                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <img src="${flagUrl}" style="width: 24px; height: 18px; margin-right: 8px; border-radius: 2px;" alt="${countryName}" />
-                    <strong style="font-size: 16px; color: #333;">${countryName}</strong>
-                  </div>
-                  <div style="color: #666; margin-bottom: 4px;">
-                    <strong style="color: #c2410c;">${formatNumberAsInDataset(Math.round(value))}</strong> ${t.patents}
-                  </div>
-                  ${!item.isSupranational ? `
-                  <div style="font-size: 12px; color: #888;">
-                    Posición en ranking: <strong>${chartData.sortedItems.filter(i => !i.isSupranational).findIndex(i => i.code === item.code) + 1}</strong>
-                  </div>
-                  ` : ''}
-                </div>
-              `;
-              
-              const tableRoot = tooltipEl.querySelector('table');
-              if (tableRoot) {
-                tableRoot.innerHTML = innerHtml;
-              }
-            }
-          }
-
-          // `this` will be the overall tooltip
-          const position = context.chart.canvas.getBoundingClientRect();
-
-          // Display, position, and set styles for font
-          tooltipEl.style.opacity = '1';
-          tooltipEl.style.position = 'absolute';
-          tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
-          tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
-          tooltipEl.style.padding = '0';
-          tooltipEl.style.pointerEvents = 'none';
-          tooltipEl.style.zIndex = '9999';
-        }
-      }
-    },
-    onHover: (event: ChartEvent, elements: Array<unknown>) => {
-      const chartCanvas = event.native?.target as HTMLElement;
-      if (chartCanvas) {
-        chartCanvas.style.cursor = elements?.length ? 'pointer' : 'default';
-        
-        if (!elements?.length) {
-          hideGlobalTooltip();
-          return;
-        }
-
-        if (elements.length > 0 && event.native) {
-          const mouse = event.native as MouseEvent;
-          const chartIndex = (elements[0] as { index: number }).index;
-          
-          const chartItem = chartData.sortedItems[chartIndex];
-          if (!chartItem) {
-            return;
-          }
-
-          const country = chartItem.code;
-          const value = chartItem.value;
-          const flagCode = chartItem.obsFlag;
-          
-          // Calcular el ranking
-          let rank = null;
-          if (!chartItem.isSupranational) {
-            const allCountriesForRanking = new Map<string, number>();
-            
-            chartData.sortedItems.forEach(item => {
-              if (!item.isSupranational) {
-                allCountriesForRanking.set(item.code, item.value);
-              }
-            });
-            
-            const sortedCountries: [string, number][] = [];
-            allCountriesForRanking.forEach((val, code) => {
-              sortedCountries.push([code, val]);
-            });
-            
-            sortedCountries.sort((a, b) => b[1] - a[1]);
-            
-            const position = sortedCountries.findIndex(([code, ]) => code === chartItem.code);
-            if (position !== -1) {
-              rank = position + 1;
-            }
-          }
-          
-          const flagUrl = getCountryFlagUrl(country);
-          const countryName = getCountryNameFromCode(country, language);
-          
-          // Preparar comparación YoY
-          const previousYearValue = getPreviousYearValue(country, selectedYear);
-          let yoyComparisonHtml = '';
-          if (value !== null && previousYearValue !== null && previousYearValue !== 0) {
-            let adjustedPrevValue = previousYearValue;
-            if (country === 'EU27_2020') {
-              adjustedPrevValue = Math.round(previousYearValue / 27);
-            } else if (country === 'EA19') {
-              adjustedPrevValue = Math.round(previousYearValue / 19);
-            } else if (country === 'EA20') {
-              adjustedPrevValue = Math.round(previousYearValue / 20);
-            }
-            
-            const difference = value - adjustedPrevValue;
-            const percentDiff = (difference / adjustedPrevValue) * 100;
-            const formattedDiff = percentDiff.toFixed(1);
-            const isPositive = difference > 0;
-            
-            yoyComparisonHtml = `
-              <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                  <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-                </svg>
-                <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
-              </div>
-            `;
-          } else {
-            yoyComparisonHtml = `<div class="text-gray-400 flex items-center mt-1 text-xs">--</div>`;
-          }
-          
-          // Preparar comparaciones
-          const isSpainCountry = country === 'ES';
-          const isEUEntity = country === 'EU27_2020';
-          
-          const euValue = !isEUEntity ? getEUValue(selectedYear) : null;
-          const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
-          const spainValue = !isSpainCountry ? getSpainValue(selectedYear) : null;
-
-          let comparisonsHtml = '';
-          
-          if (value !== null) {
-            if (!isEUEntity && euAverageValue !== null) {
-              const difference = value - euAverageValue;
-              const percentDiff = (difference / euAverageValue) * 100;
-            const formattedDiff = percentDiff.toFixed(1);
-            const isPositive = difference > 0;
-            
-            comparisonsHtml += `
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs Media UE (${formatNumberAsInDataset(Math.round(euAverageValue))}):` : 
-                    `vs Avg UE (${formatNumberAsInDataset(Math.round(euAverageValue))}):`}</span>
-                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                  </div>
-                `;
-              }
-
-            if (!isSpainCountry && spainValue !== null) {
-              const difference = value - spainValue;
-              const percentDiff = (difference / spainValue) * 100;
-            const formattedDiff = percentDiff.toFixed(1);
-            const isPositive = difference > 0;
-            
-            comparisonsHtml += `
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                    `vs España (${formatNumberAsInDataset(Math.round(spainValue))}):` : 
-                    `vs Spain (${formatNumberAsInDataset(Math.round(spainValue))}):`}</span>
-                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                  </div>
-                `;
-            }
-              }
-
-          // Descripción de flag si existe
-          let flagDescription = '';
-          if (flagCode && getLabelDescription(flagCode, language)) {
-            flagDescription = getLabelDescription(flagCode, language);
-          }
-          
-          const tooltipContent = `
-            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-              <!-- Header con el nombre del país -->
-              <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
-                <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-                  <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
-                </div>
-                <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
-              </div>
-              
-              <!-- Contenido principal -->
-              <div class="p-4">
-                <!-- Métrica principal -->
-                <div class="mb-3">
-                  <div class="flex items-center text-gray-500 text-sm mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span>${t.patents}:</span>
-                  </div>
-                  <div class="flex items-center">
-                    <span class="text-xl font-bold text-orange-700">${formatNumberAsInDataset(Math.round(value))}</span>
-                    ${flagCode ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>` : ''}
-                  </div>
-                  ${yoyComparisonHtml}
-                </div>
-                
-                <!-- Ranking (si está disponible y no es entidad supranacional) -->
-                ${rank !== null ? `
-                <div class="mb-4">
-                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                      <circle cx="12" cy="8" r="6" />
-                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                    </svg>
-                    <span class="font-medium">Rank </span>
-                    <span class="font-bold text-lg mx-1">${rank}</span>
-                    <span class="text-gray-600">${language === 'es' ? `de ${chartData.sortedItems.filter(i => !i.isSupranational).length}` : `of ${chartData.sortedItems.filter(i => !i.isSupranational).length}`}</span>
-                  </div>
-                </div>
-                ` : ''}
-                
-                <!-- Si hay comparaciones, mostrarlas -->
-                ${comparisonsHtml ? `
-                <div class="space-y-2 border-t border-gray-100 pt-3">
-                  <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
-                  ${comparisonsHtml}
-                </div>
-                ` : ''}
-              </div>
-              
-              <!-- Footer con información de la bandera de observación -->
-              ${flagCode && flagDescription ? `
-              <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                <span>${flagCode} - ${flagDescription}</span>
-              </div>
-              ` : ''}
-            </div>
-          `;
-          
-          positionGlobalTooltip(mouse, tooltipContent);
-        }
+        enabled: false
       }
     }
   };
@@ -1015,6 +1046,40 @@ function getCountryFlagUrl(countryCode: string): string {
     scrollbarColor: '#d1d5db #f3f4f6',
     msOverflowStyle: 'none',
   } as React.CSSProperties;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const handleMouseLeave = () => {
+      handleMouseOut();
+    };
+    
+    const handleScroll = () => {
+      handleMouseOut();
+    };
+    
+    container.addEventListener('mouseleave', handleMouseLeave);
+    
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+      
+      // Limpiar tooltip al desmontar
+      const tooltip = d3.select(tooltipRef.current!);
+      if (tooltip) {
+        tooltip.style('display', 'none').classed('visible', false);
+      }
+    };
+  }, []);
 
   if (!hasData) {
   return (
@@ -1048,13 +1113,24 @@ function getCountryFlagUrl(countryCode: string): string {
             data={chartData}
             options={options}
           />
-            </div>
-          </div>
-          
-          {/* Etiqueta del eje X centrada */}
+        </div>
+      </div>
+      
+      {/* Tooltip personalizado - igual que el mapa */}
+      <div 
+        ref={tooltipRef}
+        className="patents-chart-tooltip"
+        style={{
+          display: 'none',
+          maxWidth: '350px',
+          transformOrigin: 'top left'
+        }}
+      />
+      
+      {/* Etiqueta del eje X centrada */}
       <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
-            {t.axisLabel}
-          </div>
+        {t.axisLabel}
+      </div>
     </div>
   );
 };
