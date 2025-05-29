@@ -6,8 +6,13 @@ import countryFlagsData from '../logos/country_flags.json';
 // Importar las funciones de mapeo de países
 import { getIso3FromCountryName, isSupranationalEntity as isSupranationalFromMapping } from '../utils/countryMapping';
 import { EUROPEAN_COUNTRY_CODES } from '../utils/europeanCountries';
+// Importar el tipo CooperationPartnerType
+import { CooperationPartnerType } from '../pages/Patents/index';
 
 // Versión simplificada del componente
+
+// Tipo para el modo de visualización de patentes
+export type PatentsDisplayType = 'number' | 'per_million_inhabitants';
 
 // Interfaz para los elementos del archivo country_flags.json
 interface CountryFlag {
@@ -68,6 +73,8 @@ interface PatentsEuropeanMapProps {
   selectedYear: number;
   language: 'es' | 'en';
   onClick?: (country: string) => void;
+  patsDisplayType?: PatentsDisplayType;
+  cooperationPartner?: CooperationPartnerType;
 }
 
 // URL del archivo GeoJSON de Europa
@@ -115,191 +122,89 @@ function getCountryIso3(feature: GeoJsonFeature): string {
 // Función para verificar si una entidad es UE o zona euro (no un país)
 function isSupranationalEntity(name: string | undefined): boolean {
   if (!name) return false;
+  
+  // Verificación directa por códigos conocidos de entidades supranacionales
+  const supranationalCodes = ['EU27_2020', 'EA19', 'EA20', 'EU', 'EA'];
+  if (supranationalCodes.includes(name)) {
+    return true;
+  }
+  
   return isSupranationalFromMapping(name);
 }
 
 
 
 // Función para obtener el valor de la UE
-function getEUValue(data: PatentsData[], year: number): number | null {
+function getEUValue(data: PatentsData[], year: number, patsDisplayType: PatentsDisplayType = 'number', cooperationPartner: CooperationPartnerType = 'APPL'): number | null {
   if (!data || data.length === 0) return null;
   
-  const euData = data.filter(item => {
-    const isEU = item.geo === 'EU27_2020' || item.geo === 'EU';
-    const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    // Remover filtro estricto de coop_ptn para compatibilidad
+  const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
+  
+  // Buscar datos de la UE/Europa
+  const euRecords = data.filter(record => {
+    const matchesYear = parseInt(record.TIME_PERIOD) === year;
+    const matchesAppl = record.coop_ptn === cooperationPartner;
+    const matchesUnit = record.unit === targetUnit;
+    const isEU = record.geo === 'EU27_2020' || record.geo === 'EU' || record.geo === 'EU28';
     
-    return isEU && yearMatch;
+    return matchesYear && matchesAppl && matchesUnit && isEU;
   });
   
-  if (euData.length > 0 && euData[0].OBS_VALUE) {
-    return parseFloat(euData[0].OBS_VALUE);
-  }
+  if (euRecords.length === 0) return null;
   
-  return null;
+  const value = parseFloat(euRecords[0].OBS_VALUE);
+  return isNaN(value) ? null : value;
 }
 
 // Función para obtener el valor para España
-function getSpainValue(data: PatentsData[], year: number): number | null {
+function getSpainValue(data: PatentsData[], year: number, patsDisplayType: PatentsDisplayType = 'number', cooperationPartner: CooperationPartnerType = 'APPL'): number | null {
   if (!data || data.length === 0) return null;
   
-  const spainData = data.filter(item => {
-    const isSpain = item.geo === 'ES';
-    const yearMatch = parseInt(item.TIME_PERIOD) === year;
-    // Remover filtro estricto de coop_ptn para compatibilidad
+  const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
+  
+  // Buscar datos de España
+  const spainRecords = data.filter(record => {
+    const matchesYear = parseInt(record.TIME_PERIOD) === year;
+    const matchesAppl = record.coop_ptn === cooperationPartner;
+    const matchesUnit = record.unit === targetUnit;
+    const isSpain = record.geo === 'ES';
     
-    return isSpain && yearMatch;
+    return matchesYear && matchesAppl && matchesUnit && isSpain;
   });
   
-  if (spainData.length > 0 && spainData[0].OBS_VALUE) {
-    return parseFloat(spainData[0].OBS_VALUE);
-  }
+  if (spainRecords.length === 0) return null;
   
-  return null;
+  const value = parseFloat(spainRecords[0].OBS_VALUE);
+  return isNaN(value) ? null : value;
 }
 
 // Función para obtener el valor del año anterior
 function getPreviousYearValue(
   data: PatentsData[],
   countryCode: string | undefined,
-  year: number
+  year: number,
+  patsDisplayType: PatentsDisplayType = 'number',
+  cooperationPartner: CooperationPartnerType = 'APPL'
 ): number | null {
-  if (!data || data.length === 0 || !countryCode || year <= 1) {
-    console.log(`[Patents YoY Debug] Retornando null - Condiciones iniciales no cumplidas: data=${!!data}, countryCode=${countryCode}, year=${year}`);
-    return null;
-  }
+  if (!data || data.length === 0 || !countryCode) return null;
   
+  const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
   const previousYear = year - 1;
-  console.log(`[Patents YoY Debug] Buscando datos para país=${countryCode}, año anterior=${previousYear}`);
   
-  // Crear un array de posibles códigos alternativos para el país
-  const possibleCodes = [countryCode];
-  
-  // Códigos ISO mapeados más comunes
-  const codeMapping: Record<string, string[]> = {
-    'GRC': ['EL', 'GR'],
-    'GBR': ['UK', 'GB'],
-    'DEU': ['DE'],
-    'FRA': ['FR'],
-    'ESP': ['ES'],
-    'ITA': ['IT'],
-    'CZE': ['CZ'],
-    'SWE': ['SE'],
-    'DNK': ['DK'],
-    'FIN': ['FI'],
-    'AUT': ['AT'],
-    'BEL': ['BE'],
-    'BGR': ['BG'],
-    'HRV': ['HR'],
-    'CYP': ['CY'],
-    'EST': ['EE'],
-    'HUN': ['HU'],
-    'IRL': ['IE'],
-    'LVA': ['LV'],
-    'LTU': ['LT'],
-    'LUX': ['LU'],
-    'MLT': ['MT'],
-    'NLD': ['NL'],
-    'POL': ['PL'],
-    'PRT': ['PT'],
-    'ROU': ['RO'],
-    'SVK': ['SK'],
-    'SVN': ['SI'],
-    'CHE': ['CH'],
-    'NOR': ['NO'],
-    'ISL': ['IS'],
-    'TUR': ['TR'],
-    'MKD': ['MK'],
-    'SRB': ['RS'],
-    'MNE': ['ME'],
-    'ALB': ['AL'],
-    'BIH': ['BA'],
-    'UKR': ['UA'],
-    'RUS': ['RU']
-  };
-
-  // Mapeo inverso - ISO2 a ISO3
-  const codeMapping2to3: Record<string, string> = {
-    'EL': 'GRC',
-    'UK': 'GBR',
-    'GB': 'GBR',
-    'DE': 'DEU',
-    'FR': 'FRA',
-    'ES': 'ESP',
-    'IT': 'ITA',
-    'CZ': 'CZE',
-    'SE': 'SWE',
-    'DK': 'DNK',
-    'FI': 'FIN',
-    'AT': 'AUT',
-    'BE': 'BEL',
-    'BG': 'BGR',
-    'HR': 'HRV',
-    'CY': 'CYP',
-    'EE': 'EST',
-    'HU': 'HUN',
-    'IE': 'IRL',
-    'LV': 'LVA',
-    'LT': 'LTU',
-    'LU': 'LUX',
-    'MT': 'MLT',
-    'NL': 'NLD',
-    'PL': 'POL',
-    'PT': 'PRT',
-    'RO': 'ROU',
-    'SK': 'SVK',
-    'SI': 'SVN',
-    'CH': 'CHE',
-    'NO': 'NOR',
-    'IS': 'ISL',
-    'TR': 'TUR',
-    'MK': 'MKD',
-    'RS': 'SRB',
-    'ME': 'MNE',
-    'AL': 'ALB',
-    'BA': 'BIH',
-    'UA': 'UKR',
-    'RU': 'RUS'
-  };
-  
-  // Añadir códigos alternativos del mapeo
-  if (countryCode.length === 3 && countryCode in codeMapping) {
-    possibleCodes.push(...codeMapping[countryCode]);
-  } else if (countryCode.length === 2 && countryCode in codeMapping2to3) {
-    possibleCodes.push(codeMapping2to3[countryCode]);
-  }
-  
-  console.log(`[Patents YoY Debug] Códigos de país a buscar: ${possibleCodes.join(', ')}`);
-  
-  // Buscar datos del año anterior utilizando todos los códigos alternativos
-  for (const code of possibleCodes) {
-    // Buscar los datos del país para el año anterior
-    const prevYearData = data.filter(item => {
-      // Comprobar si el código geo coincide
-      const geoMatch = item.geo === code;
-      const yearMatch = parseInt(item.TIME_PERIOD) === previousYear;
-      // Remover filtro estricto de coop_ptn para compatibilidad
-      
-      // Depuración detallada para diagnóstico
-      if (geoMatch) {
-        console.log(`[Patents YoY Debug] Encontrada coincidencia geo=${item.geo}, año=${item.TIME_PERIOD}, yearMatch=${yearMatch}`);
-      }
-      
-      return geoMatch && yearMatch;
-    });
+  // Buscar datos del año anterior
+  const previousYearRecords = data.filter(record => {
+    const matchesYear = parseInt(record.TIME_PERIOD) === previousYear;
+    const matchesAppl = record.coop_ptn === cooperationPartner;
+    const matchesUnit = record.unit === targetUnit;
+    const matchesCountry = record.geo === countryCode;
     
-    console.log(`[Patents YoY Debug] Resultados encontrados para código ${code}: ${prevYearData.length}`);
-    
-    // Usar el primer resultado que coincida
-    if (prevYearData.length > 0 && prevYearData[0].OBS_VALUE) {
-      const prevValue = parseFloat(prevYearData[0].OBS_VALUE);
-      console.log(`[Patents YoY Debug] Valor del año anterior encontrado: ${prevValue}`);
-      return prevValue;
-    }
-  }
+    return matchesYear && matchesAppl && matchesUnit && matchesCountry;
+  });
   
-  console.log('[Patents YoY Debug] No se encontró valor para el año anterior');
-  return null;
+  if (previousYearRecords.length === 0) return null;
+  
+  const value = parseFloat(previousYearRecords[0].OBS_VALUE);
+  return isNaN(value) ? null : value;
 }
 
 // Función para obtener la descripción de las etiquetas
@@ -367,12 +272,12 @@ function formatNumberWithThousandSeparator(value: number, decimals: number = 0, 
 }
 
 // Formatear números completos con separador de miles
-function formatNumberComplete(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
-  return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(value);
-}
+// function formatNumberComplete(value: number, decimals: number = 0, lang: 'es' | 'en' = 'es'): string {
+//   return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+//     minimumFractionDigits: decimals,
+//     maximumFractionDigits: decimals
+//   }).format(value);
+// }
 
 // Mapeo de códigos de país a nombres en español e inglés
 const countryCodeMapping: Record<string, {es: string, en: string}> = {
@@ -508,10 +413,29 @@ const mapTexts = {
 
 // Funciones auxiliares simplificadas (no utilizadas en esta versión básica)
 
+// Función para mostrar números exactamente como aparecen en el dataset
+function formatPatentsValueAsInDataset(value: number, patsDisplayType: PatentsDisplayType = 'number'): string {
+  if (patsDisplayType === 'number') {
+    return Math.round(value).toString();
+  } else {
+    return value.toFixed(1);
+  }
+}
+
+function getPatentsDisplayUnit(patsDisplayType: PatentsDisplayType = 'number', language: 'es' | 'en' = 'es'): string {
+  if (patsDisplayType === 'number') {
+    return language === 'es' ? 'patentes' : 'patents';
+  } else {
+    return language === 'es' ? 'por millón hab.' : 'per million inhab.';
+  }
+}
+
 const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({ 
   data, 
   selectedYear, 
-  language
+  language,
+  patsDisplayType,
+  cooperationPartner
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [geoData, setGeoData] = useState<GeoJsonData | null>(null);
@@ -614,24 +538,15 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
 
   // Función para obtener el valor de un país desde los datos
   const getCountryValue = (feature: GeoJsonFeature): number | null => {
-    if (!data || data.length === 0) {
-      console.log("[Patents Map Debug] No hay datos disponibles");
-      return null;
-    }
+    if (!data || data.length === 0) return null;
     
     // Obtener códigos del país desde el feature
     const props = feature.properties || {};
     const countryName = (props.NAME || props.NAME_EN || props.ADMIN || props.CNTRY_NAME || '') as string;
     
-    // Debug: Ver todas las propiedades disponibles
-    console.log(`[Patents Map Debug] Propiedades disponibles para ${countryName}:`, Object.keys(props));
-    console.log(`[Patents Map Debug] Todas las propiedades:`, props);
-    
     // Intentar múltiples formas de obtener ISO codes
     const iso3 = props.iso_a3 || props.ISO3 || props.ADM0_A3 || props.ISO_A3 || props.adm0_a3;
     const iso2 = props.iso_a2 || props.ISO2 || props.ISO_A2 || props.adm0_a2;
-    
-    console.log(`[Patents Map Debug] Procesando país: ${countryName}, ISO3: ${iso3}, ISO2: ${iso2}`);
     
     // Mapeo especial para códigos que no coinciden directamente
     const codeMapping: Record<string, string[]> = {
@@ -747,31 +662,23 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
       possibleCodes.push(...countryNameMapping[countryName]);
     }
     
-    console.log(`[Patents Map Debug] Códigos a buscar para ${countryName}: ${possibleCodes.join(', ')}`);
-    
     // Buscar los datos para cualquiera de los posibles códigos
-    console.log(`[Patents Map Debug] Buscando datos para año: ${selectedYear}`);
-    
     const countryData = data.find(item => {
       const geoMatch = possibleCodes.some(code => item.geo === code);
       const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-      // Remover filtro estricto de coop_ptn para compatibilidad
+      const targetCooperation = cooperationPartner || 'APPL';
+      const cooperationMatch = item.coop_ptn === targetCooperation;
+      const targetUnit = (patsDisplayType || 'number') === 'number' ? 'NR' : 'P_MHAB';
+      const unitMatch = item.unit === targetUnit;
       
-      // Debug para matches encontrados
-      if (geoMatch) {
-        console.log(`[Patents Map Debug] Match encontrado para ${item.geo}: yearMatch=${yearMatch}, TIME_PERIOD=${item.TIME_PERIOD}, OBS_VALUE=${item.OBS_VALUE}`);
-      }
-      
-      return geoMatch && yearMatch;
+      return geoMatch && yearMatch && cooperationMatch && unitMatch;
     });
     
     if (countryData && countryData.OBS_VALUE) {
       const value = parseFloat(countryData.OBS_VALUE);
-      console.log(`[Patents Map Debug] Valor encontrado para ${countryName}: ${value}`);
       return value;
     }
     
-    console.log(`[Patents Map Debug] No se encontraron datos para ${countryName}`);
     return null;
   };
 
@@ -1434,7 +1341,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         
         competitors.forEach(competitor => {
           const competitorName = getLocalizedCountryName(competitor.code);
-          const formattedValue = formatNumberComplete(Math.round(competitor.value), 0, language);
+          const formattedValue = formatPatentsValueAsInDataset(Math.round(competitor.value), patsDisplayType);
           const difference = Math.abs(currentValue - competitor.value);
           const percentDiff = currentValue > 0 ? ((difference / currentValue) * 100).toFixed(1) : '0.0';
           
@@ -1517,10 +1424,12 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         
         const countryDataForYear = data.filter(item => {
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-          // Remover filtro estricto de coop_ptn para compatibilidad
-          const isEuropean = EUROPEAN_COUNTRY_CODES.includes(item.geo);
+          const targetCooperation = cooperationPartner || 'APPL';
+          const cooperationMatch = item.coop_ptn === targetCooperation;
+          const targetUnit = (patsDisplayType || 'number') === 'number' ? 'NR' : 'P_MHAB';
+          const unitMatch = item.unit === targetUnit;
           
-          return yearMatch && isEuropean;
+          return yearMatch && cooperationMatch && unitMatch;
         });
         
         console.log(`[Patents Tooltip Debug] Countries found for year ${selectedYear}:`, countryDataForYear.length);
@@ -1694,9 +1603,12 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
           
           const geoMatch = possibleCodes.some(code => item.geo === code);
           const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-          const isApplicant = item.coop_ptn === 'APPL'; // Solo datos de aplicantes
+          const targetCooperation = cooperationPartner || 'APPL';
+          const cooperationMatch = item.coop_ptn === targetCooperation;
+          const targetUnit = (patsDisplayType || 'number') === 'number' ? 'NR' : 'P_MHAB';
+          const unitMatch = item.unit === targetUnit;
           
-          return geoMatch && yearMatch && isApplicant;
+          return geoMatch && yearMatch && cooperationMatch && unitMatch;
         });
         
         // Buscar información adicional en los datos
@@ -1717,9 +1629,9 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         const isSpain = countryIso2 === 'ES' || countryIso3 === 'ESP';
         const isEU = countryIso2 === 'EU' || countryData?.geo === 'EU27_2020';
         
-        const euValue = !isEU ? getEUValue(data, selectedYear) : null;
+        const euValue = !isEU ? getEUValue(data, selectedYear, patsDisplayType, cooperationPartner) : null;
         const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
-        const spainValue = !isSpain ? getSpainValue(data, selectedYear) : null;
+        const spainValue = !isSpain ? getSpainValue(data, selectedYear, patsDisplayType, cooperationPartner) : null;
         
         console.log(`[Patents Tooltip Debug] isSpain:`, isSpain, `isEU:`, isEU);
         console.log(`[Patents Tooltip Debug] euValue:`, euValue, `euAverageValue:`, euAverageValue);
@@ -1731,16 +1643,16 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         if (value !== null) {
           // Intentar primero con códigos más específicos
           if (countryData?.geo) {
-            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear);
+            previousYearValue = getPreviousYearValue(data, countryData.geo, selectedYear, patsDisplayType, cooperationPartner);
           }
           
           // Si no se encontró, intentar con ISO3 e ISO2
           if (previousYearValue === null && countryIso3) {
-            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear);
+            previousYearValue = getPreviousYearValue(data, countryIso3, selectedYear, patsDisplayType, cooperationPartner);
           }
           
           if (previousYearValue === null && countryIso2) {
-            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear);
+            previousYearValue = getPreviousYearValue(data, countryIso2, selectedYear, patsDisplayType, cooperationPartner);
           }
           
           // Búsqueda adicional en los datos directamente
@@ -1804,8 +1716,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs Media UE (${formatNumberComplete(Math.round(euAverageValue), 0, language)}):` : 
-                  `vs Avg UE (${formatNumberComplete(Math.round(euAverageValue), 0, language)}):`}</span>
+                  `vs Media UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):` : 
+                  `vs Avg UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1821,8 +1733,8 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
             comparisonsHtml += `
               <div class="flex justify-between items-center text-xs">
                 <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                  `vs España (${formatNumberComplete(Math.round(spainValue), 0, language)}):` : 
-                  `vs Spain (${formatNumberComplete(Math.round(spainValue), 0, language)}):`}</span>
+                  `vs España (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):` : 
+                  `vs Spain (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):`}</span>
                 <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
               </div>
             `;
@@ -1872,10 +1784,10 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
                 <div class="mb-3">
                   <div class="flex items-center text-gray-500 text-sm mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span>${t.researchers}:</span>
+                    <span>${getPatentsDisplayUnit(patsDisplayType, language)}:</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-orange-700">${formatNumberComplete(Math.round(safeValue), 0, language)}</span>
+                    <span class="text-xl font-bold text-orange-700">${formatPatentsValueAsInDataset(safeValue, patsDisplayType)}</span>
                     ${countryData && countryData.OBS_FLAG ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${countryData.OBS_FLAG}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
@@ -1993,7 +1905,7 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
     };
 
     renderMap();
-  }, [geoData, data, selectedYear, language]);
+  }, [geoData, data, selectedYear, language, patsDisplayType, cooperationPartner]);
 
 
 

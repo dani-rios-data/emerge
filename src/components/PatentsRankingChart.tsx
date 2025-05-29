@@ -1,6 +1,4 @@
 import React, { useRef, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
-import * as d3 from 'd3';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,9 +10,11 @@ import {
   ChartOptions,
   ChartEvent
 } from 'chart.js';
-import { EUROPEAN_COUNTRY_CODES } from '../utils/europeanCountries';
-// Importando datos de country_flags.json
+import { Bar } from 'react-chartjs-2';
+import * as d3 from 'd3';
 import countryFlagsData from '../logos/country_flags.json';
+import { EUROPEAN_COUNTRY_CODES } from '../utils/europeanCountries';
+import { CooperationPartnerType } from '../pages/Patents/index';
 
 // Registrar componentes necesarios de Chart.js
 ChartJS.register(
@@ -26,7 +26,10 @@ ChartJS.register(
   Legend
 );
 
-// Interfaz para los elementos del archivo country_flags.json
+// Tipo para el modo de visualización de patentes
+export type PatentsDisplayType = 'number' | 'per_million_inhabitants';
+
+// Interfaz para country_flags.json
 interface CountryFlag {
   country: string;
   code: string;
@@ -34,7 +37,7 @@ interface CountryFlag {
   flag: string;
 }
 
-// Aseguramos el tipo correcto para el array de flags
+// Asegurar el tipo correcto
 const countryFlags = countryFlagsData as CountryFlag[];
 
 // Interfaz para los datos de patentes_europa.csv
@@ -65,6 +68,8 @@ interface PatentsRankingChartProps {
   data: PatentsData[];
   selectedYear: number;
   language: 'es' | 'en';
+  patsDisplayType?: PatentsDisplayType;
+  cooperationPartner?: CooperationPartnerType;
 }
 
 // Interfaz para los elementos del gráfico
@@ -181,11 +186,23 @@ const countryCodeMapping: Record<string, {es: string, en: string}> = {
 const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({ 
   data, 
   selectedYear, 
-  language
+  language,
+  patsDisplayType,
+  cooperationPartner
 }) => {
   const chartRef = useRef(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Cleanup tooltip on unmount
+  useEffect(() => {
+    return () => {
+      const tooltip = document.getElementById('chartjs-tooltip');
+      if (tooltip) {
+        tooltip.remove();
+      }
+    };
+  }, []);
 
   // Textos traducidos
   const texts = {
@@ -219,127 +236,92 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
   };
 
   // Función para obtener la URL de la bandera del país (igual que el mapa)
-  function getCountryFlagUrl(countryCode: string): string {
-    if (countryCode === 'EL') {
-      return 'https://flagcdn.com/gr.svg';
-    }
-    
-    if (countryCode === 'UK') {
-      return 'https://flagcdn.com/gb.svg';
-    }
-    
-    if (countryCode === 'EU27_2020') {
-      return 'https://flagcdn.com/eu.svg';
-    }
-    
-    const foundFlag = countryFlags.find(flag => 
-      flag.code.toUpperCase() === countryCode.toUpperCase() ||
-      flag.iso3.toUpperCase() === countryCode.toUpperCase()
-    );
-    
-    if (foundFlag) {
-      return foundFlag.flag;
-    }
-    
-    const lowerCode = countryCode.toLowerCase();
-    const codeMapping: Record<string, string> = {
+function getCountryFlagUrl(countryCode: string): string {  
+  if (countryCode === 'EL') {
+    return 'https://flagcdn.com/gr.svg';
+  }
+  
+  if (countryCode === 'UK') {
+    return 'https://flagcdn.com/gb.svg';
+  }
+  
+  if (countryCode === 'EU27_2020') {
+    return 'https://flagcdn.com/eu.svg';
+  }
+  
+  const foundFlag = countryFlags.find(flag => 
+    flag.code.toUpperCase() === countryCode.toUpperCase() ||
+    flag.iso3.toUpperCase() === countryCode.toUpperCase()
+  );
+  
+  if (foundFlag) {
+    return foundFlag.flag;
+  }
+  
+  const lowerCode = countryCode.toLowerCase();
+  const codeMapping: Record<string, string> = {
       'el': 'gr',
       'uk': 'gb'
-    };
-    
-    const mappedCode = codeMapping[lowerCode] || lowerCode;
-    return `https://flagcdn.com/${mappedCode}.svg`;
-  }
+  };
+  
+  const mappedCode = codeMapping[lowerCode] || lowerCode;
+  return `https://flagcdn.com/${mappedCode}.svg`;
+}
 
-  // Funciones auxiliares del mapa
+  // Funciones auxiliares del mapa (con filtro de coop_ptn = 'APPL')
   const getEUValue = (year: number): number | null => {
-    const euData = data.filter(item => {
-      const isEU = item.geo === 'EU27_2020';
-      const yearMatch = parseInt(item.TIME_PERIOD) === year;
-      const isApplicant = item.coop_ptn === 'APPL';
+    if (!data || data.length === 0) return null;
+    
+    const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
+    const euRecords = data.filter(record => {
+      const matchesYear = parseInt(record.TIME_PERIOD) === year;
+      const matchesAppl = record.coop_ptn === (cooperationPartner || 'APPL');
+      const matchesUnit = record.unit === targetUnit;
+      const isEU = record.geo === 'EU27_2020' || record.geo === 'EU' || record.geo === 'EU28';
       
-      return isEU && yearMatch && isApplicant;
+      return matchesYear && matchesAppl && matchesUnit && isEU;
     });
     
-    if (euData.length > 0 && euData[0].OBS_VALUE) {
-      return parseFloat(euData[0].OBS_VALUE);
-    }
-    
-    return null;
+    if (euRecords.length === 0) return null;
+    const value = parseFloat(euRecords[0].OBS_VALUE);
+    return isNaN(value) ? null : value;
   };
 
   const getSpainValue = (year: number): number | null => {
-    const spainData = data.filter(item => {
-      const isSpain = item.geo === 'ES';
-      const yearMatch = parseInt(item.TIME_PERIOD) === year;
-      const isApplicant = item.coop_ptn === 'APPL';
+    if (!data || data.length === 0) return null;
+    
+    const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
+    const spainRecords = data.filter(record => {
+      const matchesYear = parseInt(record.TIME_PERIOD) === year;
+      const matchesAppl = record.coop_ptn === (cooperationPartner || 'APPL');
+      const matchesUnit = record.unit === targetUnit;
+      const isSpain = record.geo === 'ES';
       
-      return isSpain && yearMatch && isApplicant;
+      return matchesYear && matchesAppl && matchesUnit && isSpain;
     });
     
-    if (spainData.length > 0 && spainData[0].OBS_VALUE) {
-      return parseFloat(spainData[0].OBS_VALUE);
-    }
-    
-    return null;
+    if (spainRecords.length === 0) return null;
+    const value = parseFloat(spainRecords[0].OBS_VALUE);
+    return isNaN(value) ? null : value;
   };
 
   const getPreviousYearValue = (countryCode: string | undefined, year: number): number | null => {
-    if (!data || data.length === 0 || !countryCode || year <= 1) {
-      return null;
-    }
+    if (!data || data.length === 0 || !countryCode) return null;
     
+    const targetUnit = patsDisplayType === 'number' ? 'NR' : 'P_MHAB';
     const previousYear = year - 1;
-    const possibleCodes = [countryCode];
-    
-    // Códigos alternativos
-    const codeMapping: Record<string, string[]> = {
-      'GRC': ['EL', 'GR'],
-      'GBR': ['UK', 'GB'],
-      'DEU': ['DE'],
-      'FRA': ['FR'],
-      'ESP': ['ES'],
-      'ITA': ['IT'],
-      'CZE': ['CZ'],
-      'SWE': ['SE'],
-      'DNK': ['DK'],
-      'FIN': ['FI']
-    };
-
-    const codeMapping2to3: Record<string, string> = {
-      'EL': 'GRC',
-      'UK': 'GBR',
-      'DE': 'DEU',
-      'FR': 'FRA',
-      'ES': 'ESP',
-      'IT': 'ITA',
-      'CZ': 'CZE',
-      'SE': 'SWE',
-      'DK': 'DNK',
-      'FI': 'FIN'
-    };
-    
-    if (countryCode.length === 3 && countryCode in codeMapping) {
-      possibleCodes.push(...codeMapping[countryCode]);
-    } else if (countryCode.length === 2 && countryCode in codeMapping2to3) {
-      possibleCodes.push(codeMapping2to3[countryCode]);
-    }
-    
-    for (const code of possibleCodes) {
-      const prevYearData = data.filter(item => {
-        const geoMatch = item.geo === code;
-        const yearMatch = parseInt(item.TIME_PERIOD) === previousYear;
-        const isApplicant = item.coop_ptn === 'APPL';
-        
-        return geoMatch && yearMatch && isApplicant;
-      });
+    const previousYearRecords = data.filter(record => {
+      const matchesYear = parseInt(record.TIME_PERIOD) === previousYear;
+      const matchesAppl = record.coop_ptn === (cooperationPartner || 'APPL');
+      const matchesUnit = record.unit === targetUnit;
+      const matchesCountry = record.geo === countryCode;
       
-      if (prevYearData.length > 0 && prevYearData[0].OBS_VALUE) {
-        return parseFloat(prevYearData[0].OBS_VALUE);
-      }
-    }
+      return matchesYear && matchesAppl && matchesUnit && matchesCountry;
+    });
     
-    return null;
+    if (previousYearRecords.length === 0) return null;
+    const value = parseFloat(previousYearRecords[0].OBS_VALUE);
+    return isNaN(value) ? null : value;
   };
 
   const formatNumberComplete = (value: number, decimals: number = 0): string => {
@@ -348,6 +330,11 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
     }).format(value);
+  };
+
+  // Función para mostrar números exactamente como aparecen en el dataset
+  const formatNumberAsInDataset = (value: number): string => {
+    return Math.round(value).toString();
   };
 
   const getLabelDescription = (label: string, language: 'es' | 'en'): string => {
@@ -360,43 +347,97 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
     return labelDescriptions[label]?.[language] || label;
   };
 
-  // Preparar datos del gráfico (igual que el mapa)
+  // Preparar datos del gráfico (igual que el mapa - solo datos APPL)
   const prepareChartData = (): ChartDataResult => {
-    const countryDataForYear = data.filter(item => {
-      const yearMatch = parseInt(item.TIME_PERIOD) === selectedYear;
-      const isApplicant = item.coop_ptn === 'APPL';
-      const isEuropean = EUROPEAN_COUNTRY_CODES.includes(item.geo);
+    if (!data || data.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          label: '',
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 1,
+          borderRadius: 8,
+          barPercentage: 0.8,
+          categoryPercentage: 0.9,
+        }],
+        sortedItems: []
+      };
+    }
+
+    const targetUnit = (patsDisplayType || 'number') === 'number' ? 'NR' : 'P_MHAB';
+
+    console.log(`[Patents Ranking Debug] Filtrando datos por unidad: ${targetUnit}`);
+    console.log(`[Patents Ranking Debug] Total registros disponibles: ${data.length}`);
+
+    // Filtrar datos para el año seleccionado, solo aplicantes y unidad específica
+    const yearData = data.filter(record => {
+      const yearMatch = parseInt(record.TIME_PERIOD) === selectedYear;
+      const applMatch = record.coop_ptn === (cooperationPartner || 'APPL');
+      const unitMatch = record.unit === targetUnit;
+      const isEuropean = EUROPEAN_COUNTRY_CODES.includes(record.geo);
       
-      return yearMatch && isApplicant && (isEuropean || isSupranationalEntity(item.geo));
+      return yearMatch && applMatch && unitMatch && record.OBS_VALUE && 
+             (isEuropean || isSupranationalEntity(record.geo));
     });
+
+    console.log(`[Patents Ranking Debug] Registros después de filtros: ${yearData.length}`);
 
     const tempCountryMap = new Map<string, {code: string, value: number, isSupranational: boolean}>();
     
-    countryDataForYear.forEach(item => {
+    yearData.forEach(item => {
       const countryCode = item.geo;
       let value = parseFloat(item.OBS_VALUE || '0');
-      if (isNaN(value) || value === 0) return;
+      if (isNaN(value) || value === 0) {
+        console.log(`[Patents Ranking Debug] Valor inválido o cero para ${countryCode}: ${item.OBS_VALUE}`);
+        return;
+      }
       
+      console.log(`[Patents Ranking Debug] Procesando ${countryCode}: valor original=${value}`);
+      
+      // Aplicar la misma lógica de promedio que el mapa para entidades supranacionales
       if (countryCode === 'EU27_2020') {
         value = Math.round(value / 27);
+        console.log(`[Patents Ranking Debug] EU27_2020 promedio: ${value}`);
       } else if (countryCode === 'EA19') {
         value = Math.round(value / 19);
+        console.log(`[Patents Ranking Debug] EA19 promedio: ${value}`);
       } else if (countryCode === 'EA20') {
         value = Math.round(value / 20);
+        console.log(`[Patents Ranking Debug] EA20 promedio: ${value}`);
       }
       
       const isSupranational = countryCode === 'EU27_2020' || countryCode === 'EA19' || countryCode === 'EA20';
-      tempCountryMap.set(countryCode, {code: countryCode, value: value, isSupranational: isSupranational});
+      
+      // Si ya existe el país, mantener el valor más alto (por si hay duplicados)
+      if (tempCountryMap.has(countryCode)) {
+        const existing = tempCountryMap.get(countryCode)!;
+        if (value > existing.value) {
+          tempCountryMap.set(countryCode, {code: countryCode, value: value, isSupranational: isSupranational});
+          console.log(`[Patents Ranking Debug] Actualizando ${countryCode} con valor mayor: ${value}`);
+        }
+      } else {
+        tempCountryMap.set(countryCode, {code: countryCode, value: value, isSupranational: isSupranational});
+        console.log(`[Patents Ranking Debug] Agregando ${countryCode}: ${value}`);
+      }
     });
+
+    console.log(`[Patents Ranking Debug] Países únicos procesados: ${tempCountryMap.size}`);
+    console.log(`[Patents Ranking Debug] Países en el mapa:`, Array.from(tempCountryMap.keys()).sort());
 
     const sortedData = Array.from(tempCountryMap.values())
       .sort((a, b) => b.value - a.value);
 
+    console.log(`[Patents Ranking Debug] Top 10 países por valor:`, 
+      sortedData.slice(0, 10).map(item => `${item.code}: ${item.value}`));
+
     const chartItems: ChartDataItem[] = sortedData.map(item => {
+      // Buscar datos originales con filtro de coop_ptn='APPL' para obtener flags correctamente
       const originalData = data.find(dataItem => 
         dataItem.geo === item.code && 
         parseInt(dataItem.TIME_PERIOD) === selectedYear &&
-        dataItem.coop_ptn === 'APPL'
+        dataItem.coop_ptn === (cooperationPartner || 'APPL')
       );
       
       return {
@@ -424,6 +465,11 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
       
       if (item.isSpain) return CHART_PALETTE.HIGHLIGHT;
       return CHART_PALETTE.DEFAULT;
+    });
+
+    console.log(`[Patents Ranking Debug] Datos finales del gráfico:`, {
+      totalCountries: sortedItems.length,
+      topCountries: sortedItems.slice(0, 5).map(item => `${getCountryNameFromCode(item.code, language)}: ${item.value}`)
     });
 
     return {
@@ -478,9 +524,9 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
       styleSheet.id = 'patents-tooltip-styles';
       styleSheet.textContent = `
         #patents-chart-tooltip {
-          transform-origin: top left;
+            transform-origin: top left;
           transform: scale(0.95);
-          transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
         #patents-chart-tooltip.visible {
           opacity: 1 !important;
@@ -491,29 +537,29 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
         #patents-chart-tooltip .text-orange-700 { color: #C2410C; }
         #patents-chart-tooltip .bg-orange-50 { background-color: #FFF7ED; }
         #patents-chart-tooltip .bg-yellow-50 { background-color: #FFFBEB; }
-        #patents-chart-tooltip .bg-gray-50 { background-color: #F9FAFB; }
+          #patents-chart-tooltip .bg-gray-50 { background-color: #F9FAFB; }
         #patents-chart-tooltip .border-orange-100 { border-color: #FFEDD5; }
         #patents-chart-tooltip .border-gray-100 { border-color: #F3F4F6; }
         #patents-chart-tooltip .text-gray-500 { color: #6B7280; }
         #patents-chart-tooltip .text-gray-800 { color: #1F2937; }
         #patents-chart-tooltip .text-gray-600 { color: #4B5563; }
-        #patents-chart-tooltip .text-gray-400 { color: #9CA3AF; }
+          #patents-chart-tooltip .text-gray-400 { color: #9CA3AF; }
         #patents-chart-tooltip .text-yellow-500 { color: #F59E0B; }
         #patents-chart-tooltip .rounded-lg { border-radius: 0.5rem; }
         #patents-chart-tooltip .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         #patents-chart-tooltip .p-3 { padding: 0.75rem; }
         #patents-chart-tooltip .p-4 { padding: 1rem; }
         #patents-chart-tooltip .p-2 { padding: 0.5rem; }
-        #patents-chart-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        #patents-chart-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+          #patents-chart-tooltip .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+          #patents-chart-tooltip .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
         #patents-chart-tooltip .mb-3 { margin-bottom: 0.75rem; }
         #patents-chart-tooltip .mb-1 { margin-bottom: 0.25rem; }
         #patents-chart-tooltip .mb-4 { margin-bottom: 1rem; }
         #patents-chart-tooltip .mr-1 { margin-right: 0.25rem; }
         #patents-chart-tooltip .mr-2 { margin-right: 0.5rem; }
-        #patents-chart-tooltip .ml-2 { margin-left: 0.5rem; }
+          #patents-chart-tooltip .ml-2 { margin-left: 0.5rem; }
         #patents-chart-tooltip .mt-1 { margin-top: 0.25rem; }
-        #patents-chart-tooltip .mt-3 { margin-top: 0.75rem; }
+          #patents-chart-tooltip .mt-3 { margin-top: 0.75rem; }
         #patents-chart-tooltip .text-xs { font-size: 0.75rem; }
         #patents-chart-tooltip .text-sm { font-size: 0.875rem; }
         #patents-chart-tooltip .text-lg { font-size: 1.125rem; }
@@ -530,10 +576,10 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
         #patents-chart-tooltip .overflow-hidden { overflow: hidden; }
         #patents-chart-tooltip .border-t { border-top-width: 1px; }
         #patents-chart-tooltip .space-y-2 > * + * { margin-top: 0.5rem; }
-        #patents-chart-tooltip .space-y-1 > * + * { margin-top: 0.25rem; }
+          #patents-chart-tooltip .space-y-1 > * + * { margin-top: 0.25rem; }
         #patents-chart-tooltip .max-w-xs { max-width: 20rem; }
-        #patents-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
-        #patents-chart-tooltip .relative { position: relative; }
+          #patents-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
+          #patents-chart-tooltip .relative { position: relative; }
         #patents-chart-tooltip .inline-block { display: inline-block; }
       `;
       document.head.appendChild(styleSheet);
@@ -656,9 +702,9 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
         grid: {
           display: false
         },
-        ticks: {
+                   ticks: {
           color: '#333',
-          font: {
+             font: {
             size: 12,
             weight: 'normal',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
@@ -675,7 +721,80 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
         display: false
       },
       tooltip: {
-        enabled: false
+        enabled: false,
+        external: function(context) {
+          // Tooltip Element
+          let tooltipEl = document.getElementById('chartjs-tooltip');
+
+          // Create element on first render
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'chartjs-tooltip';
+            tooltipEl.innerHTML = '<table></table>';
+            document.body.appendChild(tooltipEl);
+          }
+
+          // Hide if no tooltip
+          const tooltipModel = context.tooltip;
+          if (tooltipModel.opacity === 0) {
+            tooltipEl.style.opacity = '0';
+            return;
+          }
+
+          // Set caret Position
+          tooltipEl.classList.remove('above', 'below', 'no-transform');
+          if (tooltipModel.yAlign) {
+            tooltipEl.classList.add(tooltipModel.yAlign);
+          } else {
+            tooltipEl.classList.add('no-transform');
+          }
+
+          // Set Text
+          if (tooltipModel.body) {
+            const dataIndex = tooltipModel.dataPoints[0]?.dataIndex;
+            
+            if (dataIndex !== undefined && chartData.sortedItems[dataIndex]) {
+              const item = chartData.sortedItems[dataIndex];
+              const countryName = getCountryNameFromCode(item.code, language);
+              const value = item.value;
+              const flagUrl = getCountryFlagUrl(item.code);
+              
+              const innerHtml = `
+                <div style="background: white; border: 1px solid #ccc; border-radius: 8px; padding: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-family: Arial, sans-serif; max-width: 250px;">
+                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <img src="${flagUrl}" style="width: 24px; height: 18px; margin-right: 8px; border-radius: 2px;" alt="${countryName}" />
+                    <strong style="font-size: 16px; color: #333;">${countryName}</strong>
+                  </div>
+                  <div style="color: #666; margin-bottom: 4px;">
+                    <strong style="color: #c2410c;">${formatNumberAsInDataset(Math.round(value))}</strong> ${t.patents}
+                  </div>
+                  ${!item.isSupranational ? `
+                  <div style="font-size: 12px; color: #888;">
+                    Posición en ranking: <strong>${chartData.sortedItems.filter(i => !i.isSupranational).findIndex(i => i.code === item.code) + 1}</strong>
+                  </div>
+                  ` : ''}
+                </div>
+              `;
+              
+              const tableRoot = tooltipEl.querySelector('table');
+              if (tableRoot) {
+                tableRoot.innerHTML = innerHtml;
+              }
+            }
+          }
+
+          // `this` will be the overall tooltip
+          const position = context.chart.canvas.getBoundingClientRect();
+
+          // Display, position, and set styles for font
+          tooltipEl.style.opacity = '1';
+          tooltipEl.style.position = 'absolute';
+          tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+          tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+          tooltipEl.style.padding = '0';
+          tooltipEl.style.pointerEvents = 'none';
+          tooltipEl.style.zIndex = '9999';
+        }
       }
     },
     onHover: (event: ChartEvent, elements: Array<unknown>) => {
@@ -772,35 +891,35 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
             if (!isEUEntity && euAverageValue !== null) {
               const difference = value - euAverageValue;
               const percentDiff = (difference / euAverageValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              
-              comparisonsHtml += `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                      `vs Media UE (${formatNumberComplete(Math.round(euAverageValue), 0)}):` : 
-                      `vs Avg UE (${formatNumberComplete(Math.round(euAverageValue), 0)}):`}</span>
-                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
-            }
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs Media UE (${formatNumberAsInDataset(Math.round(euAverageValue))}):` : 
+                    `vs Avg UE (${formatNumberAsInDataset(Math.round(euAverageValue))}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+              }
 
             if (!isSpainCountry && spainValue !== null) {
               const difference = value - spainValue;
               const percentDiff = (difference / spainValue) * 100;
-              const formattedDiff = percentDiff.toFixed(1);
-              const isPositive = difference > 0;
-              
-              comparisonsHtml += `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
-                      `vs España (${formatNumberComplete(Math.round(spainValue), 0)}):` : 
-                      `vs Spain (${formatNumberComplete(Math.round(spainValue), 0)}):`}</span>
-                  <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-                </div>
-              `;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+                    `vs España (${formatNumberAsInDataset(Math.round(spainValue))}):` : 
+                    `vs Spain (${formatNumberAsInDataset(Math.round(spainValue))}):`}</span>
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
             }
-          }
+              }
 
           // Descripción de flag si existe
           let flagDescription = '';
@@ -827,7 +946,7 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
                     <span>${t.patents}:</span>
                   </div>
                   <div class="flex items-center">
-                    <span class="text-xl font-bold text-orange-700">${formatNumberComplete(Math.round(value), 0)}</span>
+                    <span class="text-xl font-bold text-orange-700">${formatNumberAsInDataset(Math.round(value))}</span>
                     ${flagCode ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>` : ''}
                   </div>
                   ${yoyComparisonHtml}
@@ -879,12 +998,12 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
   // Altura dinámica para el gráfico en función del número de países
   const chartHeight = Math.max(600, chartData.labels.length * 35);
 
-  // Determinar si hay datos para mostrar
+  // Determinar si hay datos para mostrar (con filtro de coop_ptn = 'APPL')
   const hasData = data.filter(item => 
     parseInt(item.TIME_PERIOD) === selectedYear &&
-    item.coop_ptn === 'APPL'
+    item.coop_ptn === (cooperationPartner || 'APPL')
   ).length > 0;
-
+  
   // Estilos para el contenedor con scroll
   const scrollContainerStyle: React.CSSProperties = {
     height: '520px',
@@ -898,7 +1017,7 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
   } as React.CSSProperties;
 
   if (!hasData) {
-    return (
+  return (
       <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: '620px' }}>
         <div className="text-center text-gray-500">
           <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -929,13 +1048,13 @@ const PatentsRankingChart: React.FC<PatentsRankingChartProps> = ({
             data={chartData}
             options={options}
           />
-        </div>
-      </div>
-      
-      {/* Etiqueta del eje X centrada */}
+            </div>
+          </div>
+          
+          {/* Etiqueta del eje X centrada */}
       <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
-        {t.axisLabel}
-      </div>
+            {t.axisLabel}
+          </div>
     </div>
   );
 };

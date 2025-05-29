@@ -3,37 +3,33 @@ import PatentsEuropeanMap from '../../components/PatentsEuropeanMap';
 import PatentsRankingChart from '../../components/PatentsRankingChart';
 import PatentsRegionalChart from '../../components/PatentsRegionalChart';
 import PatentsRegionalTimelineChart from '../../components/PatentsRegionalTimelineChart';
+import { PatentsDataTypeSelector, PatentsDisplayType } from '../../components/DataTypeSelector';
 import Papa from 'papaparse';
 
-// Definir la interfaz para los datos de patentes (compatible con ambos datasets)
+// Definir tipo para cooperation partners
+export type CooperationPartnerType = 'APPL' | 'INVT';
+
+// Definir la interfaz para los datos de patentes
 interface PatentsData {
-  // Campos para datos de investigadores
-  sectperf?: string;  // Sector of performance (para investigadores)
-  
-  // Campos para datos de patentes
-  STRUCTURE?: string;
-  STRUCTURE_ID?: string;
-  STRUCTURE_NAME?: string;
-  freq?: string;
-  'Time frequency'?: string;
-  coop_ptn?: string;  // Cooperation partners (para patentes)
-  'Cooperation partners'?: string;
-  unit?: string;
-  'Unit of measure'?: string;
-  'Geopolitical entity (reporting)'?: string;
-  Time?: string;
-  'Observation value'?: string;
+  STRUCTURE: string;
+  STRUCTURE_ID: string;
+  STRUCTURE_NAME: string;
+  freq: string;
+  'Time frequency': string;
+  coop_ptn: string;
+  'Cooperation partners': string;
+  unit: string;
+  'Unit of measure': string;
+  geo: string;
+  'Geopolitical entity (reporting)': string;
+  TIME_PERIOD: string;
+  Time: string;
+  OBS_VALUE: string;
+  'Observation value': string;
+  OBS_FLAG?: string;
   'Observation status (Flag) V2 structure'?: string;
   CONF_STATUS?: string;
   'Confidentiality status (flag)'?: string;
-  
-  // Campos comunes
-  geo: string;       // Geopolitical entity (ISO code)
-  TIME_PERIOD: string; // Año
-  OBS_VALUE: string;   // Número de datos
-  OBS_FLAG?: string;   // Flag de observación
-  
-  // Otros campos opcionales que podrían ser necesarios
   [key: string]: string | undefined;
 }
 
@@ -70,6 +66,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Estados para los filtros
   const [selectedYear, setSelectedYear] = useState<number>(2023);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [patsDisplayType, setPatsDisplayType] = useState<PatentsDisplayType>('number');
+  const [cooperationPartner, setCooperationPartner] = useState<CooperationPartnerType>('APPL');
   
   // Estados para los datos
   const [patentsData, setPatentsData] = useState<PatentsData[]>([]);
@@ -78,7 +76,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Estados para datos regionales
   const [regionalYear, setRegionalYear] = useState<number>(2024);
   const [regionalAvailableYears, setRegionalAvailableYears] = useState<number[]>([]);
-
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +87,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
       subtitle: "Análisis territorial del número de solicitudes de patentes presentadas",
       year: "Año",
       sector: "Sector",
+      cooperationPartner: "Tipo de colaboración",
+      applicant: "Solicitante",
+      inventor: "Inventor",
       loading: "Cargando datos...",
       error: "Error al cargar los datos",
       
@@ -103,7 +104,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
       
       // Sectores
       totalSector: "Todos los sectores",
-      businessSector: "Sector empresarial", 
+      businessSector: "Sector empresarial",
       governmentSector: "Administración Pública",
       educationSector: "Enseñanza Superior",
       nonprofitSector: "Instituciones Privadas sin Fines de Lucro"
@@ -113,6 +114,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
       subtitle: "Territorial analysis of the number of patent applications filed",
       year: "Year",
       sector: "Sector", 
+      cooperationPartner: "Type of collaboration",
+      applicant: "Applicant",
+      inventor: "Inventor",
       loading: "Loading data...",
       error: "Error loading data",
       
@@ -128,7 +132,7 @@ const Patents: React.FC<PatentsProps> = (props) => {
       // Sectors
       totalSector: "All sectors",
       businessSector: "Business enterprise sector",
-      governmentSector: "Government sector", 
+      governmentSector: "Government sector",
       educationSector: "Higher education sector",
       nonprofitSector: "Private non-profit sector"
     }
@@ -222,24 +226,29 @@ const Patents: React.FC<PatentsProps> = (props) => {
     setSelectedYear(parseInt(e.target.value));
   };
 
+  const handlePatsDisplayTypeChange = (type: PatentsDisplayType) => {
+    setPatsDisplayType(type);
+  };
+
+  const handleCooperationPartnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCooperationPartner(e.target.value as CooperationPartnerType);
+  };
+
   // Handlers para la sección regional
   const handleRegionalYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRegionalYear(parseInt(e.target.value));
   };
 
   const SectionTitle = ({ title }: { title: string }) => (
-    <div className="flex items-center mb-6">
-      <h2 className="text-xl font-bold text-gray-800 pb-2 relative">
-        {title}
-        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300"></span>
-      </h2>
-    </div>
+    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
+      {title}
+    </h2>
   );
 
   const SubsectionTitle = ({ title }: { title: string }) => (
-    <div className="flex items-center mb-4">
-      <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
-    </div>
+    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
+      {title}
+    </h3>
   );
 
   return (
@@ -270,10 +279,16 @@ const Patents: React.FC<PatentsProps> = (props) => {
           
           {/* Descripción del dataset */}
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <p>
+            <p className="font-medium mb-2">
               {language === 'es' 
-                ? "Número de patentes por sector de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro). Las patentes representan un indicador clave de la actividad innovadora y la capacidad de protección de la propiedad intelectual en cada territorio."
-                : "Number of patents by sector of performance (business, government, higher education, private non profit). Patents represent a key indicator of innovative activity and intellectual property protection capacity in each territory."
+                ? "Indicador de Patentes de la Oficina Europea de Patentes (EPO)"
+                : "European Patent Office (EPO) Patents Indicator"
+              }
+            </p>
+            <p className="mb-3">
+              {language === 'es' 
+                ? "Este indicador mide las solicitudes de protección de una invención presentadas ante la Oficina Europea de Patentes (EPO), independientemente de si son concedidas o no. Las solicitudes se asignan según el país de residencia del primer solicitante que aparece en el formulario de solicitud (principio del primer solicitante nombrado), así como según el país de residencia del inventor."
+                : "This indicator measures requests for the protection of an invention filed with the European Patent Office (EPO) regardless of whether they are granted or not. Applications are allocated according to the country of residence of the first applicant listed on the application form (first-named applicant principle) as well as according to the country of residence of the inventor."
               }
             </p>
             <p className="mt-2 text-xs italic">
@@ -335,6 +350,39 @@ const Patents: React.FC<PatentsProps> = (props) => {
                         ))}
                       </select>
                     </div>
+                    <div className="flex items-center">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-blue-500 mr-2"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <label className="text-gray-700 font-medium mr-2">{t.cooperationPartner}</label>
+                      <select 
+                        value={cooperationPartner}
+                        onChange={handleCooperationPartnerChange}
+                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      >
+                        <option value="APPL">{t.applicant}</option>
+                        <option value="INVT">{t.inventor}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <PatentsDataTypeSelector
+                      patsDisplayType={patsDisplayType}
+                      onChange={handlePatsDisplayTypeChange}
+                      language={language}
+                    />
                   </div>
                 </div>
               </div>
@@ -347,6 +395,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
                     data={patentsData}
                     selectedYear={selectedYear}
                     language={language}
+                    patsDisplayType={patsDisplayType}
+                    cooperationPartner={cooperationPartner}
                   />
                 </div>
                 
@@ -358,6 +408,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
                         data={patentsData}
                         selectedYear={selectedYear}
                         language={language}
+                        patsDisplayType={patsDisplayType}
+                        cooperationPartner={cooperationPartner}
                       />
                     </div>
                   ) : (
@@ -537,11 +589,11 @@ const Patents: React.FC<PatentsProps> = (props) => {
             </div>
           ) : (
           <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[300px] flex items-center justify-center w-full">
-            <div className="text-center text-gray-400">
+              <div className="text-center text-gray-400">
                 <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+                </svg>
                 <p className="text-lg">{t.loading}</p>
               </div>
             </div>
