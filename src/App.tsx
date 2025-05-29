@@ -323,6 +323,42 @@ const App: React.FC = () => {
               </h2>
             </div>
             
+            {/* Anuncio sobre diferencias entre fuentes de datos */}
+            <div className="mb-6 text-sm bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div className="flex items-start">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="text-yellow-600 mr-3 mt-0.5 flex-shrink-0"
+                >
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <path d="M12 9v4"/>
+                  <path d="m12 17 .01 0"/>
+                </svg>
+                <div className="text-yellow-800">
+                  <p className="font-medium mb-2">
+                    {language === 'es' 
+                      ? "Importante: Diferencias entre fuentes de datos"
+                      : "Important: Differences between data sources"
+                    }
+                  </p>
+                  <p className="text-xs leading-relaxed">
+                    {language === 'es' 
+                      ? "Los datos de patentes mostrados en este dashboard provienen de diferentes fuentes oficiales que utilizan metodologías y criterios de clasificación diversos. Los indicadores europeos se basan en datos de la Oficina Europea de Patentes (EPO), mientras que los datos nacionales y regionales provienen del registro español, desagregados por provincias y reagrupados por comunidades autónomas. Estas diferencias pueden resultar en variaciones entre las métricas presentadas."
+                      : "The patent data shown in this dashboard comes from different official sources that use various methodologies and classification criteria. European indicators are based on data from the European Patent Office (EPO), while national and regional data comes from the Spanish registry, disaggregated by provinces and regrouped by autonomous communities. These differences may result in variations between the metrics presented."
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
               {/* Componente de la página Patents */}
               <Patents language={language} />
@@ -351,9 +387,13 @@ const App: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="w-full bg-white border-t border-gray-200 py-3 shadow-inner mt-auto">
-        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
-          {language === 'es' ? 'Desarrollado por EMERGE - Asociación Canaria de Startups' : 'Developed by EMERGE - Canary Islands Startup Association'}
+      <footer className="w-full bg-slate-50 border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              © {new Date().getFullYear()} EMERGE - {language === 'es' ? 'Todos los derechos reservados' : 'All rights reserved'}
+            </p>
+          </div>
         </div>
       </footer>
     </div>

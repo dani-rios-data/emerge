@@ -6,6 +6,7 @@ import PatentsRegionalTimelineChart from '../../components/PatentsRegionalTimeli
 import PatentsEuropeanTimelineChart from '../../components/PatentsEuropeanTimelineChart';
 import { PatentsDataTypeSelector, PatentsDisplayType } from '../../components/DataTypeSelector';
 import Papa from 'papaparse';
+import PatentsKPI from '../../components/PatentsKPI';
 
 // Definir tipo para cooperation partners
 export type CooperationPartnerType = 'APPL' | 'INVT';
@@ -272,14 +273,13 @@ const Patents: React.FC<PatentsProps> = (props) => {
         <SectionTitle title={t.keyMetricsTitle} />
         <div className="mb-8">
           <SubsectionTitle title={language === 'es' ? "Estadísticas de patentes" : "Patents Statistics"} />
-          <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[200px] flex items-center justify-center w-full">
-            <div className="text-center text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-lg">{language === 'es' ? "En desarrollo" : "In development"}</p>
-            </div>
-          </div>
+          
+          {/* Componente de KPIs de Patentes */}
+          <PatentsKPI 
+            europeData={patentsData}
+            spainData={regionalData}
+            language={language}
+          />
         </div>
       </div>
       
@@ -537,42 +537,6 @@ const Patents: React.FC<PatentsProps> = (props) => {
         
         {/* Subsección 3.1: Distribución regional */}
         <div className="mb-8">
-          {/* Warning sobre diferencias entre datasets */}
-          <div className="mb-4 text-sm bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <div className="flex items-start">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="text-yellow-600 mr-3 mt-0.5 flex-shrink-0"
-              >
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                <path d="M12 9v4"/>
-                <path d="m12 17 .01 0"/>
-              </svg>
-              <div className="text-yellow-800">
-                <p className="font-medium mb-2">
-                  {language === 'es' 
-                    ? "Importante: Diferencias entre fuentes de datos"
-                    : "Important: Differences between data sources"
-                  }
-                </p>
-                <p className="text-xs leading-relaxed">
-                  {language === 'es' 
-                    ? "Los datos de esta sección pueden no coincidir exactamente con los datos de patentes europeos mostrados anteriormente. Aunque ambas fuentes son oficiales, utilizan metodologías y criterios de clasificación diferentes. Adicionalmente, los datos originales de esta sección provienen desagregados por provincias y han sido reagrupados por comunidades autónomas para facilitar el análisis territorial."
-                    : "The data in this section may not exactly match the European patent data shown above. Although both sources are official, they use different methodologies and classification criteria. Additionally, the original data in this section comes disaggregated by provinces and has been regrouped by autonomous communities to facilitate territorial analysis."
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Descripción del dataset */}
           <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p>

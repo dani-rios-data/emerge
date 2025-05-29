@@ -58,23 +58,23 @@ const Overview: React.FC<OverviewProps> = (props) => {
       paletexpressTitle: "Paletexpress-Cajasiete:",
       paletexpressDesc: "Marca refundada tras la reapertura de Paletexpress en las instalaciones de la Sociedad para el Desarrollo Económico de Canarias (SODECAN) del Gobierno de Canarias con el patrocinio de la institución financiera Cajasiete.",
       emergeObjectives: "Los objetivos de la Asociación están ligados a la creación de un tejido productivo competitivo y a la atracción de inversión y talento a las islas, en colaboración con instituciones públicas y privadas, pero siempre con el emprendedor en el centro de la acción. EMERGE está fuertemente comprometida con el desarrollo económico e inclusivo de la región y con los Objetivos de Desarrollo Sostenible de Naciones Unidas.",
-      reportPurpose: "Propósito de este Reporte",
-      purposeDescription1: "Este reporte presenta una visión detallada del panorama de Investigación y Desarrollo (I+D) en las Islas Canarias, en comparación con otras regiones españolas y países de la Unión Europea.",
-      purposeDescription2: "A través de datos actualizados y visualizaciones comparativas, este documento pretende:",
-      purposeList1: "Mostrar la posición actual de Canarias en el contexto nacional y europeo en materia de I+D",
-      purposeList2: "Proporcionar información objetiva para la toma de decisiones estratégicas",
-      purposeList3: "Identificar tendencias y patrones en los indicadores de innovación relevantes",
-      purposeList4: "Facilitar el seguimiento de la evolución de estos indicadores a lo largo del tiempo",
-      reportContent: "Contenido del Reporte",
-      contentDescription: "La información que se puede encontrar en este reporte se estructura en torno a tres ejes fundamentales de la actividad de I+D:",
-      investmentTitle: "Inversión en I+D como porcentaje del PIB",
-      investmentDescription: "Aquí se analiza qué porcentaje del Producto Interior Bruto se dedica a actividades de investigación y desarrollo, tanto en el sector público como en el privado. Es posible observar la evolución de este indicador a lo largo del tiempo y comparar la situación de Canarias con otras regiones españolas y países europeos, identificando brechas y oportunidades.",
-      researchersTitle: "Actividad investigadora",
-      researchersDescription: "Esta sección examina el capital humano dedicado a la investigación, mostrando datos sobre el número de investigadores activos en diferentes años, su distribución entre el sector público y privado, y comparativas con otras regiones y países. Los indicadores incluyen tanto valores absolutos como relativos a la población, ofreciendo una visión completa de la capacidad investigadora del territorio.",
-      patentsTitle: "Producción de patentes",
-      patentsDescription: "Como indicador de resultados de la actividad innovadora, se presenta la evolución del registro de patentes, con análisis por sectores y comparativas territoriales. Estos datos permiten evaluar la capacidad de transformar la inversión en I+D en propiedad intelectual e industrial con potencial comercial.",
-      additionalFeatures: "Para facilitar la exploración de estos datos, el reporte ofrece opciones para personalizar la visualización mediante filtros de selección de territorios, rangos temporales y cambio de idioma entre español e inglés. Todas las visualizaciones son interactivas, permitiendo profundizar en los aspectos de mayor interés.",
-      updateInfo: "La información presentada se actualiza periódicamente para mantener la relevancia y precisión de los análisis ofrecidos.",
+      reportPurpose: "Propósito de este Observatorio",
+      purposeDescription1: "Este observatorio presenta un análisis comparativo e histórico de los principales indicadores de Investigación, Desarrollo e Innovación (I+D+i) en las Islas Canarias, posicionándolos en el contexto español y europeo.",
+      purposeDescription2: "A través de datos oficiales actualizados y visualizaciones interactivas, este observatorio permite:",
+      purposeList1: "Comparar la posición de Canarias con otras comunidades autónomas españolas y países europeos",
+      purposeList2: "Analizar la evolución temporal de los indicadores clave de I+D+i",
+      purposeList3: "Identificar fortalezas y oportunidades de mejora en el ecosistema innovador canario",
+      purposeList4: "Acceder a datos actualizados para la toma de decisiones informadas",
+      reportContent: "Indicadores Disponibles",
+      contentDescription: "El observatorio estructura la información en torno a tres dimensiones fundamentales del ecosistema de I+D+i:",
+      investmentTitle: "Inversión en I+D (% del PIB)",
+      investmentDescription: "Analiza el esfuerzo financiero dedicado a actividades de I+D como porcentaje del Producto Interior Bruto. Incluye comparativas temporales desde 2010 hasta 2022, distribución por sectores (empresas, administración pública, enseñanza superior e instituciones privadas sin fines de lucro) y posicionamiento de Canarias respecto a España, UE27 y países líderes como Alemania y Países Bajos.",
+      researchersTitle: "Capital Humano Investigador",
+      researchersDescription: "Examina el personal dedicado a I+D medido en equivalencia a tiempo completo (ETC) por cada mil habitantes de la población activa. Los datos abarcan desde 2010 hasta 2022, con desagregación sectorial y análisis comparativo territorial que permite evaluar la capacidad investigadora de Canarias en el contexto nacional e internacional.",
+      patentsTitle: "Actividad de Patentamiento",
+      patentsDescription: "Evalúa la capacidad innovadora a través de dos fuentes complementarias: solicitudes ante la Oficina Europea de Patentes (EPO) por país/región, y registros del sistema español de patentes con desagregación por comunidades autónomas. Incluye análisis temporal, comparativas territoriales y métricas tanto absolutas como relativas a la población.",
+      additionalFeatures: "El observatorio ofrece funcionalidades interactivas como filtros temporales, selección de territorios, cambio de unidades de medida (valores absolutos/relativos) y alternancia entre español e inglés. Todas las visualizaciones permiten exploración detallada de los datos de interés.",
+      updateInfo: "Los datos se actualizan periódicamente según la disponibilidad de nuevas estadísticas oficiales de Eurostat, INE, ISTAC y otras fuentes institucionales.",
       dataSources: "Fuentes de Datos", 
       eurostat: "Eurostat",
       eurodescription: "Oficina Europea de Estadística, que proporciona datos oficiales a nivel europeo.",
@@ -82,17 +82,13 @@ const Overview: React.FC<OverviewProps> = (props) => {
       inedescription: "Instituto Nacional de Estadística de España, fuente oficial de datos estadísticos a nivel nacional.",
       istac: "ISTAC",
       istacdescription: "Instituto Canario de Estadística, que ofrece datos específicos para las Islas Canarias.",
-      wipo: "WIPO",
-      wipodescription: "Organización Mundial de la Propiedad Intelectual, que proporciona datos sobre patentes y propiedad intelectual.",
-      oecd: "OCDE",
-      oecddescription: "Organización para la Cooperación y el Desarrollo Económicos, que ofrece análisis comparativos entre países.",
       exploreData: "Explorar Datos",
       investmentLink: "Ver análisis de inversión en I+D",
       researchersLink: "Explorar datos sobre investigadores",
       patentsLink: "Analizar registros de patentes"
     },
     en: {
-      pageTitle: "R&D Metrics Report for EMERGE",
+      pageTitle: "R&D Metrics Observatory for EMERGE",
       aboutEmerge: "About EMERGE",
       emergeDescription1: "The Canary Islands Association of Startups, Technology-Based Companies and Angel Investors (EMERGE) is a non-profit organization established in March 2015 by Canarian technology entrepreneurs. EMERGE's primary objective is the creation of fast-growing innovative technology-based companies or startups.",
       emergeDescription2: "EMERGE is a facilitating agent of the Canary Islands' entrepreneurship and innovation ecosystem that works towards a sustainable and inclusive economic development model based on talent, resource diversification, and the opportunities offered by the knowledge economy.",
@@ -103,34 +99,30 @@ const Overview: React.FC<OverviewProps> = (props) => {
       paletexpressTitle: "Paletexpress-Cajasiete:",
       paletexpressDesc: "Brand refounded after the reopening of Paletexpress in the facilities of the Society for the Economic Development of the Canary Islands (SODECAN) of the Canary Islands Government with the sponsorship of the financial institution Cajasiete.",
       emergeObjectives: "The Association's objectives are linked to creating a competitive productive fabric and attracting investment and talent to the islands, in collaboration with public and private institutions, but always with the entrepreneur at the center of the action. EMERGE is strongly committed to the economic and inclusive development of the region and to the United Nations Sustainable Development Goals.",
-      reportPurpose: "Purpose of this Report",
-      purposeDescription1: "This report presents a detailed view of the Research and Development (R&D) landscape in the Canary Islands, compared to other Spanish regions and European Union countries.",
-      purposeDescription2: "Through updated data and comparative visualizations, this document aims to:",
-      purposeList1: "Show the current position of the Canary Islands in the national and European context regarding R&D",
-      purposeList2: "Provide objective information for strategic decision-making",
-      purposeList3: "Identify trends and patterns in relevant innovation indicators",
-      purposeList4: "Facilitate the monitoring of these indicators' evolution over time",
-      reportContent: "Report Contents",
-      contentDescription: "The information found in this report is structured around three fundamental axes of R&D activity:",
-      investmentTitle: "R&D Investment as a percentage of GDP",
-      investmentDescription: "This section analyzes what percentage of the Gross Domestic Product is dedicated to research and development activities, both in the public and private sectors. It is possible to observe the evolution of this indicator over time and compare the situation of the Canary Islands with other Spanish regions and European countries, identifying gaps and opportunities.",
-      researchersTitle: "Research Activity",
-      researchersDescription: "This section examines the human capital dedicated to research, showing data on the number of active researchers in different years, their distribution between the public and private sectors, and comparisons with other regions and countries. The indicators include both absolute and relative values to the population, offering a complete view of the territory's research capacity.",
-      patentsTitle: "Patent Production",
-      patentsDescription: "As an indicator of the results of innovative activity, the evolution of patent registration is presented, with analysis by sectors and territorial comparisons. These data allow the evaluation of the capacity to transform R&D investment into intellectual and industrial property with commercial potential.",
-      additionalFeatures: "To facilitate the exploration of these data, the report offers options to customize the visualization through filters for territory selection, time ranges, and language change between Spanish and English. All visualizations are interactive, allowing users to explore aspects of greater interest.",
-      updateInfo: "The presented information is periodically updated to maintain the relevance and accuracy of the analyses offered.",
+      reportPurpose: "Purpose of this Observatory",
+      purposeDescription1: "This observatory presents a comparative and historical analysis of the main Research, Development and Innovation (R&D&I) indicators in the Canary Islands, positioning them within the Spanish and European context.",
+      purposeDescription2: "Through updated official data and interactive visualizations, this observatory enables users to:",
+      purposeList1: "Compare the position of the Canary Islands with other Spanish autonomous communities and European countries",
+      purposeList2: "Analyze the temporal evolution of key R&D&I indicators",
+      purposeList3: "Identify strengths and improvement opportunities in the Canarian innovation ecosystem",
+      purposeList4: "Access updated data for informed decision-making",
+      reportContent: "Available Indicators",
+      contentDescription: "The observatory structures information around three fundamental dimensions of the R&D&I ecosystem:",
+      investmentTitle: "R&D Investment (% of GDP)",
+      investmentDescription: "Analyzes the financial effort dedicated to R&D activities as a percentage of Gross Domestic Product. Includes temporal comparisons from 2010 to 2022, sectoral distribution (business enterprise, government, higher education and private non-profit institutions) and positioning of the Canary Islands with respect to Spain, EU27 and leading countries such as Germany and the Netherlands.",
+      researchersTitle: "Research Human Capital",
+      researchersDescription: "Examines personnel dedicated to R&D measured in full-time equivalent (FTE) per thousand inhabitants of the active population. Data spans from 2010 to 2022, with sectoral breakdown and territorial comparative analysis that enables evaluation of the research capacity of the Canary Islands within the national and international context.",
+      patentsTitle: "Patent Activity",
+      patentsDescription: "Evaluates innovative capacity through two complementary sources: applications to the European Patent Office (EPO) by country/region, and records from the Spanish patent system with breakdown by autonomous communities. Includes temporal analysis, territorial comparisons and both absolute and population-relative metrics.",
+      additionalFeatures: "The observatory offers interactive functionalities such as temporal filters, territory selection, measurement unit changes (absolute/relative values) and language switching between Spanish and English. All visualizations allow detailed exploration of data of interest.",
+      updateInfo: "Data is updated periodically according to the availability of new official statistics from Eurostat, INE, ISTAC and other institutional sources.",
       dataSources: "Data Sources", 
       eurostat: "Eurostat",
       eurodescription: "European Statistical Office, which provides official data at the European level.",
       ine: "INE",
       inedescription: "National Institute of Statistics of Spain, official source of statistical data at the national level.",
       istac: "ISTAC",
-      istacdescription: "Canary Islands Institute of Statistics, which offers specific data for the Canary Islands.",
-      wipo: "WIPO",
-      wipodescription: "World Intellectual Property Organization, which provides data on patents and intellectual property.",
-      oecd: "OECD",
-      oecddescription: "Organization for Economic Cooperation and Development, which offers comparative analysis between countries.",
+      istacdescription: "Canary Islands Institute of Statistics, which provides specific data for the Canary Islands.",
       exploreData: "Explore Data",
       investmentLink: "View R&D investment analysis",
       researchersLink: "Explore researcher data",
@@ -147,7 +139,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   };
   
   return (
-    <div className="bg-gradient-to-br from-white via-blue-50 to-white rounded-lg shadow-lg p-6 pt-4 pb-8 w-full min-h-[700px] overflow-y-auto">
+    <div className="bg-white rounded-lg shadow-lg p-6 pt-4 pb-8 w-full min-h-[700px] overflow-y-auto">
       {/* Contenedor principal con efecto de tarjeta */}
       <div className="max-w-full mx-auto">
         {/* Sección Sobre EMERGE con diseño moderno */}
@@ -245,7 +237,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h4 className="text-xl font-bold text-blue-800">Inversión en I+D</h4>
+                    <h4 className="text-xl font-bold text-blue-800">{t('investmentTitle')}</h4>
                   </div>
                   <p className="text-gray-700 leading-relaxed">{t('investmentDescription')}</p>
                 </div>
@@ -293,7 +285,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 {t('dataSources')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Eurostat */}
                 <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
                   <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
@@ -319,24 +311,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     {t('istac')}
                   </h4>
                   <p className="text-gray-700 text-sm">{t('istacdescription')}</p>
-                </div>
-                
-                {/* WIPO */}
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
-                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-                    {t('wipo')}
-                  </h4>
-                  <p className="text-gray-700 text-sm">{t('wipodescription')}</p>
-                </div>
-                
-                {/* OECD */}
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100 hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] flex flex-col h-full">
-                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-                    {t('oecd')}
-                  </h4>
-                  <p className="text-gray-700 text-sm">{t('oecddescription')}</p>
                 </div>
               </div>
             </div>
