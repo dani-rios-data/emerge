@@ -11,7 +11,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         cleanupOutdatedCaches: true,
-        skipWaiting: true
+        skipWaiting: true,
+        clientsClaim: true,
+        // Configuración de cache más simple
+        navigateFallback: undefined
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {

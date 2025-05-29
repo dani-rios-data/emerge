@@ -14,6 +14,8 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   const texts = {
     es: {
@@ -25,7 +27,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
       iosInstall: "Para instalar esta app en tu iPhone/iPad, toca el botón de compartir",
       iosStep1: "1. Toca el icono de compartir",
       iosStep2: "2. Selecciona 'Añadir a pantalla de inicio'",
-      iosStep3: "3. Toca 'Añadir' para confirmar"
+      iosStep3: "3. Toca 'Añadir' para confirmar",
+      updateTitle: "¡Actualización Disponible!",
+      updateMessage: "Hay una nueva versión disponible. ¿Deseas actualizar ahora?",
+      updateButton: "Actualizar",
+      reloadButton: "Recargar"
     },
     en: {
       install: "Install App",
@@ -36,7 +42,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
       iosInstall: "To install this app on your iPhone/iPad, tap the share button",
       iosStep1: "1. Tap the share icon",
       iosStep2: "2. Select 'Add to Home Screen'",
-      iosStep3: "3. Tap 'Add' to confirm"
+      iosStep3: "3. Tap 'Add' to confirm",
+      updateTitle: "Update Available!",
+      updateMessage: "A new version is available. Do you want to update now?",
+      updateButton: "Update",
+      reloadButton: "Reload"
     }
   };
 
@@ -52,6 +62,35 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
                               (window.navigator as { standalone?: boolean }).standalone ||
                               document.referrer.includes('android-app://');
     setIsStandalone(isInStandaloneMode);
+
+    // Detectar actualizaciones del service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setUpdateAvailable(true);
+                setWaitingWorker(newWorker);
+              }
+            });
+          }
+        });
+      });
+
+      // Detectar si hay un service worker en espera
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (registration?.waiting) {
+          setUpdateAvailable(true);
+          setWaitingWorker(registration.waiting);
+        }
+      });
+    }
 
     // Escuchar el evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -110,6 +149,26 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
       }
     }
   }, []);
+
+  const handleUpdate = () => {
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+      setUpdateAvailable(false);
+      window.location.reload();
+    }
+  };
+
+  const handleForceReload = () => {
+    // Limpiar cache y recargar
+    if ('caches' in window) {
+      caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => {
+          caches.delete(cacheName);
+        });
+      });
+    }
+    window.location.reload();
+  };
 
   // No renderizar si está instalado como PWA
   if (isStandalone) {
@@ -194,6 +253,44 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ language }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (updateAvailable) {
+    return (
+      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 border-l-4 border-blue-400">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-sm font-medium">{t('updateTitle')}</h3>
+            <p className="mt-1 text-sm opacity-90">{t('updateMessage')}</p>
+            <div className="mt-3 flex space-x-2">
+              <button
+                onClick={handleUpdate}
+                className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-blue-50 transition-colors"
+              >
+                {t('updateButton')}
+              </button>
+              <button
+                onClick={handleForceReload}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-400 transition-colors"
+              >
+                {t('reloadButton')}
+              </button>
+              <button
+                onClick={() => setUpdateAvailable(false)}
+                className="text-blue-200 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
