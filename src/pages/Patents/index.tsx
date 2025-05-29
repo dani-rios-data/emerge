@@ -70,6 +70,10 @@ const Patents: React.FC<PatentsProps> = (props) => {
   const [patsDisplayType, setPatsDisplayType] = useState<PatentsDisplayType>('number');
   const [cooperationPartner, setCooperationPartner] = useState<CooperationPartnerType>('APPL');
   
+  // Estados independientes para el gráfico temporal
+  const [timelinePatsDisplayType, setTimelinePatsDisplayType] = useState<PatentsDisplayType>('number');
+  const [timelineCooperationPartner, setTimelineCooperationPartner] = useState<CooperationPartnerType>('APPL');
+  
   // Estados para los datos
   const [patentsData, setPatentsData] = useState<PatentsData[]>([]);
   const [regionalData, setRegionalData] = useState<RegionalData[]>([]);
@@ -238,6 +242,15 @@ const Patents: React.FC<PatentsProps> = (props) => {
   // Handlers para la sección regional
   const handleRegionalYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRegionalYear(parseInt(e.target.value));
+  };
+
+  // Handlers independientes para el gráfico temporal
+  const handleTimelinePatsDisplayTypeChange = (type: PatentsDisplayType) => {
+    setTimelinePatsDisplayType(type);
+  };
+
+  const handleTimelineCooperationPartnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTimelineCooperationPartner(e.target.value as CooperationPartnerType);
   };
 
   const SectionTitle = ({ title }: { title: string }) => (
@@ -445,6 +458,47 @@ const Patents: React.FC<PatentsProps> = (props) => {
         <div className="mb-10">
           <SubsectionTitle title={t.chartTitle} />
           
+          {/* Filtros independientes para el gráfico temporal */}
+          <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="text-blue-500 mr-2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <label className="text-gray-700 font-medium mr-2">{t.cooperationPartner}</label>
+                  <select 
+                    value={timelineCooperationPartner}
+                    onChange={handleTimelineCooperationPartnerChange}
+                    className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <option value="APPL">{t.applicant}</option>
+                    <option value="INVT">{t.inventor}</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <PatentsDataTypeSelector
+                  patsDisplayType={timelinePatsDisplayType}
+                  onChange={handleTimelinePatsDisplayTypeChange}
+                  language={language}
+                />
+              </div>
+            </div>
+          </div>
+          
           {isLoading ? (
             <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
               <div className="text-center text-gray-400">
@@ -469,8 +523,8 @@ const Patents: React.FC<PatentsProps> = (props) => {
               <PatentsEuropeanTimelineChart
                 data={patentsData}
                 language={language}
-                patsDisplayType={patsDisplayType}
-                cooperationPartner={cooperationPartner}
+                patsDisplayType={timelinePatsDisplayType}
+                cooperationPartner={timelineCooperationPartner}
               />
             </div>
           )}

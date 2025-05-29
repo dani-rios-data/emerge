@@ -618,9 +618,9 @@ function getCountryFlagUrl(countryCode: string): string {
     // Definir estilos CSS para el tooltip usando el mismo formato que PatentsEuropeanMap
     styleElement.textContent = `
       .patents-chart-tooltip {
-        transform-origin: top left;
-        transform: scale(0.95);
-        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform-origin: top left;
+          transform: scale(0.95);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         opacity: 0;
         z-index: 9999;
         pointer-events: none;
@@ -629,9 +629,9 @@ function getCountryFlagUrl(countryCode: string): string {
         border-radius: 8px;
       }
       .patents-chart-tooltip.visible {
-        opacity: 1 !important;
-        transform: scale(1);
-      }
+          opacity: 1 !important;
+          transform: scale(1);
+        }
       .patents-chart-tooltip .text-green-600 { color: #059669; }
       .patents-chart-tooltip .text-red-600 { color: #DC2626; }
       .patents-chart-tooltip .text-orange-700 { color: #C2410C; }
@@ -691,7 +691,7 @@ function getCountryFlagUrl(countryCode: string): string {
       .patents-chart-tooltip img { max-width: 100%; height: 100%; object-fit: cover; }
       .patents-chart-tooltip .relative { position: relative; }
       .patents-chart-tooltip .inline-block { display: inline-block; }
-    `;
+      `;
     
     // Añadir al head
     document.head.appendChild(styleElement);
@@ -726,10 +726,10 @@ function getCountryFlagUrl(countryCode: string): string {
     
     if (top + tooltipHeight > windowHeight - 10) {
       if (tooltipHeight < windowHeight - 20) {
-        top = windowHeight - tooltipHeight - 10;
+      top = windowHeight - tooltipHeight - 10;
       } else {
-        top = 10;
-      }
+      top = 10;
+    }
     }
     
     if (top < 10) top = 10;
@@ -745,12 +745,12 @@ function getCountryFlagUrl(countryCode: string): string {
     if (elements.length === 0) return;
     
     const chartIndex = elements[0].index;
-    const chartItem = chartData.sortedItems[chartIndex];
+          const chartItem = chartData.sortedItems[chartIndex];
     if (!chartItem) return;
-    
-    const country = chartItem.code;
-    const value = chartItem.value;
-    const flagCode = chartItem.obsFlag;
+
+          const country = chartItem.code;
+          const value = chartItem.value;
+          const flagCode = chartItem.obsFlag;
     
     // Crear mapa de valores para el ranking y competidores (igual que el mapa)
     const countryValuesMap = new Map<string, number>();
@@ -758,36 +758,36 @@ function getCountryFlagUrl(countryCode: string): string {
     chartData.sortedItems.forEach(item => {
       countryValuesMap.set(item.code, item.value);
     });
-    
-    // Calcular el ranking
-    let rank = null;
-    if (!chartItem.isSupranational) {
-      const allCountriesForRanking = new Map<string, number>();
-      
-      chartData.sortedItems.forEach(item => {
-        if (!item.isSupranational) {
-          allCountriesForRanking.set(item.code, item.value);
-        }
-      });
-      
-      const sortedCountries: [string, number][] = [];
-      allCountriesForRanking.forEach((val, code) => {
-        sortedCountries.push([code, val]);
-      });
-      
-      sortedCountries.sort((a, b) => b[1] - a[1]);
-      
-      const position = sortedCountries.findIndex(([code, ]) => code === chartItem.code);
-      if (position !== -1) {
-        rank = position + 1;
+          
+          // Calcular el ranking
+          let rank = null;
+          if (!chartItem.isSupranational) {
+            const allCountriesForRanking = new Map<string, number>();
+            
+            chartData.sortedItems.forEach(item => {
+              if (!item.isSupranational) {
+                allCountriesForRanking.set(item.code, item.value);
+              }
+            });
+            
+            const sortedCountries: [string, number][] = [];
+            allCountriesForRanking.forEach((val, code) => {
+              sortedCountries.push([code, val]);
+            });
+            
+            sortedCountries.sort((a, b) => b[1] - a[1]);
+            
+            const position = sortedCountries.findIndex(([code, ]) => code === chartItem.code);
+            if (position !== -1) {
+              rank = position + 1;
         const total = sortedCountries.length;
         rank = { rank: rank, total: total };
-      }
-    }
-    
-    const flagUrl = getCountryFlagUrl(country);
-    const countryName = getCountryNameFromCode(country, language);
-    
+            }
+          }
+          
+          const flagUrl = getCountryFlagUrl(country);
+          const countryName = getCountryNameFromCode(country, language);
+          
     // Buscar datos del país en el dataset original (igual que el mapa)
     const countryData = data.find(item => {
       const geoMatch = item.geo === country;
@@ -801,146 +801,146 @@ function getCountryFlagUrl(countryCode: string): string {
     });
     
     // Preparar comparación YoY (igual que el mapa)
-    const previousYearValue = getPreviousYearValue(country, selectedYear);
-    let yoyComparisonHtml = '';
-    if (value !== null && previousYearValue !== null && previousYearValue !== 0) {
-      let adjustedPrevValue = previousYearValue;
-      if (country === 'EU27_2020') {
-        adjustedPrevValue = Math.round(previousYearValue / 27);
-      } else if (country === 'EA19') {
-        adjustedPrevValue = Math.round(previousYearValue / 19);
-      } else if (country === 'EA20') {
-        adjustedPrevValue = Math.round(previousYearValue / 20);
-      }
-      
-      const difference = value - adjustedPrevValue;
-      const percentDiff = (difference / adjustedPrevValue) * 100;
-      const formattedDiff = percentDiff.toFixed(1);
-      const isPositive = difference > 0;
-      
-      yoyComparisonHtml = `
-        <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-            <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
-          </svg>
-          <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
-        </div>
-      `;
-    } else {
-      yoyComparisonHtml = `<div class="text-gray-400 flex items-center mt-1 text-xs">--</div>`;
-    }
-    
+          const previousYearValue = getPreviousYearValue(country, selectedYear);
+          let yoyComparisonHtml = '';
+          if (value !== null && previousYearValue !== null && previousYearValue !== 0) {
+            let adjustedPrevValue = previousYearValue;
+            if (country === 'EU27_2020') {
+              adjustedPrevValue = Math.round(previousYearValue / 27);
+            } else if (country === 'EA19') {
+              adjustedPrevValue = Math.round(previousYearValue / 19);
+            } else if (country === 'EA20') {
+              adjustedPrevValue = Math.round(previousYearValue / 20);
+            }
+            
+            const difference = value - adjustedPrevValue;
+            const percentDiff = (difference / adjustedPrevValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            yoyComparisonHtml = `
+              <div class="${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1 text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <path d="${isPositive ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
+                </svg>
+                <span>${isPositive ? '+' : ''}${formattedDiff}% vs ${selectedYear - 1}</span>
+              </div>
+            `;
+          } else {
+            yoyComparisonHtml = `<div class="text-gray-400 flex items-center mt-1 text-xs">--</div>`;
+          }
+          
     // Preparar comparaciones (igual que el mapa)
-    const isSpainCountry = country === 'ES';
-    const isEUEntity = country === 'EU27_2020';
-    
-    const euValue = !isEUEntity ? getEUValue(selectedYear) : null;
-    const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
-    const spainValue = !isSpainCountry ? getSpainValue(selectedYear) : null;
+          const isSpainCountry = country === 'ES';
+          const isEUEntity = country === 'EU27_2020';
+          
+          const euValue = !isEUEntity ? getEUValue(selectedYear) : null;
+          const euAverageValue = euValue !== null ? Math.round(euValue / 27) : null;
+          const spainValue = !isSpainCountry ? getSpainValue(selectedYear) : null;
 
-    let comparisonsHtml = '';
-    
-    if (value !== null) {
-      if (!isEUEntity && euAverageValue !== null) {
-        const difference = value - euAverageValue;
-        const percentDiff = (difference / euAverageValue) * 100;
-        const formattedDiff = percentDiff.toFixed(1);
-        const isPositive = difference > 0;
-        
-        comparisonsHtml += `
-          <div class="flex justify-between items-center text-xs">
-            <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+          let comparisonsHtml = '';
+          
+          if (value !== null) {
+            if (!isEUEntity && euAverageValue !== null) {
+              const difference = value - euAverageValue;
+              const percentDiff = (difference / euAverageValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
                 `vs Media UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):` : 
                 `vs Avg UE (${formatPatentsValueAsInDataset(euAverageValue, patsDisplayType)}):`}</span>
-            <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-          </div>
-        `;
-      }
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+              }
 
-      if (!isSpainCountry && spainValue !== null) {
-        const difference = value - spainValue;
-        const percentDiff = (difference / spainValue) * 100;
-        const formattedDiff = percentDiff.toFixed(1);
-        const isPositive = difference > 0;
-        
-        comparisonsHtml += `
-          <div class="flex justify-between items-center text-xs">
-            <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
+            if (!isSpainCountry && spainValue !== null) {
+              const difference = value - spainValue;
+              const percentDiff = (difference / spainValue) * 100;
+            const formattedDiff = percentDiff.toFixed(1);
+            const isPositive = difference > 0;
+            
+            comparisonsHtml += `
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600 inline-block w-44">${language === 'es' ? 
                 `vs España (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):` : 
                 `vs Spain (${formatPatentsValueAsInDataset(spainValue, patsDisplayType)}):`}</span>
-            <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
-          </div>
-        `;
-      }
-    }
+                <span class="font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}">${isPositive ? '+' : ''}${formattedDiff}%</span>
+                  </div>
+                `;
+            }
+              }
 
     // Obtener información de competencia (igual que el mapa)
     const competitorsHtml = !isSupranationalEntity(country) && value !== null ? 
       getCompetitorCountries(country, countryValuesMap) : '';
 
     // Construir tooltip con la misma estructura que el mapa
-    const tooltipContent = `
-      <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-        <!-- Header con el nombre del país -->
-        <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
-          <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
-            <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
-          </div>
-          <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
-        </div>
-        
-        <!-- Contenido principal -->
-        <div class="p-4">
-          <!-- Métrica principal -->
-          <div class="mb-3">
-            <div class="flex items-center text-gray-500 text-sm mb-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          const tooltipContent = `
+            <div class="max-w-xs bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+              <!-- Header con el nombre del país -->
+              <div class="flex items-center p-3 bg-orange-50 border-b border-orange-100">
+                <div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  <img src="${flagUrl}" class="w-full h-full object-cover" alt="${countryName}" />
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">${countryName || 'Desconocido'}</h3>
+              </div>
+              
+              <!-- Contenido principal -->
+              <div class="p-4">
+                <!-- Métrica principal -->
+                <div class="mb-3">
+                  <div class="flex items-center text-gray-500 text-sm mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               <span>${getPatentsDisplayUnit(patsDisplayType, language)}:</span>
-            </div>
-            <div class="flex items-center">
+                  </div>
+                  <div class="flex items-center">
               <span class="text-xl font-bold text-orange-700">${formatPatentsValueAsInDataset(value, patsDisplayType)}</span>
-              ${flagCode ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>` : ''}
-            </div>
-            ${yoyComparisonHtml}
-          </div>
-          
-          <!-- Ranking (si está disponible y no es entidad supranacional) -->
+                    ${flagCode ? `<span class="ml-2 text-xs bg-gray-100 text-gray-500 px-1 py-0.5 rounded">${flagCode}</span>` : ''}
+                  </div>
+                  ${yoyComparisonHtml}
+                </div>
+                
+                <!-- Ranking (si está disponible y no es entidad supranacional) -->
           ${rank ? `
-          <div class="mb-4">
-            <div class="bg-yellow-50 p-2 rounded-md flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
-                <circle cx="12" cy="8" r="6" />
-                <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-              </svg>
-              <span class="font-medium">Rank </span>
+                <div class="mb-4">
+                  <div class="bg-yellow-50 p-2 rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                    <span class="font-medium">Rank </span>
               <span class="font-bold text-lg mx-1">${rank.rank}</span>
               <span class="text-gray-600">${language === 'es' ? `de ${rank.total}` : `of ${rank.total}`}</span>
-            </div>
-          </div>
-          ` : ''}
-          
-          <!-- Si hay comparaciones, mostrarlas -->
-          ${comparisonsHtml ? `
-          <div class="space-y-2 border-t border-gray-100 pt-3">
-            <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
-            ${comparisonsHtml}
-          </div>
-          ` : ''}
+                  </div>
+                </div>
+                ` : ''}
+                
+                <!-- Si hay comparaciones, mostrarlas -->
+                ${comparisonsHtml ? `
+                <div class="space-y-2 border-t border-gray-100 pt-3">
+                  <div class="text-xs text-gray-500 mb-1">${language === 'es' ? 'Comparativa' : 'Comparative'}</div>
+                  ${comparisonsHtml}
+                </div>
+                ` : ''}
           
           <!-- Competidores directos -->
           ${competitorsHtml}
-        </div>
-        
-        <!-- Footer con información de la bandera de observación -->
+              </div>
+              
+              <!-- Footer con información de la bandera de observación -->
         ${countryData && countryData.OBS_FLAG && getLabelDescription(countryData.OBS_FLAG, language) ? `
-        <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+              <div class="bg-gray-50 px-3 py-2 flex items-center text-xs text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
           <span>${countryData.OBS_FLAG} - ${getLabelDescription(countryData.OBS_FLAG, language)}</span>
-        </div>
-        ` : ''}
-      </div>
-    `;
-    
+              </div>
+              ` : ''}
+            </div>
+          `;
+          
     // Mostrar tooltip
     const tooltip = d3.select(tooltipRef.current!);
     tooltip
@@ -1113,8 +1113,8 @@ function getCountryFlagUrl(countryCode: string): string {
             data={chartData}
             options={options}
           />
-        </div>
-      </div>
+            </div>
+          </div>
       
       {/* Tooltip personalizado - igual que el mapa */}
       <div 
@@ -1126,11 +1126,11 @@ function getCountryFlagUrl(countryCode: string): string {
           transformOrigin: 'top left'
         }}
       />
-      
-      {/* Etiqueta del eje X centrada */}
+          
+          {/* Etiqueta del eje X centrada */}
       <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
-        {t.axisLabel}
-      </div>
+            {t.axisLabel}
+          </div>
     </div>
   );
 };

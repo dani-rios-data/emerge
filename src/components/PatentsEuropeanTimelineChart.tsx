@@ -579,9 +579,7 @@ const PatentsEuropeanTimelineChart: React.FC<PatentsEuropeanTimelineChartProps> 
 
   return (
     <div className="w-full h-full">
-      <div className="mb-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-800">{texts.title}</h3>
-        
+      <div className="mb-4 flex justify-end items-center">
         {/* Selector de país estilo bandera */}
         {availableCountries.length > 0 && (
           <div className="flex-shrink-0 relative" ref={dropdownRef}>
