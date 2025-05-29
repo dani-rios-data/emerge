@@ -377,15 +377,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
   );
   
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
-      {title}
-    </h2>
-  );
-  
-  const SubsectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
-      {title}
-    </h3>
+    <h2 className="text-xl font-bold mb-6 text-blue-900 pl-3 border-l-4 border-blue-300">{title}</h2>
   );
 
   // Componente para título de subsección con sector (para mostrar el sector seleccionado)
@@ -401,11 +393,12 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     return (
       <div className="flex items-center mb-4 mt-8">
         <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
-        <h3 className="text-md font-semibold text-blue-700 flex items-center">
+        <h3 className="text-md font-semibold text-blue-700 flex items-center flex-wrap">
           <span>{baseTitle}</span>
-          <span className="mx-3 text-blue-400">•</span>
-          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            <span className="text-sm font-medium text-blue-800">
+          <span className="mx-3 text-blue-400 hidden sm:inline">•</span>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100 mt-1 sm:mt-0">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+            <span className="text-blue-600 font-medium text-sm">
               {getSectorDisplayName(sector, language)}
             </span>
           </div>
@@ -490,8 +483,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     );
 
     // Datos de comunidades autónomas del año más reciente
-    const mostRecentRegionYear = availableRegionYears[0];
-    const regionYearStr = mostRecentRegionYear.toString();
+    const regionYearStr = mostRecentYear.toString();
     
     const regionData = autonomousCommunitiesData.filter(item => 
       item["Año"] === regionYearStr && item["Sector Id"] === "(_T)"
@@ -565,31 +557,31 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 })()
               }
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Métrica 1: Media UE */}
-              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                  <div className="p-3 bg-blue-50 rounded-lg mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="p-2 sm:p-3 bg-blue-50 rounded-lg mr-3 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center">
-                      <h3 className="text-sm font-medium text-gray-500">
+                      <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                         {language === 'es' ? 'Unión Europea' : 'European Union'}
                       </h3>
                     </div>
-                    <div className="flex items-baseline mt-1">
+                    <div className="flex items-baseline mt-1 flex-wrap">
                       {
                           (() => {
                           const { euData } = getFixedKeyMetricsData();
                           return (
                             <>
-                              <span className="text-2xl font-bold text-blue-700">
+                              <span className="text-xl sm:text-2xl font-bold text-blue-700">
                                 {euData ? `${parseFloat(euData['%GDP']).toFixed(2)}%` : '--'}
                       </span>
-                      <span className="ml-2 text-sm text-gray-500">
+                      <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
                         {language === 'es' ? 'del PIB' : 'of GDP'}
                       </span>
                             </>
@@ -608,7 +600,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                           return (
                             <div className="flex items-center mt-1.5">
                               <span className={`text-xs font-medium ${yoyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {yoyChange >= 0 ? '+' : ''}{yoyChange.toFixed(2)}% {language === 'es' ? 'vs año anterior' : 'vs previous year'}
+                                {yoyChange >= 0 ? '+' : ''}{yoyChange.toFixed(2)}% {language === 'es' ? 'vs anterior' : 'vs previous'}
                               </span>
                             </div>
                           );
@@ -617,7 +609,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                         return (
                           <div className="flex items-center mt-1.5">
                             <span className="text-xs font-medium text-gray-400">
-                              -- {language === 'es' ? 'vs año anterior' : 'vs previous year'}
+                              -- {language === 'es' ? 'vs anterior' : 'vs previous'}
                             </span>
                           </div>
                         );
@@ -628,14 +620,14 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Métrica 2: España y ranking */}
-              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className="p-3 bg-red-50 rounded-lg mb-2 flex items-center justify-center">
+                  <div className="flex-shrink-0 mr-3">
+                    <div className="p-2 sm:p-3 bg-red-50 rounded-lg flex items-center justify-center">
                       <img 
                         src="https://flagcdn.com/es.svg" 
                         alt="Bandera de España" 
-                        className="w-8 h-6 object-cover rounded border border-gray-300 shadow-sm"
+                        className="w-6 h-4 sm:w-8 sm:h-6 object-cover rounded border border-gray-300 shadow-sm"
                         style={{ 
                           boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)' 
                         }}
@@ -644,7 +636,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                           e.currentTarget.style.display = 'none';
                           const fallbackSvg = document.createElement('svg');
                           fallbackSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                          fallbackSvg.setAttribute('class', 'h-8 w-8 text-red-600');
+                          fallbackSvg.setAttribute('class', 'h-6 w-6 sm:h-8 sm:w-8 text-red-600');
                           fallbackSvg.setAttribute('fill', 'none');
                           fallbackSvg.setAttribute('viewBox', '0 0 24 24');
                           fallbackSvg.setAttribute('stroke', 'currentColor');
@@ -654,22 +646,22 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                       />
                     </div>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center">
-                      <h3 className="text-sm font-medium text-gray-500">
+                      <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                         {language === 'es' ? 'España' : 'Spain'}
                       </h3>
                     </div>
-                    <div className="flex items-baseline mt-1">
+                    <div className="flex items-baseline mt-1 flex-wrap">
                       {
                           (() => {
                           const { spainData } = getFixedKeyMetricsData();
                           return (
                             <>
-                              <span className="text-2xl font-bold text-red-700">
+                              <span className="text-xl sm:text-2xl font-bold text-red-700">
                                 {spainData ? `${parseFloat(spainData['%GDP']).toFixed(2)}%` : '--'}
                       </span>
-                      <span className="ml-2 text-sm text-gray-500">
+                      <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
                         {language === 'es' ? 'del PIB' : 'of GDP'}
                       </span>
                             </>
@@ -677,7 +669,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                         })()
                       }
                     </div>
-                    <div className="flex items-center mt-1.5">
+                    <div className="flex flex-col mt-1.5 space-y-1">
                       {
                            (() => {
                           const { euData, spainData } = getFixedKeyMetricsData();
@@ -736,24 +728,24 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                              }
                                
                                                                 return (
-                                  <div>
+                                  <div className="space-y-1">
                                     <div className={`text-xs font-medium ${diffPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                       {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(1)}% {language === 'es' ? 'vs UE' : 'vs EU'}
                                     </div>
-                                    <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
-                                      {language === 'es' ? `Ranking UE #${ranking}` : `EU Ranking #${ranking}`}
+                                    <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                      {language === 'es' ? `#${ranking} UE` : `#${ranking} EU`}
                                     </div>
                                   </div>
                                 );
                              }
                              
                                                            return (
-                                <div>
+                                <div className="space-y-1">
                                   <div className="text-xs font-medium text-gray-400">
                                     -- {language === 'es' ? 'vs UE' : 'vs EU'}
                                   </div>
-                                  <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
-                                {language === 'es' ? `Ranking UE --` : `EU Ranking --`}
+                                  <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                {language === 'es' ? `-- UE` : `-- EU`}
                                   </div>
                                 </div>
                               );
@@ -764,79 +756,93 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 </div>
               </div>
               
-              {/* Métrica 3: Top comunidad autónoma */}
-              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+              {/* Métrica 3: Mejor comunidad autónoma */}
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className="p-3 bg-green-50 rounded-lg mb-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                    <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium text-center w-16">
-                      {language === 'es' ? 'TOP' : 'TOP'}
-                    </div>
+                  <div className="p-2 sm:p-3 bg-green-50 rounded-lg mr-3 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-500">
-                        {language === 'es' ? 'Comunidad Autónoma' : 'Region'}
-                      </h3>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1">
+                      {language === 'es' ? 'Mejor C.A.' : 'Top Region'}
+                    </h3>
                     {
                       (() => {
-                        const { topRegionData } = getFixedKeyMetricsData();
+                        const { mostRecentYear } = getFixedKeyMetricsData();
+                        const regionYearStr = mostRecentYear.toString();
                         
-                        if (topRegionData) {
-                          const regionName = language === 'es' ? 
-                            topRegionData["Comunidad Limpio"] : 
-                            topRegionData["Comunidad en Inglés"];
+                        // Obtener datos filtrados por año más reciente y sector total
+                        const allRegionData = autonomousCommunitiesData.filter(item => 
+                          item["Año"] === regionYearStr && item["Sector Id"] === "(_T)"
+                        );
+                        
+                        if (allRegionData.length > 0) {
+                          // Encontrar la región con mayor % PIB I+D
+                          let bestRegion = allRegionData[0];
+                          let bestValue = 0;
                           
-                          // Obtener el valor de manera segura para TypeScript
+                          try {
+                            bestValue = parseFloat(bestRegion["% PIB I+D"].replace(',', '.'));
+                            
+                            for (const region of allRegionData) {
+                              const regionValue = parseFloat(region["% PIB I+D"].replace(',', '.'));
+                              if (regionValue > bestValue) {
+                                bestValue = regionValue;
+                                bestRegion = region;
+                              }
+                            }
+                          } catch {
+                            // Manejar errores de parsing
+                          }
+                          
+                          const regionName = language === 'es' 
+                            ? bestRegion["Comunidad Limpio"] 
+                            : bestRegion["Comunidad en Inglés"];
+                          
+                          // Re-calcular el valor por si hay comas o puntos mezclados
                           let value = 0;
                           try {
-                            if (topRegionData && typeof topRegionData === 'object') {
-                              const val = Object.entries(topRegionData)
-                                .find(([key]) => key === "% PIB I+D")?.[1] || '0';
-                              value = parseFloat(String(val).replace(',', '.'));
-                            }
+                            // Buscar el valor específico en el array de datos
+                            const val = allRegionData
+                              .filter(item => item["Comunidad Limpio"] === bestRegion["Comunidad Limpio"])
+                              .map(item => [item["Sector Nombre"], item["% PIB I+D"]])
+                              .find(([key]) => key === "% PIB I+D")?.[1] || '0';
+                            value = parseFloat(String(val).replace(',', '.'));
                           } catch {
                             // En caso de error, usar valor por defecto
                         }
                         
                         return (
-                          <>
-                            <div className="mt-1">
-                              <span className="text-lg font-bold text-gray-800 truncate" style={{ maxWidth: '150px' }}>
-                                  {regionName}
-                              </span>
+                          <div>
+                            <div className="truncate text-sm sm:text-base font-bold text-gray-800 mb-1" title={regionName}>
+                              {regionName}
                             </div>
-                            <div className="flex items-baseline mt-1">
-                              <span className="text-2xl font-bold text-green-700">
+                            <div className="flex items-baseline flex-wrap">
+                              <span className="text-xl sm:text-2xl font-bold text-green-700">
                                   {value.toFixed(2)}%
                               </span>
-                              <span className="ml-2 text-sm text-gray-500">
+                              <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
                                 {language === 'es' ? 'del PIB' : 'of GDP'}
                               </span>
                             </div>
-                          </>
+                          </div>
                         );
                         }
                         
                         return (
-                      <>
-                        <div className="mt-1">
-                          <span className="text-lg font-bold text-gray-600 truncate" style={{ maxWidth: '150px' }}>
-                            {language === 'es' ? 'Sin datos' : 'No data'}
-                          </span>
+                      <div>
+                        <div className="text-sm sm:text-base font-bold text-gray-600 mb-1">
+                          {language === 'es' ? 'Sin datos' : 'No data'}
                         </div>
-                        <div className="flex items-baseline mt-1">
-                          <span className="text-2xl font-bold text-gray-400">--</span>
-                          <span className="ml-2 text-sm text-gray-500">
+                        <div className="flex items-baseline flex-wrap">
+                          <span className="text-xl sm:text-2xl font-bold text-gray-400">--</span>
+                          <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
                             {language === 'es' ? 'del PIB' : 'of GDP'}
                           </span>
                         </div>
-                      </>
+                      </div>
                         );
                       })()
                     }
@@ -845,18 +851,16 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Métrica 4: Canarias */}
-              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 transition-all hover:shadow-md">
+              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 transition-all hover:shadow-md">
                 <div className="flex items-start">
-                                      <div className="flex flex-col items-center mr-4">
-                    <div className="p-3 bg-yellow-50 rounded-lg mb-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
+                  <div className="p-2 sm:p-3 bg-yellow-50 rounded-lg mr-3 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center">
-                      <h3 className="text-sm font-medium text-gray-500">
+                      <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                         {language === 'es' ? 'Canarias' : 'Canary Islands'}
                       </h3>
                     </div>
@@ -879,65 +883,65 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                           );
                           
                           // Extraer valores únicos por comunidad
-                              const communityMap = new Map();
+                          const communityMap = new Map();
                           allRegionData.forEach(item => {
-                                const name = item["Comunidad Limpio"];
-                                const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
-                                if (!isNaN(value)) {
-                                  communityMap.set(name, value);
-                                }
-                              });
-                              
+                            const name = item["Comunidad Limpio"];
+                            const value = parseFloat(item["% PIB I+D"].replace(',', '.'));
+                            if (!isNaN(value)) {
+                              communityMap.set(name, value);
+                            }
+                          });
+                          
                           // Ordenar comunidades por valor
-                              const sortedCommunities = Array.from(communityMap.entries())
-                                .sort((a, b) => b[1] - a[1]);
-                              
-                              // Encontrar la posición de Canarias
-                              const canariasIndex = sortedCommunities.findIndex(([name]) => 
-                                name.toLowerCase() === "canarias"
-                              );
-                              
+                          const sortedCommunities = Array.from(communityMap.entries())
+                            .sort((a, b) => b[1] - a[1]);
+                          
+                          // Encontrar la posición de Canarias
+                          const canariasIndex = sortedCommunities.findIndex(([name]) => 
+                            name.toLowerCase() === "canarias"
+                          );
+                          
                           const canariasRank = canariasIndex !== -1 ? canariasIndex + 1 : 'N/A';
-                              
-                              return (
-                            <>
-                              <div className="flex items-baseline mt-1">
-                                <span className="text-2xl font-bold text-yellow-700">
+                          
+                          return (
+                            <div>
+                              <div className="flex items-baseline mt-1 flex-wrap">
+                                <span className="text-xl sm:text-2xl font-bold text-yellow-700">
                                   {canariasValue.toFixed(2)}%
                                 </span>
-                                <span className="ml-2 text-sm text-gray-500">
+                                <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
                                   {language === 'es' ? 'del PIB' : 'of GDP'}
                                 </span>
                               </div>
-                              <div className="flex items-center mt-1.5">
+                              <div className="flex flex-col mt-1.5 space-y-1">
                                 <span className={`text-xs font-medium ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                   {diff >= 0 ? '+' : ''}{diff.toFixed(1)}% {language === 'es' ? 'vs España' : 'vs Spain'}
                                 </span>
-                              </div>
-                                <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
-                                  {language === 'es' ? `Ranking nacional #${canariasRank}` : `National Ranking #${canariasRank}`}
+                                <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                  {language === 'es' ? `#${canariasRank} Nacional` : `#${canariasRank} National`}
                                 </div>
-                          </>
-                        );
+                              </div>
+                            </div>
+                          );
                         }
                         
                         return (
-                      <>
-                        <div className="flex items-baseline mt-1">
-                          <span className="text-2xl font-bold text-gray-400">--</span>
-                          <span className="ml-2 text-sm text-gray-500">
-                            {language === 'es' ? 'del PIB' : 'of GDP'}
-                          </span>
-                        </div>
-                        <div className="flex items-center mt-1.5">
-                          <span className="text-xs font-medium text-gray-400">
-                            -- {language === 'es' ? 'vs España' : 'vs Spain'}
-                          </span>
-                        </div>
-                        <div className="mt-1.5 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium text-center">
-                          {language === 'es' ? 'Ranking nacional: Sin datos' : 'National Ranking: No data'}
-                        </div>
-                      </>
+                          <div>
+                            <div className="flex items-baseline mt-1 flex-wrap">
+                              <span className="text-xl sm:text-2xl font-bold text-gray-400">--</span>
+                              <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
+                                {language === 'es' ? 'del PIB' : 'of GDP'}
+                              </span>
+                            </div>
+                            <div className="flex flex-col mt-1.5 space-y-1">
+                              <span className="text-xs font-medium text-gray-400">
+                                -- {language === 'es' ? 'vs España' : 'vs Spain'}
+                              </span>
+                              <div className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full font-medium inline-block">
+                                {language === 'es' ? 'Sin datos' : 'No data'}
+                              </div>
+                            </div>
+                          </div>
                         );
                       })()
                     }
@@ -997,9 +1001,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Filtros - DEJAR SOLO UN CONJUNTO DE FILTROS */}
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-4">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <div className="flex items-center">
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -1011,15 +1015,15 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
+                        className="text-blue-500 mr-2 flex-shrink-0"
                       >
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                       </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
                       <select 
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
                       >
                         {availableYears.map(year => (
                           <option key={year} value={year}>{year}</option>
@@ -1028,11 +1032,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                     
                     <div className="flex items-center">
-                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.sector}</label>
                       <select 
                         value={getSectorId(selectedSector)}
                         onChange={(e) => handleSectorChange(e.target.value)}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[200px] sm:min-w-[240px] text-sm sm:text-base"
                       >
                         {rdSectors.map(sector => (
                           <option key={sector.id} value={sector.id}>
@@ -1044,7 +1048,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                   </div>
                   
                   {/* Selector de tipo de datos visible */}
-                  <div>
+                  <div className="flex justify-start sm:justify-end">
                     <DataTypeSelector 
                       dataType={dataDisplayType} 
                       onChange={handleDataTypeChange} 
@@ -1054,56 +1058,64 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 </div>
               </div>
               
-              {/* Primera fila: Mapa y Gráfica */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Primera fila: Mapa y Gráfica - Mejorado para móvil */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8">
                 {/* Mapa de Europa */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                  <EuropeanRDMap 
-                    data={europeData} 
-                    selectedYear={selectedYear} 
-                    language={language} 
-                    selectedSector={selectedSector}
-                    autonomousCommunitiesData={autonomousCommunitiesData}
-                    dataDisplayType={dataDisplayType}
-                  />
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-2 xl:order-1">
+                  <div className="h-[350px] sm:h-[400px] lg:h-[500px]">
+                    <EuropeanRDMap 
+                      data={europeData} 
+                      selectedYear={selectedYear} 
+                      language={language} 
+                      selectedSector={selectedSector}
+                      autonomousCommunitiesData={autonomousCommunitiesData}
+                      dataDisplayType={dataDisplayType}
+                    />
+                  </div>
                 </div>
                 
                 {/* Ranking de países - Eliminar título duplicado y usar directamente el componente */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-[500px]">
-                  {europeData.length > 0 ? (
-                    <div className="h-full overflow-hidden" data-testid="country-ranking-chart">
-                      <CountryRankingChart 
-                        data={europeData}
-                        selectedYear={selectedYear}
-                        language={language}
-                        selectedSector={getSectorId(selectedSector)}
-                        autonomousCommunitiesData={autonomousCommunitiesData}
-                        dataDisplayType={dataDisplayType}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex justify-center items-center h-full">
-                      {isLoading ? (
-                        <div className="flex flex-col items-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                          <p className="mt-4 text-gray-500">{t.loading}</p>
-                        </div>
-                      ) : error ? (
-                        <div className="text-red-500">
-                          <p>{error}</p>
-                        </div>
-                      ) : (
-                        <p className="text-gray-500">{t.noData}</p>
-                      )}
-                    </div>
-                  )}
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-1 xl:order-2">
+                  <div className="h-[350px] sm:h-[400px] lg:h-[500px]">
+                    {europeData.length > 0 ? (
+                      <div className="h-full overflow-hidden" data-testid="country-ranking-chart">
+                        <CountryRankingChart 
+                          data={europeData}
+                          selectedYear={selectedYear}
+                          language={language}
+                          selectedSector={getSectorId(selectedSector)}
+                          autonomousCommunitiesData={autonomousCommunitiesData}
+                          dataDisplayType={dataDisplayType}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-center items-center h-full">
+                        {isLoading ? (
+                          <div className="flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-500"></div>
+                            <p className="mt-2 sm:mt-4 text-gray-500 text-sm sm:text-base">{t.loading}</p>
+                          </div>
+                        ) : error ? (
+                          <div className="text-red-500 text-sm sm:text-base text-center px-4">
+                            <p>{error}</p>
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm sm:text-base">{t.noData}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <ObservationFlags />
-                <SupranationalEntities />
+              {/* Segunda fila: Observation Flags y SUPRANATIONAL ENTITIES lado a lado - Mejorado para móvil */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                <div className="order-2 lg:order-1">
+                  <ObservationFlags />
+                </div>
+                <div className="order-1 lg:order-2">
+                  <SupranationalEntities />
+                </div>
               </div>
             </div>
             
@@ -1129,44 +1141,48 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                   
                   {/* Selector de sector encima de la gráfica */}
                   <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                    <div className="flex items-center">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
-                      >
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                      </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                      <select 
-                        value={getSectorId(selectedSector)}
-                        onChange={(e) => handleSectorChange(e.target.value)}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                      >
-                        {rdSectors.map(sector => (
-                          <option key={sector.id} value={sector.id}>
-                            {sector.name[language]}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                      <div className="flex items-center">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="text-blue-500 mr-2 flex-shrink-0"
+                        >
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.sector}</label>
+                        <select 
+                          value={getSectorId(selectedSector)}
+                          onChange={(e) => handleSectorChange(e.target.value)}
+                          className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[200px] sm:min-w-[240px] text-sm sm:text-base"
+                        >
+                          {rdSectors.map(sector => (
+                            <option key={sector.id} value={sector.id}>
+                              {sector.name[language]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Componente RDComparisonChart con el selectedSector como prop */}
-                  <RDComparisonChart 
-                    language={language}
-                    gdpData={mapToGDPConsolidadoData(europeData)}
-                    autonomousCommunitiesData={autonomousCommunitiesData}
-                    years={availableYears.map(year => year.toString())}
-                    selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector).toLowerCase()}
-                  />
+                  {/* Componente RDComparisonChart con el selectedSector como prop - Mejorado para móvil */}
+                  <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                    <RDComparisonChart 
+                      language={language}
+                      gdpData={mapToGDPConsolidadoData(europeData)}
+                      autonomousCommunitiesData={autonomousCommunitiesData}
+                      years={availableYears.map(year => year.toString())}
+                      selectedSector={selectedSector === 'All Sectors' ? 'total' : getSectorId(selectedSector).toLowerCase()}
+                    />
+                  </div>
                 </>
               )}
             </div>
@@ -1220,9 +1236,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               </div>
               
               {/* Filtros para la sección de comunidades autónomas */}
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-4">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <div className="flex items-center">
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -1234,15 +1250,15 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
+                        className="text-blue-500 mr-2 flex-shrink-0"
                       >
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                       </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
                       <select 
                         value={selectedRegionYear}
                         onChange={(e) => setSelectedRegionYear(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
                       >
                         {availableRegionYears.map(year => (
                           <option key={year} value={year}>{year}</option>
@@ -1251,11 +1267,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     </div>
                     
                     <div className="flex items-center">
-                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.sector}</label>
                       <select 
                         value={getSectorId(selectedRegionSector)}
                         onChange={(e) => handleRegionSectorChange(e.target.value)}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[200px] sm:min-w-[240px] text-sm sm:text-base"
                       >
                         {rdSectors.map(sector => (
                           <option key={sector.id} value={sector.id}>
@@ -1267,7 +1283,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                   </div>
                   
                   {/* Selector de tipo de datos */}
-                  <div>
+                  <div className="flex justify-start sm:justify-end">
                     <DataTypeSelector 
                       dataType={dataDisplayType} 
                       onChange={handleDataTypeChange} 
@@ -1277,42 +1293,45 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                 </div>
               </div>
               
-              {/* Mapa y Ranking */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Mapa y Ranking - Mejorado para móvil */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8">
                 {/* Mapa de España */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-                  {autonomousCommunitiesData.length > 0 ? (
-                    <SpanishRegionsMap 
-                      data={autonomousCommunitiesData} 
-                      selectedYear={selectedRegionYear} 
-                      language={language} 
-                      selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
-                      dataDisplayType={dataDisplayType}
-                    />
-                  ) : (
-                    <div className="flex justify-center items-center h-full">
-                      <p className="text-gray-500">{t.noData}</p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Ranking de comunidades */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-[500px]">
-                  {autonomousCommunitiesData.length > 0 ? (
-                    <div className="h-full overflow-hidden" data-testid="region-ranking-chart">
-                      <RegionRankingChart 
-                        data={autonomousCommunitiesData}
-                        selectedYear={selectedRegionYear}
-                        language={language}
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-2 xl:order-1">
+                  <div className="h-[350px] sm:h-[400px] lg:h-[500px]">
+                    {autonomousCommunitiesData.length > 0 ? (
+                      <SpanishRegionsMap 
+                        data={autonomousCommunitiesData} 
+                        selectedYear={selectedRegionYear} 
+                        language={language} 
                         selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
                         dataDisplayType={dataDisplayType}
                       />
-                    </div>
-                  ) : (
-                    <div className="flex justify-center items-center h-full">
-                      <p className="text-gray-500">{t.noData}</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex justify-center items-center h-full">
+                        <p className="text-gray-500 text-sm sm:text-base">{t.noData}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Ranking de comunidades */}
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-1 xl:order-2">
+                  <div className="h-[350px] sm:h-[400px] lg:h-[500px]">
+                    {autonomousCommunitiesData.length > 0 ? (
+                      <div className="h-full overflow-hidden" data-testid="region-ranking-chart">
+                        <RegionRankingChart 
+                          data={autonomousCommunitiesData}
+                          selectedYear={selectedRegionYear}
+                          language={language}
+                          selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-center items-center h-full">
+                        <p className="text-gray-500 text-sm sm:text-base">{t.noData}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1339,43 +1358,47 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                   
                   {/* Selector de sector estilo light-blue encima de la gráfica */}
                   <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                    <div className="flex items-center">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
-                      >
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                      </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.sector}</label>
-                      <select 
-                        value={getSectorId(selectedRegionSector)}
-                        onChange={(e) => handleRegionSectorChange(e.target.value)}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[240px]"
-                      >
-                        {rdSectors.map(sector => (
-                          <option key={sector.id} value={sector.id}>
-                            {sector.name[language]}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                      <div className="flex items-center">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="text-blue-500 mr-2 flex-shrink-0"
+                        >
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.sector}</label>
+                        <select 
+                          value={getSectorId(selectedRegionSector)}
+                          onChange={(e) => handleRegionSectorChange(e.target.value)}
+                          className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 min-w-[200px] sm:min-w-[240px] text-sm sm:text-base"
+                        >
+                          {rdSectors.map(sector => (
+                            <option key={sector.id} value={sector.id}>
+                              {sector.name[language]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   
-                  <CommunityRDComparisonChart 
-                    language={language}
-                    gdpData={mapToGDPConsolidadoData(europeData)}
-                    autonomousCommunitiesData={autonomousCommunitiesData}
-                    years={availableYears.map(year => year.toString())}
-                    selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector).toLowerCase()}
-                  />
+                  <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                    <CommunityRDComparisonChart 
+                      language={language}
+                      gdpData={mapToGDPConsolidadoData(europeData)}
+                      autonomousCommunitiesData={autonomousCommunitiesData}
+                      years={availableYears.map(year => year.toString())}
+                      selectedSector={selectedRegionSector === 'All Sectors' ? 'total' : getSectorId(selectedRegionSector).toLowerCase()}
+                    />
+                  </div>
                 </>
               )}
               
