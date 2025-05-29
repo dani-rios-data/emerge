@@ -35,8 +35,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-6 mt-3 text-blue-800 pb-3 border-b-2 border-blue-200 flex items-center group">
-      <span className="inline-block w-2 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-md mr-3 group-hover:w-3 transition-all duration-300"></span>
+    <h2 className="text-lg font-bold mb-4 mt-2 text-blue-800 pb-2 border-b-2 border-blue-200 flex items-center group">
+      <span className="inline-block w-1.5 h-6 bg-gradient-to-r from-blue-600 to-blue-800 rounded-sm mr-2.5 group-hover:w-2 transition-all duration-300"></span>
       <span className="relative">
         {title}
         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
@@ -139,64 +139,64 @@ const Overview: React.FC<OverviewProps> = (props) => {
   };
   
   return (
-    <div className="bg-white rounded-lg p-6 pt-4 pb-8 w-full min-h-[700px] overflow-y-auto">
+    <div className="bg-white rounded-lg p-5 pt-3 pb-6 w-full min-h-[700px] overflow-y-auto">
       {/* Contenedor principal */}
       <div className="max-w-full mx-auto">
         {/* Sección Sobre EMERGE */}
-        <div className="mb-12 bg-white p-7 rounded-lg border border-gray-200 animate-section opacity-0 translate-y-4 transition-all duration-700">
+        <div className="mb-8 bg-white p-5 rounded-lg border border-gray-200 animate-section opacity-0 translate-y-4 transition-all duration-700">
           <SectionTitle title={t('aboutEmerge')} />
           
           <div className="prose prose-blue max-w-none">
-            <div className="mb-6 text-gray-700 leading-relaxed">
-              <p className="mb-4 text-lg">{t('emergeDescription1')}</p>
-              <p className="text-lg">{t('emergeDescription2')}</p>
+            <div className="mb-4 text-gray-700 leading-relaxed">
+              <p className="mb-3 text-base">{t('emergeDescription1')}</p>
+              <p className="text-base">{t('emergeDescription2')}</p>
             </div>
             
-            <div className="mb-6 text-gray-700 leading-relaxed">
-              <p className="mb-4 text-lg">{t('emergeTeam')}</p>
+            <div className="mb-4 text-gray-700 leading-relaxed">
+              <p className="mb-3 text-base">{t('emergeTeam')}</p>
               <div className="flex items-center my-3 text-blue-800 ml-2">
-                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
-                <span className="font-semibold text-lg">{t('emergeSpaces')}</span>
+                <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                <span className="font-semibold text-base">{t('emergeSpaces')}</span>
               </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 transition-all duration-300 group">
-              <div className="font-semibold text-blue-800 mb-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 transition-all duration-300 group">
+              <div className="font-semibold text-blue-800 mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
-                <span className="text-lg">{t('marineTitle')}</span>
+                <span className="text-base">{t('marineTitle')}</span>
               </div>
-              <p className="text-gray-700">{t('marineDesc')}</p>
+              <p className="text-gray-700 text-sm">{t('marineDesc')}</p>
             </div>
             
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 transition-all duration-300 group">
-              <div className="font-semibold text-blue-800 mb-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 transition-all duration-300 group">
+              <div className="font-semibold text-blue-800 mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h6v4H7V5zm8 8v2h1v1H4v-1h1v-2H4v-1h16v1h-1z" clipRule="evenodd" />
                 </svg>
-                <span className="text-lg">{t('paletexpressTitle')}</span>
+                <span className="text-base">{t('paletexpressTitle')}</span>
               </div>
-              <p className="text-gray-700">{t('paletexpressDesc')}</p>
+              <p className="text-gray-700 text-sm">{t('paletexpressDesc')}</p>
             </div>
           </div>
           
-          <div className="mt-4 mb-2 text-gray-700 leading-relaxed text-lg p-4 rounded-lg bg-gray-50 border border-gray-200">
+          <div className="mt-3 mb-2 text-gray-700 leading-relaxed text-base p-3 rounded-lg bg-gray-50 border border-gray-200">
             <p>{t('emergeObjectives')}</p>
           </div>
         </div>
 
         {/* Propósito del observatorio */}
-        <div className="mb-12 animate-section opacity-0 translate-y-4 transition-all duration-700">
+        <div className="mb-8 animate-section opacity-0 translate-y-4 transition-all duration-700">
           <SectionTitle title={t('reportPurpose')} />
           
-          <div className="bg-white p-7 rounded-lg border border-gray-200">
-            <p className="mb-4 text-gray-700 leading-relaxed text-lg">{t('purposeDescription1')}</p>
-            <p className="mb-5 text-gray-700 leading-relaxed text-lg">{t('purposeDescription2')}</p>
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <p className="mb-3 text-gray-700 leading-relaxed text-base">{t('purposeDescription1')}</p>
+            <p className="mb-4 text-gray-700 leading-relaxed text-base">{t('purposeDescription2')}</p>
             
-            <ul className="space-y-4 text-gray-700 mb-4">
+            <ul className="space-y-3 text-gray-700 mb-3">
               {[
                 t('purposeList1'),
                 t('purposeList2'),
@@ -204,12 +204,12 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 t('purposeList4')
               ].map((item, index) => (
                 <li key={index} className="flex items-start">
-                  <div className="flex-shrink-0 flex h-7 items-center">
-                    <svg className="h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="flex-shrink-0 flex h-6 items-center">
+                    <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                     </svg>
                   </div>
-                  <span className="ml-3 text-lg">{item}</span>
+                  <span className="ml-3 text-base">{item}</span>
                 </li>
               ))}
             </ul>
@@ -217,102 +217,102 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
 
         {/* Contenido del observatorio */}
-        <div className="mb-6 animate-section opacity-0 translate-y-4 transition-all duration-700">
+        <div className="mb-5 animate-section opacity-0 translate-y-4 transition-all duration-700">
           <SectionTitle title={t('reportContent')} />
           
-          <div className="mb-7 p-7 bg-white rounded-lg border border-gray-200">
-            <p className="mb-8 text-gray-700 leading-relaxed text-lg">{t('contentDescription')}</p>
+          <div className="mb-5 p-5 bg-white rounded-lg border border-gray-200">
+            <p className="mb-6 text-gray-700 leading-relaxed text-base">{t('contentDescription')}</p>
             
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Inversión en I+D Card */}
-              <div className="bg-white rounded-lg border border-gray-200 p-5">
-                <div className="flex items-start mb-3">
-                  <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-start mb-2">
+                  <div className="flex-shrink-0 bg-blue-100 p-2.5 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-bold text-blue-800">{t('investmentTitle')}</h4>
+                  <h4 className="text-base font-bold text-blue-800">{t('investmentTitle')}</h4>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{t('investmentDescription')}</p>
+                <p className="text-gray-700 leading-relaxed text-sm">{t('investmentDescription')}</p>
               </div>
               
               {/* Actividad investigadora Card */}
-              <div className="bg-white rounded-lg border border-gray-200 p-5">
-                <div className="flex items-start mb-3">
-                  <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-start mb-2">
+                  <div className="flex-shrink-0 bg-blue-100 p-2.5 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-bold text-blue-800">{t('researchersTitle')}</h4>
+                  <h4 className="text-base font-bold text-blue-800">{t('researchersTitle')}</h4>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{t('researchersDescription')}</p>
+                <p className="text-gray-700 leading-relaxed text-sm">{t('researchersDescription')}</p>
               </div>
               
               {/* Producción de patentes Card */}
-              <div className="bg-white rounded-lg border border-gray-200 p-5">
-                <div className="flex items-start mb-3">
-                  <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-start mb-2">
+                  <div className="flex-shrink-0 bg-blue-100 p-2.5 rounded-lg mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-bold text-blue-800">{t('patentsTitle')}</h4>
+                  <h4 className="text-base font-bold text-blue-800">{t('patentsTitle')}</h4>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{t('patentsDescription')}</p>
+                <p className="text-gray-700 leading-relaxed text-sm">{t('patentsDescription')}</p>
               </div>
             </div>
             
             {/* Sección de fuentes de datos */}
-            <div className="mt-12">
-              <h3 className="text-lg font-semibold mb-5 text-blue-800 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mt-8">
+              <h3 className="text-base font-semibold mb-4 text-blue-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                 </svg>
                 {t('dataSources')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Eurostat */}
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-blue-800 mb-1 flex items-center text-sm">
+                    <span className="inline-block w-1 h-1 bg-blue-600 rounded-full mr-2"></span>
                     {t('eurostat')}
                   </h4>
-                  <p className="text-gray-700 text-sm">{t('eurodescription')}</p>
+                  <p className="text-gray-700 text-xs">{t('eurodescription')}</p>
                 </div>
                 
                 {/* INE */}
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-blue-800 mb-1 flex items-center text-sm">
+                    <span className="inline-block w-1 h-1 bg-blue-600 rounded-full mr-2"></span>
                     {t('ine')}
                   </h4>
-                  <p className="text-gray-700 text-sm">{t('inedescription')}</p>
+                  <p className="text-gray-700 text-xs">{t('inedescription')}</p>
                 </div>
                 
                 {/* ISTAC */}
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-blue-800 mb-1.5 flex items-center">
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-blue-800 mb-1 flex items-center text-sm">
+                    <span className="inline-block w-1 h-1 bg-blue-600 rounded-full mr-2"></span>
                     {t('istac')}
                   </h4>
-                  <p className="text-gray-700 text-sm">{t('istacdescription')}</p>
+                  <p className="text-gray-700 text-xs">{t('istacdescription')}</p>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <div className="flex items-start mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex items-start mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-gray-700 text-sm">{t('additionalFeatures')}</p>
             </div>
             <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <p className="text-gray-700 text-sm">{t('updateInfo')}</p>
