@@ -335,9 +335,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
           ) : (
             <div className="bg-white rounded-lg w-full">
               {/* Filtros */}
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-4">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <div className="flex items-center">
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -349,15 +349,15 @@ const Patents: React.FC<PatentsProps> = (props) => {
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
+                        className="text-blue-500 mr-2 flex-shrink-0"
                       >
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                       </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.year}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
                       <select 
                         value={selectedYear}
                         onChange={handleYearChange}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
                       >
                         {availableYears.map(year => (
                           <option key={year} value={year}>{year}</option>
@@ -375,23 +375,23 @@ const Patents: React.FC<PatentsProps> = (props) => {
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round" 
-                        className="text-blue-500 mr-2"
+                        className="text-blue-500 mr-2 flex-shrink-0"
                       >
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                       </svg>
-                      <label className="text-gray-700 font-medium mr-2">{t.cooperationPartner}</label>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.cooperationPartner}</label>
                       <select 
                         value={cooperationPartner}
                         onChange={handleCooperationPartnerChange}
-                        className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
                       >
                         <option value="APPL">{t.applicant}</option>
                         <option value="INVT">{t.inventor}</option>
                       </select>
                     </div>
                   </div>
-                  <div>
+                  <div className="flex justify-start sm:justify-end">
                     <PatentsDataTypeSelector
                       patsDisplayType={patsDisplayType}
                       onChange={handlePatsDisplayTypeChange}
@@ -401,53 +401,57 @@ const Patents: React.FC<PatentsProps> = (props) => {
                 </div>
               </div>
               
-              {/* Primera fila: Mapa y Gráfica */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Primera fila: Mapa y Gráfica - Mejorado para móvil */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8">
                 {/* Mapa de Europa */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "660px" }}>
-                  <PatentsEuropeanMap
-                    data={patentsData}
-                    selectedYear={selectedYear}
-                    language={language}
-                    patsDisplayType={patsDisplayType}
-                    cooperationPartner={cooperationPartner}
-                  />
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-2 xl:order-1">
+                  <div className="h-[400px] sm:h-[500px] lg:h-[660px]">
+                    <PatentsEuropeanMap
+                      data={patentsData}
+                      selectedYear={selectedYear}
+                      language={language}
+                      patsDisplayType={patsDisplayType}
+                      cooperationPartner={cooperationPartner}
+                    />
+                  </div>
                 </div>
                 
                 {/* Ranking de países */}
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "660px" }}>
-                  {patentsData.length > 0 ? (
-                    <div className="h-full overflow-hidden">
-                      <PatentsRankingChart
-                        data={patentsData}
-                        selectedYear={selectedYear}
-                        language={language}
-                        patsDisplayType={patsDisplayType}
-                        cooperationPartner={cooperationPartner}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex justify-center items-center h-full">
-                      {isLoading ? (
-                        <div className="flex flex-col items-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                          <p className="mt-4 text-gray-500">{t.loading}</p>
-                        </div>
-                      ) : error ? (
-                        <div className="text-red-500">
-                          <p>{error}</p>
-                        </div>
-                      ) : (
-                        <div className="bg-gray-50 p-8 rounded-lg text-center">
-                          <p className="text-gray-600">
-                            {language === 'es' ? 
-                              'Gráfico de ranking disponible en el mapa europeo' : 
-                              'Ranking chart available in the European map'}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 order-1 xl:order-2">
+                  <div className="h-[400px] sm:h-[500px] lg:h-[660px]">
+                    {patentsData.length > 0 ? (
+                      <div className="h-full overflow-hidden">
+                        <PatentsRankingChart
+                          data={patentsData}
+                          selectedYear={selectedYear}
+                          language={language}
+                          patsDisplayType={patsDisplayType}
+                          cooperationPartner={cooperationPartner}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-center items-center h-full">
+                        {isLoading ? (
+                          <div className="flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-500"></div>
+                            <p className="mt-2 sm:mt-4 text-gray-500 text-sm sm:text-base">{t.loading}</p>
+                          </div>
+                        ) : error ? (
+                          <div className="text-red-500 text-sm sm:text-base text-center px-4">
+                            <p>{error}</p>
+                          </div>
+                        ) : (
+                          <div className="bg-gray-50 p-4 sm:p-8 rounded-lg text-center">
+                            <p className="text-gray-600 text-sm sm:text-base">
+                              {language === 'es' ? 
+                                'Gráfico de ranking disponible en el mapa europeo' : 
+                                'Ranking chart available in the European map'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -459,9 +463,9 @@ const Patents: React.FC<PatentsProps> = (props) => {
           <SubsectionTitle title={t.chartTitle} />
           
           {/* Filtros independientes para el gráfico temporal */}
-          <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-4">
+          <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                 <div className="flex items-center">
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -473,23 +477,23 @@ const Patents: React.FC<PatentsProps> = (props) => {
                     strokeWidth="2" 
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
-                    className="text-blue-500 mr-2"
+                    className="text-blue-500 mr-2 flex-shrink-0"
                   >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  <label className="text-gray-700 font-medium mr-2">{t.cooperationPartner}</label>
+                  <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.cooperationPartner}</label>
                   <select 
                     value={timelineCooperationPartner}
                     onChange={handleTimelineCooperationPartnerChange}
-                    className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
                   >
                     <option value="APPL">{t.applicant}</option>
                     <option value="INVT">{t.inventor}</option>
                   </select>
                 </div>
               </div>
-              <div>
+              <div className="flex justify-start sm:justify-end">
                 <PatentsDataTypeSelector
                   patsDisplayType={timelinePatsDisplayType}
                   onChange={handleTimelinePatsDisplayTypeChange}
@@ -500,32 +504,34 @@ const Patents: React.FC<PatentsProps> = (props) => {
           </div>
           
           {isLoading ? (
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
+            <div className="bg-gray-50 p-4 sm:p-8 rounded-lg border border-gray-200 min-h-[300px] sm:min-h-[400px] flex items-center justify-center w-full">
               <div className="text-center text-gray-400">
-                <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-6 w-6 sm:h-8 sm:w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p className="text-lg">{t.loading}</p>
+                <p className="text-sm sm:text-lg">{t.loading}</p>
               </div>
             </div>
           ) : error ? (
-            <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center w-full">
+            <div className="bg-gray-50 p-4 sm:p-8 rounded-lg border border-gray-200 min-h-[300px] sm:min-h-[400px] flex items-center justify-center w-full">
               <div className="text-center text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-lg">{error}</p>
+                <p className="text-sm sm:text-lg">{error}</p>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
-              <PatentsEuropeanTimelineChart
-                data={patentsData}
-                language={language}
-                patsDisplayType={timelinePatsDisplayType}
-                cooperationPartner={timelineCooperationPartner}
-              />
+            <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+              <div className="h-[350px] sm:h-[450px] lg:h-[500px]">
+                <PatentsEuropeanTimelineChart
+                  data={patentsData}
+                  language={language}
+                  patsDisplayType={timelinePatsDisplayType}
+                  cooperationPartner={timelineCooperationPartner}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -559,52 +565,58 @@ const Patents: React.FC<PatentsProps> = (props) => {
             <div className="bg-white rounded-lg w-full">
               {/* Filtros para la sección regional */}
               <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                <div className="flex items-center">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="16" 
-                    height="16" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="text-blue-500 mr-2"
-                  >
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                  </svg>
-                  <label className="text-gray-700 font-medium mr-2">{t.year}</label>
-                  <select 
-                    value={regionalYear}
-                    onChange={handleRegionalYearChange}
-                    className="border border-gray-300 rounded px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  >
-                    {regionalAvailableYears.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                  <div className="flex items-center">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-blue-500 mr-2 flex-shrink-0"
+                    >
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
+                    <select 
+                      value={regionalYear}
+                      onChange={handleRegionalYearChange}
+                      className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
+                    >
+                      {regionalAvailableYears.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
               
               {/* Gráfico regional */}
-              <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "660px" }}>
-                <PatentsRegionalChart
-                  data={regionalData}
-                  selectedYear={regionalYear}
-                  language={language}
-                />
+              <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                <div className="h-[400px] sm:h-[500px] lg:h-[660px]">
+                  <PatentsRegionalChart
+                    data={regionalData}
+                    selectedYear={regionalYear}
+                    language={language}
+                  />
+                </div>
               </div>
 
               {/* Timeline de evolución regional */}
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <SubsectionTitle title={language === 'es' ? "Evolución temporal por comunidades autónomas" : "Timeline Evolution by Autonomous Communities"} />
                 
-                <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "550px" }}>
-                  <PatentsRegionalTimelineChart
-                    data={regionalData}
-                    language={language}
-                  />
+                <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100">
+                  <div className="h-[400px] sm:h-[500px] lg:h-[550px]">
+                    <PatentsRegionalTimelineChart
+                      data={regionalData}
+                      language={language}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

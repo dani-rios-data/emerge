@@ -1099,32 +1099,60 @@ const PatentsEuropeanMap: React.FC<PatentsEuropeanMapProps> = ({
         }
       };
 
-      // Función para posicionar tooltip
+      // Función para posicionar tooltip - Optimizada para móvil
       const positionTooltip = (tooltip: d3.Selection<HTMLDivElement, unknown, null, undefined>, event: MouseEvent, tooltipNode: HTMLElement) => {
         const tooltipRect = tooltipNode.getBoundingClientRect();
-        const tooltipWidth = tooltipRect.width || 300;
-        const tooltipHeight = tooltipRect.height || 200;
+        const tooltipWidth = tooltipRect.width || 320;
+        const tooltipHeight = tooltipRect.height || 280;
         
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         
-        let left = event.clientX + 15;
-        let top = event.clientY - 15;
+        // Detectar si es móvil (pantalla pequeña)
+        const isMobile = windowWidth < 768;
         
-        if (left + tooltipWidth > windowWidth - 10) {
-          left = event.clientX - tooltipWidth - 15;
-        }
+        let left, top;
         
-        if (top + tooltipHeight > windowHeight - 10) {
-          if (tooltipHeight < windowHeight - 20) {
-            top = windowHeight - tooltipHeight - 10;
+        if (isMobile) {
+          // En móvil, centrar el tooltip en la pantalla con margen
+          const margin = 10;
+          
+          // Centrar horizontalmente con margen de seguridad
+          left = Math.max(margin, (windowWidth - tooltipWidth) / 2);
+          
+          // Posicionar verticalmente - preferir la parte superior si cabe
+          if (event.clientY > windowHeight / 2) {
+            // Si el click está en la mitad inferior, mostrar arriba
+            top = Math.max(margin, event.clientY - tooltipHeight - 20);
           } else {
-            top = 10;
+            // Si el click está en la mitad superior, mostrar abajo
+            top = Math.min(windowHeight - tooltipHeight - margin, event.clientY + 20);
           }
+          
+          // Asegurar que cabe en la pantalla
+          if (tooltipHeight > windowHeight - 2 * margin) {
+            top = margin;
+          }
+        } else {
+          // Comportamiento original para desktop
+          left = event.clientX + 15;
+          top = event.clientY - 15;
+          
+          if (left + tooltipWidth > windowWidth - 10) {
+            left = event.clientX - tooltipWidth - 15;
+          }
+          
+          if (top + tooltipHeight > windowHeight - 10) {
+            if (tooltipHeight < windowHeight - 20) {
+              top = windowHeight - tooltipHeight - 10;
+            } else {
+              top = 10;
+            }
+          }
+          
+          if (top < 10) top = 10;
+          if (left < 10) left = 10;
         }
-        
-        if (top < 10) top = 10;
-        if (left < 10) left = 10;
         
         tooltip
           .style('left', `${left}px`)

@@ -900,7 +900,7 @@ const getPreviousYearValue = (
   }
 };
 
-// Añadir una función para posicionar el tooltip inteligentemente
+// Añadir una función para posicionar el tooltip inteligentemente y optimizada para móvil
 function positionTooltip(
   tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>, 
   event: MouseEvent, 
@@ -908,41 +908,68 @@ function positionTooltip(
 ): void {
   // Obtener las dimensiones del tooltip
   const tooltipRect = tooltipNode.getBoundingClientRect();
-  const tooltipWidth = tooltipRect.width || 300; // Usar un valor por defecto si aún no se ha renderizado
-  const tooltipHeight = tooltipRect.height || 200;
+  const tooltipWidth = tooltipRect.width || 320; // Aumentar ancho por defecto para móvil
+  const tooltipHeight = tooltipRect.height || 280; // Aumentar altura por defecto
   
   // Obtener dimensiones de la ventana
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   
-  // Calcular la posición óptima
-  let left = event.clientX + 15;
-  let top = event.clientY - 15;
+  // Detectar si es móvil (pantalla pequeña)
+  const isMobile = windowWidth < 768;
   
-  // Ajustar horizontalmente si se sale por la derecha
-  if (left + tooltipWidth > windowWidth - 10) {
-    left = event.clientX - tooltipWidth - 15; // Mover a la izquierda del cursor
-  }
+  let left, top;
   
-  // Ajustar verticalmente si se sale por abajo
-  if (top + tooltipHeight > windowHeight - 10) {
-    if (tooltipHeight < windowHeight - 20) {
-      // Si cabe en la pantalla, ajustar hacia arriba
-      top = windowHeight - tooltipHeight - 10;
+  if (isMobile) {
+    // En móvil, centrar el tooltip en la pantalla con margen
+    const margin = 10;
+    
+    // Centrar horizontalmente con margen de seguridad
+    left = Math.max(margin, (windowWidth - tooltipWidth) / 2);
+    
+    // Posicionar verticalmente - preferir la parte superior si cabe
+    if (event.clientY > windowHeight / 2) {
+      // Si el click está en la mitad inferior, mostrar arriba
+      top = Math.max(margin, event.clientY - tooltipHeight - 20);
     } else {
-      // Si es demasiado grande, colocarlo en la parte superior con scroll
+      // Si el click está en la mitad superior, mostrar abajo
+      top = Math.min(windowHeight - tooltipHeight - margin, event.clientY + 20);
+    }
+    
+    // Asegurar que cabe en la pantalla
+    if (tooltipHeight > windowHeight - 2 * margin) {
+      top = margin;
+    }
+  } else {
+    // Comportamiento original para desktop
+    left = event.clientX + 15;
+    top = event.clientY - 15;
+    
+    // Ajustar horizontalmente si se sale por la derecha
+    if (left + tooltipWidth > windowWidth - 10) {
+      left = event.clientX - tooltipWidth - 15; // Mover a la izquierda del cursor
+    }
+    
+    // Ajustar verticalmente si se sale por abajo
+    if (top + tooltipHeight > windowHeight - 10) {
+      if (tooltipHeight < windowHeight - 20) {
+        // Si cabe en la pantalla, ajustar hacia arriba
+        top = windowHeight - tooltipHeight - 10;
+      } else {
+        // Si es demasiado grande, colocarlo en la parte superior con scroll
+        top = 10;
+      }
+    }
+    
+    // Asegurar que no se salga por arriba
+    if (top < 10) {
       top = 10;
     }
-  }
-  
-  // Asegurar que no se salga por arriba
-  if (top < 10) {
-    top = 10;
-  }
-  
-  // Asegurar que no se salga por la izquierda
-  if (left < 10) {
-    left = 10;
+    
+    // Asegurar que no se salga por la izquierda
+    if (left < 10) {
+      left = 10;
+    }
   }
   
   // Aplicar la posición

@@ -649,34 +649,39 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
 
   return (
     <div ref={chartRef} className="w-full h-full">
-      {/* Selector de comunidad alineado a la derecha */}
-      <div className="mb-4 flex justify-end items-center">
-        <div className="flex-shrink-0 relative" ref={dropdownRef}>
+      {/* Selector de comunidad con diseño responsive */}
+      <div className="mb-4 flex flex-col sm:flex-row sm:justify-end sm:items-center">
+        <div className="flex items-center mb-2 sm:mb-0">
+          <span className="text-sm text-gray-600 mr-3 flex-shrink-0">
+            {language === 'es' ? 'Comparar con:' : 'Compare with:'}
+          </span>
+        </div>
+        <div className="flex-shrink-0 relative w-full sm:w-auto" ref={dropdownRef}>
           <div 
-            className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm cursor-pointer hover:bg-gray-50"
+            className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm cursor-pointer hover:bg-gray-50 w-full sm:w-auto"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <div className="flex items-center gap-1 px-2 py-1">
+            <div className="flex items-center gap-2 px-3 py-2 flex-grow sm:flex-grow-0">
               <FlagImage 
                 community={selectedCommunity.name} 
                 size={20} 
                 strokeColor="rgba(229, 231, 235, 0.5)"
               />
-              <span className="text-sm font-medium text-gray-800">
+              <span className="text-sm font-medium text-gray-800 truncate">
                 {selectedCommunity ? selectedCommunity.name : t.selectCommunity}
               </span>
             </div>
-            <div className="p-1 px-2 border-l border-gray-200 text-gray-500">
+            <div className="p-2 border-l border-gray-200 text-gray-500 flex-shrink-0">
               <ChevronDown size={16} />
             </div>
           </div>
 
           {dropdownOpen && (
-            <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto w-48 right-0">
+            <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto w-full sm:w-64 right-0 sm:right-0">
               {availableCommunities.map(community => (
                 <button
                   key={community.code}
-                  className={`flex items-center w-full text-left px-3 py-1.5 hover:bg-gray-100 ${
+                  className={`flex items-center w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors ${
                     community.code === selectedCommunity?.code ? 'bg-blue-50' : ''
                   }`}
                   onClick={() => {
@@ -689,7 +694,7 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
                     size={18} 
                     strokeColor="rgba(229, 231, 235, 0.5)"
                   />
-                  <span className="ml-2 text-sm">{community.name}</span>
+                  <span className="ml-2 text-sm truncate">{community.name}</span>
                 </button>
               ))}
             </div>
@@ -697,30 +702,41 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
         </div>
       </div>
 
-      {/* Gráfica de líneas */}
+      {/* Gráfica de líneas con márgenes adaptativos */}
       <div ref={chartContainerRef} className="h-80 bg-white rounded-lg border border-gray-100 p-2 shadow-sm">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={timeSeriesData}
-            margin={{ top: 20, right: 60, left: 20, bottom: 10 }}
+            margin={{ 
+              top: 20, 
+              right: window.innerWidth < 768 ? 30 : 60, 
+              left: window.innerWidth < 768 ? 15 : 20, 
+              bottom: 10 
+            }}
           >
             <XAxis 
               dataKey="year" 
-              tick={{ fill: '#4b5563', fontSize: 10 }}
+              tick={{ fill: '#4b5563', fontSize: window.innerWidth < 768 ? 9 : 10 }}
               tickLine={{ stroke: '#9ca3af' }}
               axisLine={{ stroke: '#e5e7eb' }}
+              interval={window.innerWidth < 768 ? 1 : 0} // Mostrar menos etiquetas en móvil
             />
             <YAxis 
               label={{ 
                 value: t.patentsCount, 
                 angle: -90, 
                 position: 'insideLeft',
-                style: { textAnchor: 'middle', fill: '#6b7280', fontSize: 10 }
+                style: { 
+                  textAnchor: 'middle', 
+                  fill: '#6b7280', 
+                  fontSize: window.innerWidth < 768 ? 9 : 10 
+                }
               }}
-              tick={{ fill: '#4b5563', fontSize: 10 }}
+              tick={{ fill: '#4b5563', fontSize: window.innerWidth < 768 ? 9 : 10 }}
               tickLine={{ stroke: '#9ca3af' }}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatYAxis}
+              width={window.innerWidth < 768 ? 40 : 50} // Reducir ancho del eje Y en móvil
             />
             <Tooltip content={<CustomTooltip />} />
             
@@ -730,9 +746,14 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
               dataKey="canarias" 
               name={t.canarias}
               stroke={LINE_COLORS.canarias} 
-              strokeWidth={2.5}
+              strokeWidth={window.innerWidth < 768 ? 2 : 2.5}
               dot={false}
-              activeDot={{ r: 6, stroke: LINE_COLORS.canarias, strokeWidth: 1, fill: '#fff' }}
+              activeDot={{ 
+                r: window.innerWidth < 768 ? 4 : 6, 
+                stroke: LINE_COLORS.canarias, 
+                strokeWidth: 1, 
+                fill: '#fff' 
+              }}
               isAnimationActive={false}
             />
             
@@ -743,40 +764,47 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
                 dataKey="community" 
                 name={selectedCommunity.name}
                 stroke={LINE_COLORS.community} 
-                strokeWidth={2.5}
+                strokeWidth={window.innerWidth < 768 ? 2 : 2.5}
                 dot={false}
-                activeDot={{ r: 6, stroke: LINE_COLORS.community, strokeWidth: 1, fill: '#fff' }}
+                activeDot={{ 
+                  r: window.innerWidth < 768 ? 4 : 6, 
+                  stroke: LINE_COLORS.community, 
+                  strokeWidth: 1, 
+                  fill: '#fff' 
+                }}
                 isAnimationActive={false}
               />
             )}
             
-            {/* Banderas renderizadas dentro del SVG */}
-            <Customized
-              component={(rechartProps: Record<string, unknown>) => (
-                <FlagsCustomComponent
-                  {...rechartProps}
-                  data={timeSeriesData}
-                  selectedCommunity={selectedCommunity}
-                  texts={t}
-                />
-              )}
-            />
+            {/* Banderas renderizadas dentro del SVG - Solo en desktop */}
+            {window.innerWidth >= 768 && (
+              <Customized
+                component={(rechartProps: Record<string, unknown>) => (
+                  <FlagsCustomComponent
+                    {...rechartProps}
+                    data={timeSeriesData}
+                    selectedCommunity={selectedCommunity}
+                    texts={t}
+                  />
+                )}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
       
-      {/* Leyenda en la parte inferior central */}
-      <div className="flex flex-wrap items-center justify-center mt-4 gap-x-8 gap-y-3">
+      {/* Leyenda responsive en la parte inferior */}
+      <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center mt-4 gap-x-8 gap-y-2">
         {/* Canarias */}
         <div className="flex items-center">
-          <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: LINE_COLORS.canarias }}></div>
+          <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: LINE_COLORS.canarias }}></div>
           <span className="text-sm font-medium text-gray-700">{t.canarias}</span>
         </div>
         
         {/* Comunidad seleccionada */}
         {selectedCommunity && (
           <div className="flex items-center">
-            <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: LINE_COLORS.community }}></div>
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: LINE_COLORS.community }}></div>
             <span className="text-sm font-medium text-gray-700">{selectedCommunity.name}</span>
           </div>
         )}
