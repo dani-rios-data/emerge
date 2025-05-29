@@ -57,8 +57,6 @@ interface LocalizedTexts {
   spainAverage: string;
   canarias: string;
   selectCommunity: string;
-  warningTitle: string;
-  warningMessage: string;
 }
 
 // Interfaz para las escalas de Recharts
@@ -385,9 +383,7 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
       loading: 'Cargando...',
       spainAverage: 'Media España',
       canarias: 'Canarias',
-      selectCommunity: 'Seleccionar comunidad',
-      warningTitle: 'Datos específicos de patentes en España',
-      warningMessage: 'Todos los datos mostrados en esta gráfica provienen del dataset oficial de patentes registradas en España. Los valores de la media nacional se calculan basándose únicamente en este conjunto de datos.'
+      selectCommunity: 'Seleccionar comunidad'
     },
     en: {
       noData: 'No data',
@@ -395,9 +391,7 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
       loading: 'Loading...',
       spainAverage: 'Spain Average',
       canarias: 'Canary Islands',
-      selectCommunity: 'Select community',
-      warningTitle: 'Spain-specific patent data',
-      warningMessage: 'All data shown in this chart comes from the official dataset of patents registered in Spain. National average values are calculated based solely on this dataset.'
+      selectCommunity: 'Select community'
     }
   };
 
@@ -463,26 +457,42 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
       // Años disponibles (2010-2024)
       const availableYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
 
-      // Filtrar solo las filas con datos válidos (excluyendo filas sin provincia o con valores vacíos al principio)
-      // También excluir filas duplicadas - solo tomar la primera aparición de cada provincia
-      const seenProvinces = new Set<string>();
-      const validData = data.filter(item => {
-        if (!item.Provincia || 
-            item.Provincia === '' || 
-            item.Provincia.includes('No residentes') ||
-            !item['2010'] || 
-            item['2010'] === ''
-        ) {
-          return false;
+      // Construir mapa de provincias agregando todos los valores para cada provincia
+      const provinceDataMap = new Map<string, {name: string, yearValues: Record<string, number>}>();
+      
+      // Procesar cada fila en el dataset y agrupar por provincia
+      data.forEach(item => {
+        const provinceName = item['Provincia'];
+        
+        if (!provinceName || 
+            provinceName === '' || 
+            provinceName.includes('No residentes')) {
+          return;
         }
         
-        // Si ya hemos visto esta provincia, excluir esta fila (evita duplicados)
-        if (seenProvinces.has(item.Provincia)) {
-          return false;
+        // Si ya existe esta provincia, acumular los valores; sino, crear nueva entrada
+        if (provinceDataMap.has(provinceName)) {
+          const existing = provinceDataMap.get(provinceName)!;
+          // Sumar valores de todos los años
+          for (const year of availableYears) {
+            const yearValue = parseFloat(item[year] || '0');
+            if (!isNaN(yearValue)) {
+              existing.yearValues[year] = (existing.yearValues[year] || 0) + yearValue;
+            }
+          }
+        } else {
+          // Crear nueva entrada para esta provincia
+          const yearValues: Record<string, number> = {};
+          for (const year of availableYears) {
+            const yearValue = parseFloat(item[year] || '0');
+            yearValues[year] = isNaN(yearValue) ? 0 : yearValue;
+          }
+          
+          provinceDataMap.set(provinceName, {
+            name: provinceName,
+            yearValues: yearValues
+          });
         }
-        
-        seenProvinces.add(item.Provincia);
-        return true;
       });
 
       // Crear puntos de datos para cada año
@@ -494,34 +504,37 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
           community: null
         };
 
-        // 1. Buscar datos de Canarias
-        const canariasProvinces = validData.filter(item => 
-          item.Provincia && 
-          (item.Provincia === 'Las Palmas' || item.Provincia === 'Santa Cruz de Tenerife') &&
-          item[year] && item[year] !== ''
-        );
-
-        if (canariasProvinces.length > 0) {
-          const canariasPatents = canariasProvinces.reduce((sum, province) => {
-            const patents = parseInt(province[year] || '0');
-            return sum + (isNaN(patents) ? 0 : patents);
-          }, 0);
+        // 1. Buscar datos de Canarias (ahora usando datos agrupados)
+        let canariasPatents = 0;
+        const laspalmasData = provinceDataMap.get('Las Palmas');
+        const tenerife = provinceDataMap.get('Santa Cruz de Tenerife');
+        
+        if (laspalmasData && laspalmasData.yearValues[year] > 0) {
+          canariasPatents += laspalmasData.yearValues[year];
+        }
+        if (tenerife && tenerife.yearValues[year] > 0) {
+          canariasPatents += tenerife.yearValues[year];
+        }
+        
+        if (canariasPatents > 0) {
           dataPoint.canarias = canariasPatents;
         }
 
-        // 2. Buscar datos de la comunidad seleccionada
+        // 2. Buscar datos de la comunidad seleccionada (ahora usando datos agrupados)
         if (selectedCommunity) {
-          const communityProvinces = validData.filter(item => 
-            item.Provincia && 
-            PROVINCE_TO_COMMUNITY[item.Provincia] === selectedCommunity.name &&
-            item[year] && item[year] !== ''
-          );
-
-          if (communityProvinces.length > 0) {
-            const communityPatents = communityProvinces.reduce((sum, province) => {
-              const patents = parseInt(province[year] || '0');
-              return sum + (isNaN(patents) ? 0 : patents);
-            }, 0);
+          let communityPatents = 0;
+          
+          // Iterar por todas las provincias agrupadas y sumar las que pertenecen a la comunidad seleccionada
+          provinceDataMap.forEach((provinceData, provinceName) => {
+            if (PROVINCE_TO_COMMUNITY[provinceName] === selectedCommunity.name) {
+              const provinceValue = provinceData.yearValues[year] || 0;
+              if (provinceValue > 0) {
+                communityPatents += provinceValue;
+              }
+            }
+          });
+          
+          if (communityPatents > 0) {
             dataPoint.community = communityPatents;
           }
         }
@@ -636,33 +649,6 @@ const PatentsRegionalTimelineChart: React.FC<PatentsRegionalTimelineChartProps> 
 
   return (
     <div ref={chartRef} className="w-full h-full">
-      {/* Warning sobre el dataset específico */}
-      <div className="mb-4 text-sm bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <div className="flex items-start">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            className="text-blue-600 mr-3 mt-0.5 flex-shrink-0"
-          >
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v6l4 2"/>
-          </svg>
-          <div className="text-blue-800">
-            <p className="font-medium mb-2">{t.warningTitle}</p>
-            <p className="text-xs leading-relaxed">
-              {t.warningMessage}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Selector de comunidad alineado a la derecha */}
       <div className="mb-4 flex justify-end items-center">
         <div className="flex-shrink-0 relative" ref={dropdownRef}>

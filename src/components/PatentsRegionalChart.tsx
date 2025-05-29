@@ -484,35 +484,59 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
 
   // Preparar datos del gráfico usando el dataset de patentes por provincias
   const prepareChartData = (): ChartDataResult => {
-    // Construir mapa de comunidades autónomas agregando datos de provincias
-    const regionMap = new Map<string, {code: string, name: string, value: number, provinces: {name: string, value: number}[]}>();
+    // Construir mapa de provincias agregando todos los valores para cada código NUTS
+    const provinceDataMap = new Map<string, {code: string, name: string, yearValues: Record<string, number>}>();
     
-    // Crear un mapa para evitar duplicados de provincias
-    const processedProvinces = new Set<string>();
-    
-    // Procesar cada provincia en el dataset
+    // Procesar cada fila en el dataset y agrupar por provincia
     data.forEach(item => {
       const provinceCode = item['Nuts Prov'];
       const provinceName = item['Provincia'];
+      
+      if (!provinceCode || !provinceName) return;
+      
+      // Si ya existe esta provincia, acumular los valores; sino, crear nueva entrada
+      if (provinceDataMap.has(provinceCode)) {
+        const existing = provinceDataMap.get(provinceCode)!;
+        // Sumar valores de todos los años
+        for (let year = 2010; year <= 2024; year++) {
+          const yearKey = year.toString();
+          const yearValue = parseFloat(item[yearKey] || '0');
+          if (!isNaN(yearValue)) {
+            existing.yearValues[yearKey] = (existing.yearValues[yearKey] || 0) + yearValue;
+          }
+        }
+      } else {
+        // Crear nueva entrada para esta provincia
+        const yearValues: Record<string, number> = {};
+        for (let year = 2010; year <= 2024; year++) {
+          const yearKey = year.toString();
+          const yearValue = parseFloat(item[yearKey] || '0');
+          yearValues[yearKey] = isNaN(yearValue) ? 0 : yearValue;
+        }
+        
+        provinceDataMap.set(provinceCode, {
+          code: provinceCode,
+          name: provinceName,
+          yearValues: yearValues
+        });
+      }
+    });
+
+    // Construir mapa de comunidades autónomas agregando datos de provincias
+    const regionMap = new Map<string, {code: string, name: string, value: number, provinces: {name: string, value: number}[]}>();
+    
+    // Procesar cada provincia agrupada y asignar a su comunidad autónoma
+    provinceDataMap.forEach(provinceData => {
+      const provinceCode = provinceData.code;
+      const provinceName = provinceData.name;
       const yearKey = selectedYear.toString();
-      
-      if (!provinceCode || !provinceName || !yearKey) return;
-      
-      // Evitar procesar la misma provincia múltiples veces
-      if (processedProvinces.has(provinceCode)) return;
-      processedProvinces.add(provinceCode);
       
       // Obtener el código de la comunidad autónoma para esta provincia
       const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
       if (!autonomousCommunityCode) return;
       
-      // Obtener el valor de patentes para el año seleccionado
-      const yearValue = item[yearKey];
-      let value = parseFloat(yearValue || '0');
-      
-      if (isNaN(value)) {
-        value = 0;
-      }
+      // Obtener el valor de patentes para el año seleccionado (ahora ya sumado)
+      const value = provinceData.yearValues[yearKey] || 0;
       
       // Agregar o actualizar la comunidad autónoma
       if (regionMap.has(autonomousCommunityCode)) {
@@ -590,19 +614,36 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
 
   // Función para obtener el valor de Canarias
   const getCanariasValue = (year: number): number | null => {
-    let canariasValue = 0;
+    // Construir mapa de provincias canarias agregando todos los valores
+    const canariasProvinceDataMap = new Map<string, {yearValues: Record<string, number>}>();
     const yearKey = year.toString();
     
+    // Procesar cada fila y agrupar provincias canarias
     data.forEach(item => {
       const provinceCode = item['Nuts Prov'];
       const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
       
       if (autonomousCommunityCode === 'ES70') { // Código de Canarias
-        const yearValue = parseFloat(item[yearKey] || '0');
-        if (!isNaN(yearValue)) {
-          canariasValue += yearValue;
+        // Si ya existe esta provincia, acumular los valores; sino, crear nueva entrada
+        if (canariasProvinceDataMap.has(provinceCode)) {
+          const existing = canariasProvinceDataMap.get(provinceCode)!;
+          const yearValue = parseFloat(item[yearKey] || '0');
+          if (!isNaN(yearValue)) {
+            existing.yearValues[yearKey] = (existing.yearValues[yearKey] || 0) + yearValue;
+          }
+        } else {
+          const yearValue = parseFloat(item[yearKey] || '0');
+          canariasProvinceDataMap.set(provinceCode, {
+            yearValues: {[yearKey]: isNaN(yearValue) ? 0 : yearValue}
+          });
         }
       }
+    });
+    
+    // Sumar todos los valores de las provincias canarias
+    let canariasValue = 0;
+    canariasProvinceDataMap.forEach(provinceData => {
+      canariasValue += provinceData.yearValues[yearKey] || 0;
     });
     
     return canariasValue > 0 ? canariasValue : null;
@@ -715,17 +756,36 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           let yoyPercentage = null;
           const previousYear = selectedYear - 1;
           if (previousYear >= 2010) {
-            // Calcular el valor del año anterior para esta comunidad autónoma
-            let previousYearValue = 0;
+            // Construir mapa de provincias para el año anterior
+            const previousYearProvinceDataMap = new Map<string, {yearValues: Record<string, number>}>();
+            const prevYearKey = previousYear.toString();
+            
+            // Procesar cada fila y agrupar por provincia para el año anterior
             data.forEach(item => {
               const provinceCode = item['Nuts Prov'];
               const autonomousCommunityCode = provinceToAutonomousCommunityMapping[provinceCode];
+              
               if (autonomousCommunityCode === regionCode) {
-                const prevYearValue = parseFloat(item[previousYear.toString()] || '0');
-                if (!isNaN(prevYearValue)) {
-                  previousYearValue += prevYearValue;
+                // Si ya existe esta provincia, acumular los valores; sino, crear nueva entrada
+                if (previousYearProvinceDataMap.has(provinceCode)) {
+                  const existing = previousYearProvinceDataMap.get(provinceCode)!;
+                  const prevYearValue = parseFloat(item[prevYearKey] || '0');
+                  if (!isNaN(prevYearValue)) {
+                    existing.yearValues[prevYearKey] = (existing.yearValues[prevYearKey] || 0) + prevYearValue;
+                  }
+                } else {
+                  const prevYearValue = parseFloat(item[prevYearKey] || '0');
+                  previousYearProvinceDataMap.set(provinceCode, {
+                    yearValues: {[prevYearKey]: isNaN(prevYearValue) ? 0 : prevYearValue}
+                  });
                 }
               }
+            });
+            
+            // Sumar todos los valores de las provincias para el año anterior
+            let previousYearValue = 0;
+            previousYearProvinceDataMap.forEach(provinceData => {
+              previousYearValue += provinceData.yearValues[prevYearKey] || 0;
             });
             
             if (previousYearValue > 0) {
