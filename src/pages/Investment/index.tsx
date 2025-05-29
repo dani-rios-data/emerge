@@ -916,12 +916,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                     : "Includes the expenditures for R&D performed within the various sectors of performance (business, government, higher education, private non profit), regardless of the source of funds. Expressed as a percentage of gross domestic product (GDP)."
                   }
                 </p>
-                <p className="text-xs italic">
-                  {language === 'es' 
-                    ? "Fuente: Eurostat"
-                    : "Source: Eurostat"
-                  }
-                </p>
                 <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mt-3">
                   <div className="flex items-start">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0">
@@ -935,8 +929,8 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                       </p>
                       <p className="text-yellow-700 text-xs mt-1">
                         {language === 'es' 
-                          ? "Para calcular los valores en euros se utilizó la información del PIB de Europa a precios corrientes del dataset de Eurostat (nama_10_gdp). Los valores aproximados de inversión en I+D en millones de euros se obtuvieron multiplicando el porcentaje del PIB destinado a I+D por el PIB total de cada país."
-                          : "To calculate values in euros, European GDP information at current prices from the Eurostat dataset (nama_10_gdp) was used. The approximate R&D investment values in million euros were obtained by multiplying the percentage of GDP allocated to R&D by the total GDP of each country."
+                          ? "Los valores en euros no están disponibles directamente. La información fue calculada cruzando los datos de inversión en I+D con el PIB anual de cada país."
+                          : "Values in euros are not directly available. The information was calculated by cross-referencing R&D investment data with the annual GDP of each country."
                         }
                       </p>
                     </div>
