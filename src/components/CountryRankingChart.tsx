@@ -173,6 +173,43 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
   
   const sectorNameEn = sectorNameMapping[selectedSector] || 'All Sectors';
 
+  // Función para obtener la etiqueta directamente del CSV principal - MOVIDA DENTRO DEL COMPONENTE
+  const getDataLabelForCountry = (country: string, year: number): string => {
+    console.log('🔍 Buscando etiqueta para:', { country, year, sectorNameEn });
+    
+    // Buscar el registro correspondiente en los datos usando el nombre exacto
+    const countryData = data.find(item => {
+      // Intentar coincidir tanto por nombre en inglés como en español
+      const countryMatchEn = item.Country === country;
+      const countryMatchEs = item.País === country;
+      const yearMatch = parseInt(item.Year) === year;
+      const sectorMatch = item.Sector === sectorNameEn || 
+                      (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
+      
+      const isMatch = (countryMatchEn || countryMatchEs) && yearMatch && sectorMatch;
+      
+      if (isMatch) {
+        console.log('✅ Encontrado registro:', {
+          Country: item.Country,
+          País: item.País,
+          Year: item.Year,
+          Sector: item.Sector,
+          label: item.label_percent_gdp_id
+        });
+      }
+      
+      return isMatch;
+    });
+    
+    console.log('🏷️ Resultado búsqueda:', {
+      encontrado: !!countryData,
+      etiqueta: countryData?.label_percent_gdp_id || 'sin etiqueta'
+    });
+    
+    // Retornar la etiqueta si existe, o cadena vacía si no hay etiqueta
+    return countryData?.label_percent_gdp_id || '';
+  };
+
   // Procesar y filtrar datos para el año y sector seleccionado
   const countryDataForYear = data.filter(item => 
     parseInt(item['Year']) === selectedYear &&
@@ -1170,22 +1207,6 @@ const CountryRankingChart: React.FC<CountryRankingChartProps> = ({
 
   // Altura dinámica para el gráfico en función del número de países
   const chartHeight = Math.max(400, sortedCountries.length * 25);
-
-  // Modificar la lógica para obtener la etiqueta directamente del CSV principal
-  const getDataLabelForCountry = (country: string, year: number): string => {
-    // Buscar el registro correspondiente en los datos usando el nombre exacto
-    const countryData = data.find(item => {
-      const countryMatch = item.Country === country;
-      const yearMatch = parseInt(item.Year) === year;
-      const sectorMatch = item.Sector === sectorNameEn || 
-                      (item.Sector === 'All Sectors' && sectorNameEn === 'All Sectors');
-      
-      return countryMatch && yearMatch && sectorMatch;
-    });
-    
-    // Retornar la etiqueta si existe, o cadena vacía si no hay etiqueta
-    return countryData?.label_percent_gdp_id || '';
-  };
 
   // Función para obtener el título del gráfico basado en sector y año seleccionados
   const getChartTitle = () => {

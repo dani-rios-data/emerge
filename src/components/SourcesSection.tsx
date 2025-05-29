@@ -385,7 +385,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
               }`}
             >
               <div className="w-4 h-4">
-                {getTabIcon('all')}
+              {getTabIcon('all')}
               </div>
               <span>{t('allTab')}</span>
             </button>
@@ -400,7 +400,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
               }`}
             >
               <div className="w-4 h-4">
-                {getTabIcon('investment')}
+              {getTabIcon('investment')}
               </div>
               <span>{t('investmentTab')}</span>
             </button>
@@ -415,7 +415,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
               }`}
             >
               <div className="w-4 h-4">
-                {getTabIcon('researchers')}
+              {getTabIcon('researchers')}
               </div>
               <span>{t('researchersTab')}</span>
             </button>
@@ -430,7 +430,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
               }`}
             >
               <div className="w-4 h-4">
-                {getTabIcon('patents')}
+              {getTabIcon('patents')}
               </div>
               <span>{t('patentsTab')}</span>
             </button>
@@ -453,41 +453,41 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                         {source.title}
                       </h4>
                     </div>
-                    {activeSubTab === 'all' && (
+                      {activeSubTab === 'all' && (
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${getCategoryColor(source.category)}`}>
-                        {getCategoryName(source.category)}
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Descripción */}
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{source.description}</p>
-                  
-                  {/* Footer con organización y botón */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 pt-2">
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 sm:w-5 sm:h-5 bg-blue-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
-                        <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-500">
-                        <span className="font-medium text-gray-700">{source.organization}</span>
-                      </p>
+                          {getCategoryName(source.category)}
+                        </span>
+                      )}
                     </div>
                     
-                    <a 
-                      href={source.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                  {/* Descripción */}
+                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{source.description}</p>
+                    
+                  {/* Footer con organización y botón */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 pt-2">
+                      <div className="flex items-center">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 bg-blue-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                        <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                          <span className="font-medium text-gray-700">{source.organization}</span>
+                        </p>
+                      </div>
+                      
+                      <a 
+                        href={source.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
                       className="group/btn inline-flex items-center justify-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-medium rounded-md sm:rounded-lg shadow-sm transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
-                    >
+                      >
                       <span className="truncate">{t('accessData')}</span>
                       <svg className="ml-1 sm:ml-1.5 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                        <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                      </svg>
-                    </a>
+                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                        </svg>
+                      </a>
                   </div>
                 </div>
               </div>
