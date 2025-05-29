@@ -376,11 +376,21 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
     </div>
   );
   
+  // Componente para título de sección
   const SectionTitle = ({ title }: { title: string }) => (
-    <h2 className="text-xl font-bold mb-6 text-blue-900 pl-3 border-l-4 border-blue-300">{title}</h2>
+    <h2 className="text-xl font-bold mb-6 mt-0 text-blue-800 border-b border-blue-100 pb-2">
+      {title}
+    </h2>
   );
 
-  // Componente para título de subsección con sector (para mostrar el sector seleccionado)
+  // Componente para título de subsección normal (sin sector dinámico)
+  const SubsectionTitle = ({ title }: { title: string }) => (
+    <h3 className="text-md font-semibold mb-4 mt-8 text-blue-700 pl-2 border-l-4 border-blue-200">
+      {title}
+    </h3>
+  );
+
+  // Componente para título de subsección con sector (solo para secciones específicas)
   const SubsectionTitleWithSector = ({ 
     baseTitle, 
     sector, 
@@ -397,7 +407,6 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <span>{baseTitle}</span>
           <span className="mx-3 text-blue-400 hidden sm:inline">•</span>
           <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100 mt-1 sm:mt-0">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
             <span className="text-blue-600 font-medium text-sm">
               {getSectorDisplayName(sector, language)}
             </span>
@@ -955,13 +964,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
           <div className="mb-12">
             <SectionTitle title={t.euComparisonTitle} />
             
-            {/* Subsección 2.1: Mapa y ranking de inversión en I+D */}
+            {/* Subsección 2.1: Mapa de Europa y ranking de países */}
             <div className="mb-10">
-              <SubsectionTitleWithSector 
-                baseTitle={language === 'es' ? "Distribución geográfica de la inversión" : "Geographical Distribution of Investment"} 
-                sector={selectedSector} 
-                language={language}
-              />
+              <SubsectionTitle title={language === 'es' ? "Distribución geográfica de la inversión" : "Geographic Distribution of Investment"} />
               
               {/* Descripción del dataset */}
               <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
@@ -973,12 +978,11 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                   </strong>
                 </p>
                 <p className="mb-3">
-                  {language === 'es' 
-                    ? "Incluye los gastos en I+D realizados dentro de los diversos sectores de ejecución (empresas, gobierno, educación superior, instituciones privadas sin fines de lucro), independientemente de la fuente de financiación. Expresado como porcentaje del producto interior bruto (PIB)."
-                    : "Includes the expenditures for R&D performed within the various sectors of performance (business, government, higher education, private non profit), regardless of the source of funds. Expressed as a percentage of gross domestic product (GDP)."
-                  }
+                  {language === 'es'
+                    ? 'Gastos totales en I+D como porcentaje del PIB por país. Datos extraídos de Eurostat y la OCDE.'
+                    : 'Total R&D expenditure as percentage of GDP by country. Data extracted from Eurostat and OECD.'}
                 </p>
-                <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mt-3">
+                <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
                   <div className="flex items-start">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0">
                       <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
@@ -990,10 +994,9 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
                         {language === 'es' ? 'Nota metodológica:' : 'Methodological note:'}
                       </p>
                       <p className="text-yellow-700 text-xs mt-1">
-                        {language === 'es' 
-                          ? "Los valores en euros no están disponibles directamente. La información fue calculada cruzando los datos de inversión en I+D con el PIB anual de cada país."
-                          : "Values in euros are not directly available. The information was calculated by cross-referencing R&D investment data with the annual GDP of each country."
-                        }
+                        {language === 'es'
+                          ? 'Los valores en euros no están disponibles directamente. La información fue calculada cruzando los datos de inversión en I+D con el PIB anual de cada país.'
+                          : 'Euro values are not directly available. The information was calculated by cross-referencing R&D investment data with the annual GDP of each country.'}
                       </p>
                     </div>
                   </div>
@@ -1121,11 +1124,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Subsección 2.2: Distribución sectorial de la inversión en I+D */}
             <div className="mb-10">
-              <SubsectionTitleWithSector 
-                baseTitle={language === 'es' ? "Distribución sectorial de la inversión" : "Sectoral Distribution of Investment"} 
-                sector={selectedSector} 
-                language={language}
-              />
+              <SubsectionTitle title={language === 'es' ? "Distribución sectorial de la inversión" : "Sectoral Distribution of Investment"} />
               
               {/* Componente SectorDistribution */}
               <SectorDistribution language={language} />
@@ -1194,11 +1193,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Subsección 3.1: Mapa y ranking de inversión en I+D por comunidades */}
             <div className="mb-10">
-              <SubsectionTitleWithSector 
-                baseTitle={language === 'es' ? "Distribución regional de la inversión" : "Regional Distribution of Investment"} 
-                sector={selectedRegionSector} 
-                language={language}
-              />
+              <SubsectionTitle title={language === 'es' ? "Distribución regional de la inversión" : "Regional Distribution of Investment"} />
               
               {/* Descripción del dataset */}
               <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
@@ -1338,11 +1333,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
             
             {/* Nueva Subsección 3.2: Distribución sectorial de la inversión en I+D */}
             <div className="mb-10">
-              <SubsectionTitleWithSector 
-                baseTitle={language === 'es' ? "Análisis sectorial por comunidades" : "Sectoral Analysis by Communities"} 
-                sector={selectedRegionSector} 
-                language={language}
-              />
+              <SubsectionTitle title={language === 'es' ? "Análisis sectorial por comunidades" : "Sectoral Analysis by Communities"} />
               
               {/* Componente CommunityDistribution */}
               <CommunityDistribution language={language} />
@@ -1405,11 +1396,7 @@ const Investment: React.FC<InvestmentProps> = ({ language }) => {
               {/* Nuevo componente SectorEvolutionChart para mostrar evolución por sectores */}
               {autonomousCommunitiesData.length > 0 && (
                 <>
-                  <SubsectionTitleWithSector 
-                    baseTitle={language === 'es' ? "Evolución sectorial en comunidades" : "Sectoral Evolution in Communities"} 
-                    sector={selectedRegionSector} 
-                    language={language}
-                  />
+                  <SubsectionTitle title={language === 'es' ? "Evolución sectorial en comunidades" : "Sectoral Evolution in Communities"} />
                   <SectorEvolutionChart 
                     language={language}
                     autonomousCommunitiesData={autonomousCommunitiesData}
