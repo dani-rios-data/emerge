@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface SourcesSectionProps {
   language: 'es' | 'en';
@@ -8,6 +8,22 @@ type SubTabType = 'all' | 'investment' | 'researchers' | 'patents';
 
 const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>('all');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Estilos CSS en línea para asegurar que el scroll horizontal funcione bien
   const scrollTabsStyle = {
@@ -226,7 +242,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
       case 'researchers':
         return (
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" />
           </svg>
         );
       case 'patents':
@@ -266,6 +282,22 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
     }
   };
 
+  // Función para obtener el nombre de la pestaña activa para el dropdown
+  const getActiveTabName = () => {
+    switch (activeSubTab) {
+      case 'all':
+        return language === 'es' ? 'Todos los Datasets' : 'All Datasets';
+      case 'investment':
+        return language === 'es' ? 'Inversión en I+D' : 'R&D Investment';
+      case 'researchers':
+        return language === 'es' ? 'Investigadores' : 'Researchers';
+      case 'patents':
+        return language === 'es' ? 'Patentes' : 'Patents';
+      default:
+        return language === 'es' ? 'Todos los Datasets' : 'All Datasets';
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-h-[500px] sm:min-h-[700px]">
       {/* Introducción */}
@@ -287,23 +319,75 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
 
       {/* Subpestañas */}
       <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-lg overflow-hidden">
-        <div className="border-b border-gray-200 bg-gray-50">
-          {/* Navegación de pestañas responsive */}
+        {/* Navegación Mobile (Dropdown) */}
+        <div className="sm:hidden border-b border-gray-200 bg-gray-50 p-3">
+          <div className="relative" ref={dropdownRef}>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              {language === 'es' ? 'Categoría:' : 'Category:'}
+            </label>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            >
+              <div className="flex items-center">
+                <div className="w-4 h-4 mr-2 text-blue-600">
+                  {getTabIcon(activeSubTab)}
+                </div>
+                <span className="block truncate">{getActiveTabName()}</span>
+              </div>
+              <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                {(['all', 'investment', 'researchers', 'patents'] as SubTabType[]).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveSubTab(tab);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center ${
+                      activeSubTab === tab ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
+                    }`}
+                  >
+                    <div className="w-4 h-4 mr-2">
+                      {getTabIcon(tab)}
+                    </div>
+                    <span>
+                      {tab === 'all' && (language === 'es' ? 'Todos los Datasets' : 'All Datasets')}
+                      {tab === 'investment' && (language === 'es' ? 'Inversión en I+D' : 'R&D Investment')}
+                      {tab === 'researchers' && (language === 'es' ? 'Investigadores' : 'Researchers')}
+                      {tab === 'patents' && (language === 'es' ? 'Patentes' : 'Patents')}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navegación Desktop (Tabs) */}
+        <div className="hidden sm:block border-b border-gray-200 bg-gray-50">
           <nav className="flex overflow-x-auto scrollbar-hide" aria-label="Tabs" style={scrollTabsStyle}>
             {/* All Tab */}
             <button
               onClick={() => setActiveSubTab('all')}
-              className={`group relative py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-2 border-b-2 sm:border-b-3 flex-shrink-0 whitespace-nowrap ${
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 flex-shrink-0 whitespace-nowrap ${
                 activeSubTab === 'all'
                   ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
               }`}
             >
-              <div className="w-3 h-3 sm:w-4 sm:h-4">
+              <div className="w-4 h-4">
                 {getTabIcon('all')}
               </div>
-              <span className="hidden sm:inline">{t('allTab')}</span>
-              <span className="sm:hidden">Todos</span>
+              <span>{t('allTab')}</span>
               {activeSubTab === 'all' && (
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
               )}
@@ -312,17 +396,16 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
             {/* Investment Tab */}
             <button
               onClick={() => setActiveSubTab('investment')}
-              className={`group relative py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-2 border-b-2 sm:border-b-3 flex-shrink-0 whitespace-nowrap ${
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 flex-shrink-0 whitespace-nowrap ${
                 activeSubTab === 'investment'
                   ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
               }`}
             >
-              <div className="w-3 h-3 sm:w-4 sm:h-4">
+              <div className="w-4 h-4">
                 {getTabIcon('investment')}
               </div>
-              <span className="hidden sm:inline">{t('investmentTab')}</span>
-              <span className="sm:hidden">I+D</span>
+              <span>{t('investmentTab')}</span>
               {activeSubTab === 'investment' && (
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
               )}
@@ -331,17 +414,16 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
             {/* Researchers Tab */}
             <button
               onClick={() => setActiveSubTab('researchers')}
-              className={`group relative py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-2 border-b-2 sm:border-b-3 flex-shrink-0 whitespace-nowrap ${
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 flex-shrink-0 whitespace-nowrap ${
                 activeSubTab === 'researchers'
                   ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
               }`}
             >
-              <div className="w-3 h-3 sm:w-4 sm:h-4">
+              <div className="w-4 h-4">
                 {getTabIcon('researchers')}
               </div>
-              <span className="hidden sm:inline">{t('researchersTab')}</span>
-              <span className="sm:hidden">Inv.</span>
+              <span>{t('researchersTab')}</span>
               {activeSubTab === 'researchers' && (
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
               )}
@@ -350,17 +432,16 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
             {/* Patents Tab */}
             <button
               onClick={() => setActiveSubTab('patents')}
-              className={`group relative py-3 sm:py-4 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-2 border-b-2 sm:border-b-3 flex-shrink-0 whitespace-nowrap ${
+              className={`group relative py-4 px-6 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-3 flex-shrink-0 whitespace-nowrap ${
                 activeSubTab === 'patents'
                   ? 'border-blue-500 text-blue-600 bg-white shadow-sm'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-white/50'
               }`}
             >
-              <div className="w-3 h-3 sm:w-4 sm:h-4">
+              <div className="w-4 h-4">
                 {getTabIcon('patents')}
               </div>
-              <span className="hidden sm:inline">{t('patentsTab')}</span>
-              <span className="sm:hidden">Pat.</span>
+              <span>{t('patentsTab')}</span>
               {activeSubTab === 'patents' && (
                 <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
               )}
@@ -380,7 +461,7 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                   {/* Header con título y categoria */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                     <div className="flex-grow">
-                      <h4 className="text-base sm:text-lg font-bold text-gray-800 group-hover:text-blue-900 transition-colors duration-200 leading-snug">
+                      <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-800 group-hover:text-blue-900 transition-colors duration-200 leading-snug">
                         {source.title}
                       </h4>
                     </div>
@@ -395,10 +476,10 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                   <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{source.description}</p>
                   
                   {/* Footer con organización y botón */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 pt-2">
                     <div className="flex items-center">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
-                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 bg-blue-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                        <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       </div>
@@ -411,10 +492,10 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                       href={source.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="group/btn inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg shadow-sm transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
+                      className="group/btn inline-flex items-center justify-center px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs sm:text-sm font-medium rounded-md sm:rounded-lg shadow-sm transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
                     >
-                      <span>{t('accessData')}</span>
-                      <svg className="ml-1.5 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <span className="truncate">{t('accessData')}</span>
+                      <svg className="ml-1 sm:ml-1.5 w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
                         <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
                       </svg>
