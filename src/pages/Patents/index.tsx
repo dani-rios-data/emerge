@@ -3,6 +3,7 @@ import PatentsEuropeanMap from '../../components/PatentsEuropeanMap';
 import PatentsRankingChart from '../../components/PatentsRankingChart';
 import PatentsRegionalChart from '../../components/PatentsRegionalChart';
 import PatentsRegionalTimelineChart from '../../components/PatentsRegionalTimelineChart';
+import PatentsEuropeanTimelineChart from '../../components/PatentsEuropeanTimelineChart';
 import { PatentsDataTypeSelector, PatentsDisplayType } from '../../components/DataTypeSelector';
 import Papa from 'papaparse';
 
@@ -464,11 +465,13 @@ const Patents: React.FC<PatentsProps> = (props) => {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-lg w-full">
-              {/* Sin gráfico temporal - componente eliminado */}
-              <div className="bg-gray-50 p-8 rounded-lg text-center">
-                <p className="text-gray-600">Gráfico temporal eliminado</p>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100" style={{ height: "500px" }}>
+              <PatentsEuropeanTimelineChart
+                data={patentsData}
+                language={language}
+                patsDisplayType={patsDisplayType}
+                cooperationPartner={cooperationPartner}
+              />
             </div>
           )}
         </div>
