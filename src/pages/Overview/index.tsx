@@ -67,7 +67,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
       purposeList4: "Acceder a datos actualizados para la toma de decisiones informadas",
       reportContent: "Indicadores Disponibles",
       contentDescription: "El observatorio estructura la información en torno a tres dimensiones fundamentales del ecosistema de I+D+i:",
-      investmentTitle: "Inversión en I+D (% del PIB)",
+      investmentTitle: "Inversión en I+D",
       investmentDescription: "Analiza el esfuerzo financiero dedicado a actividades de I+D como porcentaje del Producto Interior Bruto. Incluye comparativas temporales desde 2010 hasta 2022, distribución por sectores (empresas, administración pública, enseñanza superior e instituciones privadas sin fines de lucro) y posicionamiento de Canarias respecto a España, UE27 y países líderes como Alemania y Países Bajos.",
       researchersTitle: "Capital Humano Investigador",
       researchersDescription: "Examina el personal dedicado a I+D medido en equivalencia a tiempo completo (ETC) por cada mil habitantes de la población activa. Los datos abarcan desde 2010 hasta 2022, con desagregación sectorial y análisis comparativo territorial que permite evaluar la capacidad investigadora de Canarias en el contexto nacional e internacional.",
@@ -108,7 +108,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
       purposeList4: "Access updated data for informed decision-making",
       reportContent: "Available Indicators",
       contentDescription: "The observatory structures information around three fundamental dimensions of the R&D&I ecosystem:",
-      investmentTitle: "R&D Investment (% of GDP)",
+      investmentTitle: "R&D Investment",
       investmentDescription: "Analyzes the financial effort dedicated to R&D activities as a percentage of Gross Domestic Product. Includes temporal comparisons from 2010 to 2022, sectoral distribution (business enterprise, government, higher education and private non-profit institutions) and positioning of the Canary Islands with respect to Spain, EU27 and leading countries such as Germany and the Netherlands.",
       researchersTitle: "Research Human Capital",
       researchersDescription: "Examines personnel dedicated to R&D measured in full-time equivalent (FTE) per thousand inhabitants of the active population. Data spans from 2010 to 2022, with sectoral breakdown and territorial comparative analysis that enables evaluation of the research capacity of the Canary Islands within the national and international context.",
@@ -309,13 +309,13 @@ const Overview: React.FC<OverviewProps> = (props) => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-gray-700 text-lg">{t('additionalFeatures')}</p>
+              <p className="text-gray-700 text-sm">{t('additionalFeatures')}</p>
             </div>
             <div className="flex items-start">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <p className="text-gray-700 text-lg">{t('updateInfo')}</p>
+              <p className="text-gray-700 text-sm">{t('updateInfo')}</p>
             </div>
           </div>
         </div>
