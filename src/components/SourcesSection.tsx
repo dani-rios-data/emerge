@@ -388,9 +388,6 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                 {getTabIcon('all')}
               </div>
               <span>{t('allTab')}</span>
-              {activeSubTab === 'all' && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
-              )}
             </button>
 
             {/* Investment Tab */}
@@ -406,9 +403,6 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                 {getTabIcon('investment')}
               </div>
               <span>{t('investmentTab')}</span>
-              {activeSubTab === 'investment' && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
-              )}
             </button>
 
             {/* Researchers Tab */}
@@ -424,9 +418,6 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                 {getTabIcon('researchers')}
               </div>
               <span>{t('researchersTab')}</span>
-              {activeSubTab === 'researchers' && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
-              )}
             </button>
 
             {/* Patents Tab */}
@@ -442,9 +433,6 @@ const SourcesSection: React.FC<SourcesSectionProps> = ({ language }) => {
                 {getTabIcon('patents')}
               </div>
               <span>{t('patentsTab')}</span>
-              {activeSubTab === 'patents' && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></span>
-              )}
             </button>
           </nav>
         </div>
