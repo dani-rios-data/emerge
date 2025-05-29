@@ -336,55 +336,59 @@ const Patents: React.FC<PatentsProps> = (props) => {
             <div className="bg-white rounded-lg w-full">
               {/* Filtros */}
               <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                    <div className="flex items-center">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        className="text-blue-500 mr-2 flex-shrink-0"
-                      >
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                      </svg>
-                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <div className="flex items-center flex-shrink-0">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="text-blue-500 mr-2"
+                        >
+                          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base whitespace-nowrap">{t.year}</label>
+                      </div>
                       <select 
                         value={selectedYear}
                         onChange={handleYearChange}
-                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base min-w-[80px]"
                       >
                         {availableYears.map(year => (
                           <option key={year} value={year}>{year}</option>
                         ))}
                       </select>
                     </div>
-                    <div className="flex items-center">
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        className="text-blue-500 mr-2 flex-shrink-0"
-                      >
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.cooperationPartner}</label>
+                    <div className="flex items-center flex-wrap gap-2">
+                      <div className="flex items-center flex-shrink-0">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          className="text-blue-500 mr-2"
+                        >
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base whitespace-nowrap">{t.cooperationPartner}</label>
+                      </div>
                       <select 
                         value={cooperationPartner}
                         onChange={handleCooperationPartnerChange}
-                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
+                        className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base min-w-[120px]"
                       >
                         <option value="APPL">{t.applicant}</option>
                         <option value="INVT">{t.inventor}</option>
@@ -464,29 +468,31 @@ const Patents: React.FC<PatentsProps> = (props) => {
           
           {/* Filtros independientes para el gráfico temporal */}
           <div className="bg-blue-50 p-3 sm:p-4 rounded-md border border-blue-100 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <div className="flex items-center">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="16" 
-                    height="16" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="text-blue-500 mr-2 flex-shrink-0"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.cooperationPartner}</label>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="flex items-center flex-wrap gap-2">
+                  <div className="flex items-center flex-shrink-0">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-blue-500 mr-2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base whitespace-nowrap">{t.cooperationPartner}</label>
+                  </div>
                   <select 
                     value={timelineCooperationPartner}
                     onChange={handleTimelineCooperationPartnerChange}
-                    className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
+                    className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base min-w-[120px]"
                   >
                     <option value="APPL">{t.applicant}</option>
                     <option value="INVT">{t.inventor}</option>
@@ -565,27 +571,29 @@ const Patents: React.FC<PatentsProps> = (props) => {
             <div className="bg-white rounded-lg w-full">
               {/* Filtros para la sección regional */}
               <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
-                  <div className="flex items-center">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      className="text-blue-500 mr-2 flex-shrink-0"
-                    >
-                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base">{t.year}</label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex items-center flex-shrink-0">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-blue-500 mr-2"
+                      >
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <label className="text-gray-700 font-medium mr-2 text-sm sm:text-base whitespace-nowrap">{t.year}</label>
+                    </div>
                     <select 
                       value={regionalYear}
                       onChange={handleRegionalYearChange}
-                      className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base"
+                      className="border border-gray-300 rounded px-2 sm:px-3 py-1.5 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm sm:text-base min-w-[80px]"
                     >
                       {regionalAvailableYears.map(year => (
                         <option key={year} value={year}>{year}</option>

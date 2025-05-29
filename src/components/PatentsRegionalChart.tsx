@@ -353,11 +353,11 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
       boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
       borderRadius: '8px',
       padding: '0',
-      minWidth: '200px',
-      maxWidth: '350px',
+      minWidth: window.innerWidth < 768 ? '280px' : '200px',
+      maxWidth: window.innerWidth < 768 ? '90vw' : '350px',
       border: '1px solid #e2e8f0',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
-      fontSize: '14px',
+      fontSize: window.innerWidth < 768 ? '12px' : '14px',
       lineHeight: '1.5',
       color: '#333',
       transition: 'opacity 0.15s ease-in-out, transform 0.15s ease-in-out'
@@ -372,19 +372,45 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
-    let left = mouseX + 10;
-    let top = mouseY - (tooltipHeight / 2);
+    // Detectar si es móvil
+    const isMobile = windowWidth < 768;
     
-    if (left + tooltipWidth > windowWidth) {
-      left = mouseX - tooltipWidth - 10;
-    }
+    let left, top;
     
-    if (top + tooltipHeight > windowHeight) {
-      top = windowHeight - tooltipHeight - 10;
-    }
-    
-    if (top < 10) {
-      top = 10;
+    if (isMobile) {
+      // En móvil, centrar el tooltip en la pantalla
+      const margin = 10;
+      left = Math.max(margin, (windowWidth - tooltipWidth) / 2);
+      
+      // Posicionar verticalmente según donde hizo clic el usuario
+      if (mouseY > windowHeight / 2) {
+        // Si está en la mitad inferior, mostrar arriba
+        top = Math.max(margin, mouseY - tooltipHeight - 20);
+      } else {
+        // Si está en la mitad superior, mostrar abajo
+        top = Math.min(windowHeight - tooltipHeight - margin, mouseY + 20);
+      }
+      
+      // Asegurar que cabe en la pantalla
+      if (tooltipHeight > windowHeight - 2 * margin) {
+        top = margin;
+      }
+    } else {
+      // Comportamiento original para desktop
+      left = mouseX + 10;
+      top = mouseY - (tooltipHeight / 2);
+      
+      if (left + tooltipWidth > windowWidth) {
+        left = mouseX - tooltipWidth - 10;
+      }
+      
+      if (top + tooltipHeight > windowHeight) {
+        top = windowHeight - tooltipHeight - 10;
+      }
+      
+      if (top < 10) {
+        top = 10;
+      }
     }
     
     tooltipEl.style.left = `${Math.floor(left)}px`;
@@ -662,8 +688,8 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     layout: {
       padding: {
         top: 10,
-        right: 15,
-        bottom: 30,
+        right: window.innerWidth < 768 ? 10 : 15,
+        bottom: window.innerWidth < 768 ? 20 : 30,
         left: 10
       }
     },
@@ -681,13 +707,24 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
         ticks: {
           color: '#333',
           font: {
-            size: 10,
+            size: window.innerWidth < 768 ? 8 : 10,
             weight: 'normal',
             family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif"
           },
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 45
+          autoSkip: window.innerWidth < 768,
+          maxRotation: window.innerWidth < 768 ? 65 : 45,
+          minRotation: window.innerWidth < 768 ? 65 : 45,
+          callback: function(value: string | number, index: number): string {
+            if (window.innerWidth < 768) {
+              const labels = this.chart.data.labels;
+              if (labels && typeof labels[index] === 'string') {
+                const label = labels[index] as string;
+                // Truncar labels largos en móvil
+                return label.length > 12 ? label.substring(0, 12) + '...' : label;
+              }
+            }
+            return this.chart.data.labels?.[index]?.toString() || '';
+          }
         },
         border: {
           color: '#E5E7EB'
@@ -807,42 +844,45 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
           const canariasValue = !isCanariasRegion ? getCanariasValue(selectedYear) : null;
           
           // Construir el contenido del tooltip
+          const isMobile = window.innerWidth < 768;
           const tooltipContent = `
             <div class="max-w-md bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <!-- Header con bandera y nombre de la región -->
-              <div class="flex items-center p-2 bg-orange-50 border-b border-orange-100">
+              <div class="flex items-center ${isMobile ? 'p-2' : 'p-2'} bg-orange-50 border-b border-orange-100">
                 ${flagUrl ? 
-                  `<div class="w-8 h-6 mr-2 rounded overflow-hidden relative">
+                  `<div class="w-${isMobile ? '6' : '8'} h-${isMobile ? '4' : '6'} mr-2 rounded overflow-hidden relative">
                     <img src="${flagUrl}" class="w-full h-full object-cover" alt="${regionName}" />
                   </div>` :
-                  `<span class="text-xl mr-2">${flag}</span>`
+                  `<span class="${isMobile ? 'text-lg' : 'text-xl'} mr-2">${flag}</span>`
                 }
-                <h3 class="text-md font-bold text-gray-800">${regionName}</h3>
+                <h3 class="${isMobile ? 'text-sm' : 'text-md'} font-bold text-gray-800">${regionName}</h3>
               </div>
               
               <!-- Contenido principal -->
-              <div class="p-3">
+              <div class="${isMobile ? 'p-2' : 'p-3'}">
                 <!-- Métrica principal -->
-                <div class="mb-2">
-                  <div class="flex items-center text-gray-500 text-xs mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div class="${isMobile ? 'mb-1' : 'mb-2'}">
+                  <div class="flex items-center text-gray-500 ${isMobile ? 'text-xs' : 'text-xs'} mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${isMobile ? '12' : '14'}" height="${isMobile ? '12' : '14'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>${t.patents}:</span>
                   </div>
                   <div class="flex items-center">
                     ${isConfidential ? 
-                      `<span class="text-md font-bold text-gray-500">${t.confidential}</span>` :
-                      `<span class="text-lg font-bold text-orange-700">${formatNumberComplete(Math.round(value), 0)}</span>`
+                      `<span class="${isMobile ? 'text-sm' : 'text-md'} font-bold text-gray-500">${t.confidential}</span>` :
+                      `<span class="${isMobile ? 'text-base' : 'text-lg'} font-bold text-orange-700">${formatNumberComplete(Math.round(value), 0)}</span>`
                     }
                   </div>
                   ${yoyChange !== null && yoyPercentage !== null && !isConfidential ? `
                   <div class="mt-1">
-                    <div class="inline-flex items-center px-2 py-1 rounded-full text-xs ${yoyChange >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                    <div class="inline-flex items-center px-${isMobile ? '1' : '2'} py-1 rounded-full ${isMobile ? 'text-xs' : 'text-xs'} ${yoyChange >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                         <path d="${yoyChange >= 0 ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'}"></path>
                       </svg>
                       <span class="font-medium">
-                        YoY: ${yoyChange >= 0 ? '+' : ''}${formatNumberComplete(Math.round(yoyChange), 0)} 
-                        (${yoyPercentage >= 0 ? '+' : ''}${yoyPercentage.toFixed(1)}%)
+                        ${isMobile ? 
+                          `${yoyPercentage >= 0 ? '+' : ''}${yoyPercentage.toFixed(1)}%` : 
+                          `YoY: ${yoyChange >= 0 ? '+' : ''}${formatNumberComplete(Math.round(yoyChange), 0)} (${yoyPercentage >= 0 ? '+' : ''}${yoyPercentage.toFixed(1)}%)`
+                        }
                       </span>
                     </div>
                   </div>
@@ -851,21 +891,21 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
                 
                 <!-- Ranking (si está disponible y no es confidencial) -->
                 ${rank !== null && !isConfidential ? `
-                <div class="mb-2">
-                  <div class="bg-yellow-50 p-1.5 rounded-md flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-1">
+                <div class="${isMobile ? 'mb-1' : 'mb-2'}">
+                  <div class="bg-yellow-50 p-${isMobile ? '1' : '1.5'} rounded-md flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${isMobile ? '12' : '14'}" height="${isMobile ? '12' : '14'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-1">
                       <circle cx="12" cy="8" r="6" />
                       <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
                     </svg>
-                    <span class="text-sm">Posición </span>
-                    <span class="font-bold text-md mx-1">${rank}</span>
-                    <span class="text-gray-600 text-sm">${language === 'es' ? `de ${nonConfidentialItems.length}` : `of ${nonConfidentialItems.length}`}</span>
+                    <span class="${isMobile ? 'text-xs' : 'text-sm'}">Posición </span>
+                    <span class="font-bold ${isMobile ? 'text-sm' : 'text-md'} mx-1">${rank}</span>
+                    <span class="text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}">${language === 'es' ? `de ${nonConfidentialItems.length}` : `of ${nonConfidentialItems.length}`}</span>
                   </div>
                 </div>
                 ` : ''}
 
                 <!-- Comparación con Canarias (si no es Canarias y hay datos) -->
-                ${canariasValue !== null && !isCanariasRegion && !isConfidential ? `
+                ${canariasValue !== null && !isCanariasRegion && !isConfidential && !isMobile ? `
                 <div class="mb-2">
                   <div class="bg-gray-50 p-2 rounded-md">
                     <div class="text-xs text-gray-500 mb-1 flex items-center">
@@ -889,31 +929,36 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
                 </div>
                 ` : ''}
 
-                <!-- Lista de provincias con valores individuales del dataset -->
-                ${provincesFromDataset.length > 0 ? `
-                <div class="mb-2">
-                  <div class="text-xs font-medium text-gray-700 mb-1 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                <!-- Lista de provincias con valores individuales del dataset (Solo en desktop o si hay pocas provincias) -->
+                ${provincesFromDataset.length > 0 && (!isMobile || provincesFromDataset.filter(p => p.value > 0).length <= 3) ? `
+                <div class="${isMobile ? 'mb-1' : 'mb-2'}">
+                  <div class="${isMobile ? 'text-xs' : 'text-xs'} font-medium text-gray-700 mb-1 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${isMobile ? '10' : '12'}" height="${isMobile ? '10' : '12'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     ${language === 'es' ? 'Provincias:' : 'Provinces:'}
                   </div>
-                  <div class="space-y-0.5 text-xs">
+                  <div class="space-y-0.5 ${isMobile ? 'text-xs' : 'text-xs'}">
                     ${provincesFromDataset
                       .filter((province) => province.value > 0)
                       .sort((a, b) => b.value - a.value)
+                      .slice(0, isMobile ? 2 : 5) // Mostrar menos provincias en móvil
                       .map((province) => {
                         const percentage = value > 0 ? ((province.value / value) * 100).toFixed(1) : '0.0';
                         return `
-                        <div class="flex justify-between items-center py-1 px-2 bg-white rounded border border-gray-200">
+                        <div class="flex justify-between items-center py-${isMobile ? '0.5' : '1'} px-${isMobile ? '1' : '2'} bg-white rounded border border-gray-200">
                           <div class="flex items-center">
                             <div class="w-1 h-1 rounded-full mr-1.5 bg-blue-500"></div>
-                            <span class="text-gray-700 text-xs">${province.name}</span>
+                            <span class="text-gray-700 ${isMobile ? 'text-xs' : 'text-xs'} ${isMobile ? 'truncate max-w-20' : ''}">${province.name}</span>
                           </div>
-                          <span class="font-medium text-gray-800 text-xs">${formatNumberComplete(Math.round(province.value), 0)} (${percentage}%)</span>
+                          <span class="font-medium text-gray-800 ${isMobile ? 'text-xs' : 'text-xs'} ml-1">${formatNumberComplete(Math.round(province.value), 0)}${isMobile ? '' : ` (${percentage}%)`}</span>
                         </div>
                       `}).join('')}
+                    ${isMobile && provincesFromDataset.filter(p => p.value > 0).length > 2 ? 
+                      `<div class="text-xs text-gray-400 text-center py-1">+${provincesFromDataset.filter(p => p.value > 0).length - 2} más</div>` : 
+                      ''
+                    }
                   </div>
                 </div>
                 ` : ''}
@@ -930,8 +975,10 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
   // Preparar datos para el gráfico
   const chartData: ChartDataResult = prepareChartData();
   
-  // Altura fija para el gráfico horizontal
-  const chartHeight = 520;
+  // Altura adaptable según el tamaño de pantalla
+  const isMobile = window.innerWidth < 768;
+  const chartHeight = isMobile ? 400 : 520;
+  const containerHeight = isMobile ? 480 : 620;
 
   // Determinar si hay datos para mostrar
   const hasData = data.length > 0 && data.some(item => {
@@ -940,33 +987,33 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
     return yearValue && parseFloat(yearValue) > 0;
   });
   
-  // Estilos para el contenedor sin scroll horizontal
+  // Estilos para el contenedor sin scroll horizontal - adaptado para móvil
   const scrollContainerStyle: React.CSSProperties = {
-    height: '520px',
+    height: `${chartHeight}px`,
     overflowX: 'hidden',
     overflowY: 'hidden',
     border: '1px solid #f0f0f0',
     borderRadius: '8px',
-    padding: '10px 0',
+    padding: isMobile ? '5px 0' : '10px 0',
     width: '100%'
   } as React.CSSProperties;
 
   // Si no hay datos, mostrar mensaje de no disponibilidad
   if (!hasData) {
     return (
-      <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: '620px' }}>
+      <div className="flex justify-center items-center bg-gray-50 rounded-lg border border-gray-200" style={{ height: `${containerHeight}px` }}>
         <div className="text-center text-gray-500">
-          <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="mt-2">{t.noData}</p>
+          <p className={`mt-2 ${isMobile ? 'text-sm' : ''}`}>{t.noData}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative" style={{ height: '620px' }} ref={containerRef}>
+    <div className="relative" style={{ height: `${containerHeight}px` }} ref={containerRef}>
       {/* Contenedor del gráfico sin título */}
       <div style={scrollContainerStyle} ref={scrollContainerRef} className="custom-scrollbar">
         <div style={{ height: `${chartHeight}px`, width: '100%' }}>
@@ -979,7 +1026,7 @@ const PatentsRegionalChart: React.FC<PatentsRegionalChartProps> = ({
       </div>
       
       {/* Etiqueta del eje Y centrada */}
-      <div className="text-center mt-4 mb-2 text-sm font-medium text-gray-700">
+      <div className={`text-center mt-2 mb-2 ${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-700`}>
         {t.axisLabel}
       </div>
     </div>
