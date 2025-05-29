@@ -1,77 +1,141 @@
-# Dashboard de Datos I+D de Canarias
+# Observatorio de I+D de Canarias - Dashboard BI
 
-Este dashboard permite visualizar y comparar los datos económicos de I+D (Investigación y Desarrollo) de las Islas Canarias, en comparación con otras regiones de España y países de la Unión Europea.
+Una aplicación web moderna y amigable para móviles que presenta análisis comparativos e históricos de indicadores de investigación, desarrollo e innovación en las Islas Canarias.
 
-## Características
+## 🚀 Características Principales
 
-- Visualización de datos de I+D de Canarias y comparación con otras regiones españolas y países europeos
-- Soporte multilenguaje (español e inglés)
-- Diseño responsive utilizando Tailwind CSS
-- Gráficos interactivos con diversas bibliotecas (Recharts, Chart.js, Nivo)
-- Selección de regiones y países para comparación personalizada
+### 📱 Optimización Móvil
+- **Progressive Web App (PWA)**: Instalable en dispositivos móviles
+- **Diseño Responsive**: Adaptado para pantallas de todos los tamaños
+- **Navegación Táctil**: Menú hamburguesa y controles optimizados para touch
+- **Rendimiento Móvil**: Carga rápida y experiencia fluida en dispositivos móviles
+- **Modo Offline**: Funcionalidad básica disponible sin conexión a internet
 
-## Secciones
+### 📊 Secciones de Análisis
+- **Visión General**: Panorama del ecosistema de I+D+i en Canarias
+- **Inversión en I+D**: Análisis del esfuerzo financiero como % del PIB
+- **Investigadores**: Capital humano dedicado a I+D por sectores
+- **Patentes**: Análisis de solicitudes ante la Oficina Europea de Patentes
+- **Fuentes de Datos**: Información sobre las fuentes utilizadas
 
-1. **Resumen (Overview)**: Visión general de los indicadores principales.
-2. **Porcentaje del PIB**: Análisis del porcentaje del PIB invertido en I+D, desglosado en inversión pública y privada.
-3. **Investigadores**: Número de investigadores por año, desglosados por sector público y privado.
-4. **Patentes**: Evolución del número de patentes, también desglosadas por sector.
+### 🌐 Características Técnicas
+- **Multiidioma**: Español e Inglés
+- **Gráficos Interactivos**: Visualizaciones responsivas con Recharts
+- **Mapas Dinámicos**: Representaciones geográficas interactivas
+- **Tooltips Informativos**: Información contextual en hover/touch
+- **Exportación de Datos**: Capacidad de descarga de información
 
-## Tecnologías Utilizadas
+## 🛠️ Tecnologías Utilizadas
 
-- React 18
-- TypeScript
-- Vite
-- React Router
-- i18next para internacionalización
-- Tailwind CSS para estilos
-- Recharts, Chart.js y Nivo para visualizaciones
-- PapaParse para procesamiento de CSV
+- **Frontend**: React 18 + TypeScript
+- **Styling**: Tailwind CSS con utilidades móviles personalizadas
+- **Build Tool**: Vite con plugin PWA
+- **Gráficos**: Recharts, D3.js, Chart.js
+- **Mapas**: React Simple Maps
+- **PWA**: Vite PWA Plugin con Workbox
 
-## Instalación
+## 📱 Instalación como PWA
 
+### Android/Chrome
+1. Visita la aplicación en tu navegador Chrome
+2. Aparecerá automáticamente un prompt de instalación
+3. Toca "Instalar" para añadir la app a tu pantalla de inicio
+
+### iOS/Safari
+1. Abre la aplicación en Safari
+2. Toca el botón de compartir (cuadrado con flecha hacia arriba)
+3. Selecciona "Añadir a pantalla de inicio"
+4. Toca "Añadir" para confirmar
+
+## 🚀 Desarrollo
+
+### Requisitos Previos
+- Node.js 18+ 
+- npm o yarn
+
+### Instalación
 ```bash
 # Clonar el repositorio
 git clone [url-del-repositorio]
 
-# Entrar al directorio
+# Navegar al directorio
 cd dashboard-bi
 
 # Instalar dependencias
 npm install
 
-# Iniciar el servidor de desarrollo
+# Iniciar servidor de desarrollo
 npm run dev
 ```
 
-## Estructura del Proyecto
-
-```
-dashboard-bi/
-├── public/
-│   ├── data/       # Archivos CSV con los datos
-│   └── ...
-├── src/
-│   ├── components/ # Componentes reutilizables
-│   ├── contexts/   # Contextos de React (ej: idioma)
-│   ├── data/       # Datos estáticos
-│   ├── hooks/      # Custom hooks
-│   ├── i18n/       # Configuración de internacionalización
-│   ├── pages/      # Páginas principales
-│   ├── types/      # Definiciones de tipos
-│   └── utils/      # Funciones de utilidad
-├── package.json
-└── README.md
-```
-
-## Despliegue
-
-El proyecto está configurado para ser desplegado en Vercel. Para desplegar:
-
+### Scripts Disponibles
 ```bash
-vercel
+# Desarrollo
+npm run dev          # Servidor de desarrollo con PWA habilitado
+
+# Construcción
+npm run build        # Build de producción con PWA
+
+# Vista previa
+npm run preview      # Vista previa del build de producción
+
+# Linting
+npm run lint         # Verificar código con ESLint
 ```
 
-## Licencia
+## 📱 Optimizaciones Móviles Implementadas
 
-Este proyecto está disponible como código abierto bajo la licencia MIT.
+### CSS y Estilos
+- **Safe Area Support**: Soporte para dispositivos con notch
+- **Touch Targets**: Botones con tamaño mínimo de 44px (iOS guidelines)
+- **Smooth Scrolling**: Desplazamiento suave optimizado para móviles
+- **Responsive Typography**: Tipografía que se adapta al tamaño de pantalla
+- **Mobile-First Design**: Diseño pensado primero para móviles
+
+### Interacción
+- **Menú Hamburguesa**: Navegación colapsable en pantallas pequeñas
+- **Gestos Táctiles**: Optimizado para interacción táctil
+- **Feedback Visual**: Estados hover/active adaptados para touch
+- **Prevención de Zoom**: Inputs configurados para evitar zoom automático en iOS
+
+### Rendimiento
+- **Code Splitting**: Carga bajo demanda de componentes
+- **Image Optimization**: Imágenes optimizadas para diferentes densidades
+- **Service Worker**: Caché inteligente para carga rápida
+- **Lazy Loading**: Carga diferida de contenido no crítico
+
+## 🔧 Configuración PWA
+
+La aplicación incluye:
+- **Manifest.json**: Configuración de la aplicación web
+- **Service Worker**: Generado automáticamente por Vite PWA
+- **Iconos**: Iconos adaptativos para diferentes plataformas
+- **Shortcuts**: Accesos directos a secciones principales
+- **Offline Support**: Funcionalidad básica sin conexión
+
+## 📊 Estructura de Datos
+
+Los datos se organizan en:
+- **CSV Files**: Datos estructurados en formato CSV
+- **JSON Configs**: Configuraciones de visualización
+- **Static Assets**: Logos, iconos y recursos estáticos
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está desarrollado por EMERGE - Asociación Canaria de Startups.
+
+## 📞 Contacto
+
+Para más información sobre el proyecto, contacta con EMERGE - Asociación Canaria de Startups.
+
+---
+
+**Nota**: Esta aplicación está optimizada para proporcionar la mejor experiencia posible tanto en dispositivos móviles como de escritorio, con especial énfasis en la usabilidad móvil y la capacidad de instalación como PWA.

@@ -28,6 +28,25 @@ export default {
         'dashboard-bg': '#fffdf7',
         'dashboard-light': '#eff2f1',
       },
+      screens: {
+        'xs': '475px',
+        '3xl': '1600px',
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      fontSize: {
+        'xxs': '0.625rem',
+      },
+      minHeight: {
+        'screen-safe': '100dvh',
+      },
+      maxWidth: {
+        'screen-xl': '100vw',
+      }
     },
   },
   plugins: [],
